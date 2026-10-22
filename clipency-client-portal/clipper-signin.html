@@ -1041,6 +1041,11 @@ document.querySelectorAll('.peek').forEach(function(b){
     var em = document.getElementById('upEmail').value.trim();
     var pw = document.getElementById('upPass').value;
     var m  = document.getElementById('msgUp');
+    /* the name shows in chats, appeals and the client's creator list; handle_new_user
+       copies these into the profile */
+    var fn = document.getElementById('upFirst').value.trim(), ln = document.getElementById('upLast').value.trim();
+    var meta = { first_name: fn, last_name: ln, full_name: (fn + ' ' + ln).trim() };
+    if(!fn){ return err(m, 'Enter your first name.'); }
     if(!document.getElementById('upTerms').checked){ return err(m, 'Please accept the Terms to continue.'); }
     if(!em || !pw){ return err(m, 'Enter your email and a password.'); }
     if(pw.length < 8){ return err(m, 'Password must be at least 8 characters.'); }
@@ -1049,11 +1054,11 @@ document.querySelectorAll('.peek').forEach(function(b){
     try{
       var c = client(), data;
       if(c){
-        var r = await c.auth.signUp({ email: em, password: pw });
+        var r = await c.auth.signUp({ email: em, password: pw, options: { data: meta } });
         if(r.error) throw r.error;
         data = r.data;
       } else {
-        data = await rest('signup', { email: em, password: pw });
+        data = await rest('signup', { email: em, password: pw, data: meta });
       }
       var session = data && (data.session || (data.access_token ? data : null));
       if(session && session.access_token){
