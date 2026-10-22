@@ -33,3 +33,7 @@ tests/
 supabase/
 _to_delete/
 _clipathon-port-backup/
+
+# local tools
+.claude/
+.vercel/

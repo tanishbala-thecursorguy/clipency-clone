@@ -40,3 +40,4 @@ incoming/
 
 # local tools
 .claude/
+.vercel
