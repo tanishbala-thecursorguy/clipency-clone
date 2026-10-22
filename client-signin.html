@@ -1316,7 +1316,7 @@ document.querySelectorAll('.peek').forEach(function(b){
       var c = client();
       var back = afterAuthURL();
       if(c){
-        var r = await c.auth.resetPasswordForEmail(em, { redirectTo: back });
+        var r = await c.auth.resetPasswordForEmail(em, { redirectTo: location.origin + '/reset-password?for=client' });
         if(r.error) throw r.error;
       } else {
         await rest('recover', { email: em });

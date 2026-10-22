@@ -398,7 +398,7 @@ section{position:relative;}
    ============================================================ */
 .footer{border-top:1px solid var(--hair);padding:90px 0 0;position:relative;overflow:hidden;}
 .footer-art{right:0;bottom:0;width:clamp(160px,19vw,278px);opacity:.95;}
-.footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:48px;position:relative;z-index:2;}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr 1fr;gap:40px;position:relative;z-index:2;}
 .footer-brand .brand{margin-bottom:22px;}
 .footer-tag{font-family:var(--serif);font-size:20px;font-style:italic;color:var(--ink-70);line-height:1.5;max-width:260px;}
 .f-col-title{font-size:10.5px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--bronze);margin-bottom:24px;}

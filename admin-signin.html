@@ -75,6 +75,10 @@ button[disabled]{opacity:.55; cursor:default;}
 .msg.ok{color:var(--bronze);}
 .foot{margin-top:22px; text-align:center; font-size:12px; color:var(--ink-40); letter-spacing:.03em;}
 .foot a{color:var(--bronze); text-decoration:none;}
+.lrow{display:flex; justify-content:space-between; align-items:baseline;}
+.forgot{font-size:11.5px; color:var(--bronze); text-decoration:none; letter-spacing:.02em;}
+.forgot:hover{text-decoration:underline;}
+[hidden]{display:none !important;}
 @media (max-width:480px){ .card{padding:32px 22px 26px;} h1{font-size:30px;} .back{top:14px; left:14px;} }
 </style>
 </head>
@@ -92,11 +96,22 @@ button[disabled]{opacity:.55; cursor:default;}
       <input id="em" type="email" autocomplete="username" placeholder="you@clipency.in" required>
     </div>
     <div>
-      <label for="pw">Password</label>
+      <div class="lrow"><label for="pw">Password</label><a class="forgot" id="forgot" href="#">Forgot password?</a></div>
       <input id="pw" type="password" autocomplete="current-password" placeholder="••••••••" required>
     </div>
     <button id="go" type="submit">Sign in to console &#8594;</button>
     <p class="msg" id="msg" role="status"></p>
+  </form>
+  <!-- Reset for staff only: the server sends a link only to addresses in admin_users,
+       and answers the same way for every address. -->
+  <form id="rf" novalidate hidden>
+    <div>
+      <label for="rem">Admin email</label>
+      <input id="rem" type="email" autocomplete="username" placeholder="you@clipency.in" required>
+    </div>
+    <button id="rgo" type="submit">Email me a reset link &#8594;</button>
+    <p class="msg" id="rmsg" role="status"></p>
+    <p class="foot" style="margin-top:0"><a href="#" id="rback">&#8592; Back to sign in</a></p>
   </form>
 
   <p class="foot">Not staff? <a href="/signup">Clipper sign-in</a> · <a href="/client-signin">Client sign-in</a></p>
@@ -149,6 +164,35 @@ button[disabled]{opacity:.55; cursor:default;}
       say(e.message || 'Something went wrong. Please try again.');
       go.disabled = false;
     }
+  });
+
+  /* ---- forgot password (admins only) ---- */
+  var rf = document.getElementById('rf'), rem = document.getElementById('rem'), rgo = document.getElementById('rgo'), rmsg = document.getElementById('rmsg');
+  function rsay(t, ok){ rmsg.textContent = t || ''; rmsg.className = 'msg' + (ok ? ' ok' : ''); }
+  document.getElementById('forgot').addEventListener('click', function(e){
+    e.preventDefault(); f.hidden = true; rf.hidden = false; rem.value = em.value.trim(); rsay(''); rem.focus();
+  });
+  document.getElementById('rback').addEventListener('click', function(e){
+    e.preventDefault(); rf.hidden = true; f.hidden = false; em.focus();
+  });
+  rf.addEventListener('submit', async function(ev){
+    ev.preventDefault();
+    var v = rem.value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)){ rsay('Enter your admin email address.'); return; }
+    rgo.disabled = true; rsay('Sending…', true);
+    try{
+      var r = await fetch(CFG.SUPABASE_URL + '/functions/v1/admin-password-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + CFG.SUPABASE_ANON_KEY },
+        body: JSON.stringify({ email: v, origin: location.origin })
+      });
+      var j = await r.json().catch(function(){ return {}; });
+      if(!r.ok && j.message){ throw new Error(j.message); }
+      rsay(j.message || 'If that email belongs to a Clipency admin, a reset link is on its way.', true);
+    }catch(e){
+      rsay(e.message || 'Could not send the link. Try again in a minute.');
+    }
+    rgo.disabled = false;
   });
 })();
 </script>
