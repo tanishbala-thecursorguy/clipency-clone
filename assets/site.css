@@ -783,3 +783,7 @@ main > section:not(.hero){content-visibility:auto;contain-intrinsic-size:auto 90
 html.lite .nav.scrolled{-webkit-backdrop-filter:none;backdrop-filter:none;background:var(--paper);}
 html.lite .reveal{filter:none;}
 html.lite .paper-field::before{display:none;}
+
+.f-consent{display:flex;align-items:flex-end;}
+.f-check{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink-2,inherit);cursor:pointer;line-height:1.35;padding-bottom:12px;}
+.f-check input{width:16px;height:16px;accent-color:var(--gold,#C79A5E);flex:none;}

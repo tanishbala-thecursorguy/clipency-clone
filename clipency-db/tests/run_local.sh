@@ -18,7 +18,7 @@ SNAP="select 'col '||table_name||'.'||column_name||' default='||coalesce(column_
 OLD=$(run -At -c "select string_agg(tablename, ',') from pg_tables where schemaname='public'")
 OLDFN=$(run -At -c "select string_agg(proname, ',') from pg_proc where pronamespace='public'::regnamespace")
 echo "$SNAP" | run -At -v old="$OLD" -v oldfn="$OLDFN" > /tmp/cxpg/before.txt
-for m in 035_review_window_24h 036_creator_type 037_appeals_support 038_group_chats 039_realtime_jobs_storage 039b_harden_new_functions 039c_money_misspellings; do
+for m in 035_review_window_24h 036_creator_type 037_appeals_support 038_group_chats 039_realtime_jobs_storage 039b_harden_new_functions 039c_money_misspellings 040_lead_welcome; do
   run -f $m.sql >/dev/null 2>&1 || { echo "MIGRATION FAILED: $m"; run -f $m.sql 2>&1 | grep -i error; exit 1; }
   run -f $m.sql >/dev/null 2>&1 || { echo "RE-RUN FAILED: $m"; exit 1; }
   echo "applied (twice): $m"
@@ -27,6 +27,6 @@ echo "$SNAP" | run -At -v old="$OLD" -v oldfn="$OLDFN" > /tmp/cxpg/after.txt
 echo "--- changes to things that existed before (should be only the approved 24h review rule):"
 diff /tmp/cxpg/before.txt /tmp/cxpg/after.txt | grep '^[<>]' || echo "(none)"
 echo "---"
-for t in 035_036 037 038 039; do
+for t in 035_036 037 038 039 040; do
   run -f tests/${t}_test.sql 2>&1 | grep -E "PASS|FAIL|ERROR" | sed 's/^psql:[^ ]* NOTICE:  //'
 done

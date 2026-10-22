@@ -154,14 +154,38 @@
   }));
   paintPlan();
 
-  /* ---- book-a-call form (demo: nothing leaves the page yet) ---- */
+  /* ---- book-a-call form: saved as a lead (submit_landing_lead, the same function the
+     old site used). A welcome email, and WhatsApp once it's set up, follow automatically. ---- */
   const form = $('#startForm');
   if(form){
-    form.addEventListener('submit', e => {
+    const SB = 'https://spwtkdgpgeutrhwcjrpy.supabase.co', KEY = 'sb_publishable_IInNrDBLK3dINHSyWaUDzg_UWF63j0B';
+    const val = id => (($('#' + id) || {}).value || '').trim();
+    form.addEventListener('submit', async e => {
       e.preventDefault();
       if(!form.checkValidity()){ form.reportValidity(); return; }
-      const err = $('#fErr');
+      const err = $('#fErr'), btn = $('.f-submit', form);
+      err.hidden = true;
       if(!picked.size){ err.textContent = 'Pick at least one service. One is fine.'; err.hidden = false; return; }
+      const phone = val('fPhone');
+      if(phone && phone.replace(/\D/g, '').length < 8){ err.textContent = 'Check your WhatsApp number (include the country code).'; err.hidden = false; return; }
+      const stage = $('#fStage'), services = [...picked].map(k => ({films:'Launch Films', dist:'Distribution & Clipping', ugc:'UGC Creators'})[k] || k);
+      const payload = {
+        full_name: val('fName'), email: val('fEmail'), phone, company: val('fCo'), brand_name: val('fCo'),
+        campaign_type: services.join(', '), message: val('fMsg'), source_page: location.pathname || '/',
+        website: val('fSite'), stage: stage ? stage.options[stage.selectedIndex].text : '', services,
+        whatsapp_ok: !!(phone && ($('#fWa') || {}).checked), form: 'launch-call'
+      };
+      if(btn){ btn.disabled = true; btn.style.opacity = .6; }
+      try{
+        const r = await fetch(SB + '/rest/v1/rpc/submit_landing_lead', { method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: KEY, Authorization: 'Bearer ' + KEY },
+          body: JSON.stringify({ payload }) });
+        if(!r.ok) throw new Error(String(r.status));
+      }catch(ex){
+        err.textContent = 'Something went wrong sending this. Please try again, or email hello@clipency.in.'; err.hidden = false;
+        if(btn){ btn.disabled = false; btn.style.opacity = ''; }
+        return;
+      }
       form.style.display = 'none';
       const ok = $('#fOk'); ok.classList.add('show'); ok.focus({preventScroll:true});
     });

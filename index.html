@@ -41,7 +41,7 @@ try{ var nc = navigator.connection || {};
 try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
 if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavior:'instant'}); });
 </script>
-<link rel="stylesheet" href="/assets/site.css?v=1792701775">
+<link rel="stylesheet" href="/assets/site.css?v=1792705818">
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -696,6 +696,10 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
             <div class="f-field"><label class="f-label" for="fCo">Company <span class="req">*</span></label><input class="f-input" id="fCo" name="company" required autocomplete="organization" placeholder="Company name"></div>
             <div class="f-field"><label class="f-label" for="fSite">Website <span class="opt">(optional)</span></label><input class="f-input" id="fSite" name="site" autocomplete="url" placeholder="company.com"></div>
           </div>
+          <div class="f-row">
+            <div class="f-field"><label class="f-label" for="fPhone">WhatsApp number <span class="opt">(optional)</span></label><input class="f-input" id="fPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+91 98765 43210"></div>
+            <div class="f-field f-consent"><label class="f-check"><input type="checkbox" id="fWa" checked> <span>Message me on WhatsApp about my launch</span></label></div>
+          </div>
           <div class="f-field"><label class="f-label" for="fStage">You are <span class="req">*</span></label>
             <select class="f-select" id="fStage" name="stage" required>
               <option value="">Select one</option>
@@ -712,7 +716,7 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
           <div class="f-field"><label class="f-label" for="fMsg">What are you launching? <span class="opt">(optional)</span></label><textarea class="f-area" id="fMsg" name="msg" placeholder="The product, who it's for, and when you want to launch."></textarea></div>
           <div class="f-error" id="fErr" hidden></div>
           <button class="btn btn-ink f-submit" type="submit">Book My Launch Call <span class="arr">&#8594;</span></button>
-          <p class="f-note">Demo page · nothing is sent yet</p>
+          <p class="f-note">We reply within 24 hours. No spam, ever.</p>
         </form>
         <div class="f-success" id="fOk" tabindex="-1">
           <div class="fs-mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>
@@ -743,6 +747,6 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
   <div class="footer-bottom"><p>&copy; 2026 Clipency. The launch &amp; distribution firm for tech products.</p></div>
 </footer>
 
-<script src="/assets/site.js?v=1792701775"></script>
+<script src="/assets/site.js?v=1792705818"></script>
 </body>
 </html>

@@ -115,3 +115,8 @@ declare h int; begin
     new.review_due_at := now() + make_interval(hours => coalesce(h, 48));
   end if; return new; end $$;
 create trigger trg_cx_stamp_review_due before insert on public.clip_submissions for each row execute function public.cx_stamp_review_due();
+-- the live leads table (website inquiries), same columns
+create table if not exists public.leads (
+  id uuid primary key default gen_random_uuid(), full_name text, email text, phone text, company text, brand_name text,
+  campaign_type text, budget text, message text, source_page text, status text default 'new', raw_payload jsonb,
+  created_at timestamptz default now(), updated_at timestamptz default now());
