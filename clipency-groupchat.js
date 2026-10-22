@@ -35,7 +35,7 @@
   ];
   function allowedRe(role){return new RegExp('^https?:\\/\\/(?:www\\.|m\\.)?(?:'+(role==='creator'?SOCIAL:SOCIAL+'|'+DOCS)+')(?:[\\/?#]|$)','i');}
   /* no payment talk between creators and the client (Clipency's own posts are exempt) */
-  var MONEY=/[$₹€£¥]|\b(rs\.?|inr|usd|eur|gbp|rupees?|dollars?|euros?|pounds?|bucks|paisa|lakhs?|lacs?|crores?|pay|paid|pays|paying|payment|payments|payout|payouts|money|cash|price|prices|pricing|rate|rates|rpm|cpm|fee|fees|salary|earn|earns|earned|earning|earnings|budget|budgets|invoice|invoices|upi|paypal|bank|transfer|tip|tips|bonus|bonuses|commission|compensation|per view|per video|per reel|per clip)\b/i;
+  var MONEY=/[$₹€£¥]|\b(rup+[aeiy]+\w*|dol+[aeo]r\w*)\b|\d[\d,.]*\s*(rs?|inr|usd)\b|\d\s*\/-|\b(rs\.?|inr|usd|eur|gbp|rupees?|dollars?|euros?|pounds?|bucks|paisa|lakhs?|lacs?|crores?|pay|paid|pays|paying|payment|payments|payout|payouts|money|cash|price|prices|pricing|rate|rates|rpm|cpm|fee|fees|salary|earn|earns|earned|earning|earnings|budget|budgets|invoice|invoices|upi|paypal|bank|transfer|tip|tips|bonus|bonuses|commission|compensation|per view|per video|per reel|per clip)\b/i;
   function check(text,role){
     text=text||'';
     for(var i=0;i<CONTACT.length;i++)if(CONTACT[i][0].test(text))return CONTACT[i][1];
@@ -172,7 +172,7 @@
       '<input type="file" accept="image/*" data-file hidden>'+
       '<textarea class="cxg-ta" data-ta rows="1" placeholder="'+(role==='client'?'Message all creators: instructions, links, inspo…':role==='admin'?'Post as the Clipency team…':'Message the group…')+'"></textarea>'+
       '<button class="cxg-send" data-send disabled>Send</button></div>'+
-      '<div class="cxg-foot">'+(role==='creator'?'Only Instagram, YouTube, Facebook and TikTok links. ':'Social links and Google Drive/Docs links only. ')+'No phone numbers, emails or outside chat apps'+(role==='admin'?'.':', and no payment talk (amounts, currencies, rates).')+'</div></div></div>';
+      '</div></div>';
     var R=host.firstChild, box=R.querySelector('[data-msgs]'), ta=R.querySelector('[data-ta]'), send=R.querySelector('[data-send]');
     var warn=R.querySelector('[data-warn]'), prev=R.querySelector('[data-prev]'), file=R.querySelector('[data-file]');
     function sync(){

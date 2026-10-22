@@ -33,7 +33,7 @@
     [/https?:\/\/(?!(?:www\.)?(?:instagram\.com|instagr\.am|tiktok\.com|vm\.tiktok\.com|youtube\.com|youtu\.be|clipency\.in)\b)\S+/i,'outside links (only Instagram, TikTok and YouTube links are allowed)']
   ];
   /* No payment talk between creators and clients (support chats with Clipency may discuss payouts). */
-  var MONEY=/[$₹€£¥]|\b(rs\.?|inr|usd|eur|gbp|rupees?|dollars?|euros?|pounds?|bucks|paisa|lakhs?|lacs?|crores?|pay|paid|pays|paying|payment|payments|payout|payouts|money|cash|price|prices|pricing|rate|rates|rpm|cpm|fee|fees|salary|earn|earns|earned|earning|earnings|budget|budgets|invoice|invoices|upi|paypal|bank|transfer|tip|tips|bonus|bonuses|commission|compensation|per view|per video|per reel|per clip)\b/i;
+  var MONEY=/[$₹€£¥]|\b(rup+[aeiy]+\w*|dol+[aeo]r\w*)\b|\d[\d,.]*\s*(rs?|inr|usd)\b|\d\s*\/-|\b(rs\.?|inr|usd|eur|gbp|rupees?|dollars?|euros?|pounds?|bucks|paisa|lakhs?|lacs?|crores?|pay|paid|pays|paying|payment|payments|payout|payouts|money|cash|price|prices|pricing|rate|rates|rpm|cpm|fee|fees|salary|earn|earns|earned|earning|earnings|budget|budgets|invoice|invoices|upi|paypal|bank|transfer|tip|tips|bonus|bonuses|commission|compensation|per view|per video|per reel|per clip)\b/i;
   function check(t,allowMoney){
     for(var i=0;i<RULES.length;i++)if(RULES[i][0].test(t||''))return RULES[i][1];
     if(!allowMoney&&MONEY.test(t||''))return 'payment or money talk (amounts, currencies, rates or payouts)';
@@ -312,7 +312,7 @@
               '<input type="file" accept="image/*" data-file hidden>'+
               '<textarea class="cxa-ta" data-ta rows="1" placeholder="'+(role==='admin'?'Reply as the Clipency team…':'Write a message…')+'"></textarea>'+
               '<button class="cxa-send" data-send disabled>Send</button></div>'+
-            '<div class="cxa-foot">Keep it here: phone numbers, emails and outside chat apps are blocked'+(sup||role==='admin'?'. ':', and so is payment talk (amounts, currencies, rates). ')+(role==='admin'?'Both sides are emailed when you post.':'The other side gets an email when you send.')+'</div></div>'
+            '</div>'
           :'<div class="cxa-closed">'+(a.outcome==='resolved'?'This support request is resolved. Need more help? Open a new one from Support.':'This appeal is closed'+(a.outcome==='approved'?': the clip was approved.':': the rejection was kept.'))+'</div>');
 
       var box=mainEl.querySelector('[data-msgs]'); box.scrollTop=box.scrollHeight;
