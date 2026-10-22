@@ -3264,7 +3264,7 @@ $('#appealSave').onclick=async function(){
 var AUTO_LETTER={instagram:'IG',tiktok:'TT',youtube:'YT'};
 async function renderDetAuto(c){
   var box=$('#dAuto'); box.style.display='none';
-  if(DEMO||!c||c.status!=='active'||!isUGC())return;   /* clippers submit links by hand */
+  if(!PLATFORM_LOGIN||DEMO||!c||c.status!=='active'||!isUGC())return;   /* clippers (and everyone, until platform login is on) submit links by hand */
   var r=await sb.rpc('autosub_accounts'); if(DET!==c||r.error)return;
   var accs=(r.data&&r.data.accounts)||[];
   var plats=String(c.platform||'').toLowerCase().split(',').map(function(p){return p.trim();}).filter(function(p){return AUTO_PLAT[p];});
@@ -3338,10 +3338,11 @@ function paintType(){
   var t=$('#piType'); if(t)t.textContent=label;
   var hc=$('#pfTypeChip'); if(hc)hc.textContent=label;
   var sw=$('#pfSwitch'); if(sw)sw.textContent=isUGC()?'⇄ Switch to Clipper':'⇄ Switch to UGC creator';
-  var ac=$('#autoCard'); if(ac)ac.style.display=isUGC()?'':'none';
-  var gb=$('#gigBox'); if(gb)gb.style.display=isUGC()?'':'none';
-  $$('.acct .add').forEach(function(b){b.textContent=isUGC()?'Log in':'+ Add';b.title=isUGC()?'Log in with this platform: your account connects and auto-submits':'Verify with a code in your bio';});
-  if(!isUGC()){var d=$('#dAuto'); if(d)d.style.display='none';}
+  var login=isUGC()&&PLATFORM_LOGIN;
+  var ac=$('#autoCard'); if(ac)ac.style.display=login?'':'none';
+  var gb=$('#gigBox'); if(gb)gb.style.display=login?'':'none';
+  $$('.acct .add').forEach(function(b){b.textContent=login?'Log in':'+ Add';b.title=login?'Log in with this platform: your account connects and auto-submits':'Verify with a code in your bio';});
+  if(!login){var d=$('#dAuto'); if(d)d.style.display='none';}
 }
 function tpClose(){var v=$('#tpVeil'); if(v)v.remove();}
 function tpShow(html){
@@ -3352,7 +3353,7 @@ function showTypePicker(){
   var v=tpShow('<div class="eyeb">Welcome to Clipency</div><h2>How will you create?</h2>'+
     '<p class="tp-sub">Pick the one that fits you. You can change it later in Profile.</p>'+
     '<div class="tp-opts">'+
-      '<button class="tp-opt" data-t="ugc"><span class="ic">🎥</span><b>UGC creator</b><span>You film your own videos for brands and post them on your Instagram, TikTok or YouTube. Log in once and every new post is submitted for you, automatically.</span></button>'+
+      '<button class="tp-opt" data-t="ugc"><span class="ic">🎥</span><b>UGC creator</b><span>You film your own videos for brands and post them on your Instagram, TikTok or YouTube. '+(PLATFORM_LOGIN?'Log in once and every new post is submitted for you, automatically.':'Add your accounts, verify them with a code in your bio, and submit each video link.')+'</span></button>'+
       '<button class="tp-opt" data-t="clipper"><span class="ic">✂️</span><b>Clipper</b><span>You clip and edit content for campaigns. Add your accounts, verify them with a code in your bio, and submit each clip link yourself.</span></button>'+
     '</div>');
   v.querySelectorAll('[data-t]').forEach(function(b){b.onclick=async function(){
@@ -3360,8 +3361,8 @@ function showTypePicker(){
     var r=await sb.rpc('creator_set_type',{p_type:t});
     if(r.error){toast(r.error.message);b.disabled=false;return;}
     PROFILE.creator_type=t; paintType(); renderAutoSubmit();
-    if(t==='ugc')ugcIntro();
-    else{tpClose(); toast('Clipper account ready. Verify your accounts in Profile to start submitting.');
+    if(t==='ugc'&&PLATFORM_LOGIN)ugcIntro();
+    else{tpClose(); toast((t==='ugc'?'UGC creator':'Clipper')+' account ready. Verify your accounts in Profile to start submitting.');
       var seen=false;try{seen=localStorage.getItem('cx-onb')==='1';}catch(e){} if(!seen)setTimeout(startOnb,400);}
   };});
 }
@@ -3435,6 +3436,7 @@ async function switchType(){
   var r=await sb.rpc('creator_set_type',{p_type:next});
   if(r.error){toast(r.error.message);return;}
   PROFILE.creator_type=next; paintType(); renderCamps('All'); if(DET)renderDetAuto(DET); renderAutoSubmit();
+  if(next==='ugc'&&!PLATFORM_LOGIN){toast('You’re a UGC creator now. Showing UGC campaigns.');return;}
   if(next==='ugc'){
     var a=await sb.rpc('autosub_accounts'); var linked=((a.data&&a.data.accounts)||[]).filter(function(x){return x.linked;});
     if(!linked.length){ugcIntro();return;}
@@ -3444,10 +3446,13 @@ async function switchType(){
 $('#piTypeBtn').onclick=switchType;
 
 /* ---- auto-submit: linked accounts post straight into a campaign ---- */
+/* Off until Meta approves Instagram Login: everyone (UGC creators included) adds
+   accounts with the code-in-bio check and submits links by hand. */
+var PLATFORM_LOGIN=false;
 var AUTO_PLAT={instagram:'Instagram',tiktok:'TikTok',youtube:'YouTube'};
 function auAgo(d){if(!d)return 'never';var m=Math.round((Date.now()-new Date(d))/6e4);return m<1?'just now':m<60?m+'m ago':Math.round(m/60)<24?Math.round(m/60)+'h ago':Math.round(m/1440)+'d ago';}
 async function renderAutoSubmit(){
-  var host=$('#autoList'); if(!host)return; paintType(); if(!isUGC())return;
+  var host=$('#autoList'); if(!host)return; paintType(); if(!isUGC()||!PLATFORM_LOGIN)return;
   if(DEMO){host.innerHTML='<div class="empty">Auto-submit is available once you are signed in.</div>';return;}
   var r=await sb.rpc('autosub_accounts');
   if(r.error){host.innerHTML='<div class="empty">'+esc(r.error.message)+'</div>';return;}
@@ -3526,7 +3531,7 @@ function openCodeVerify(p){CN_PLAT=p;
   $('#cn1Title').textContent='Connect '+l;$('#cn1Lab').textContent=l+' username';
   $('#cnHandle').value='';$('#cn1Msg').textContent='';open_('cn1');}
 $$('.acct .add').forEach(function(b){b.onclick=function(){
-  if(isUGC()){ugcLogin(b.dataset.p,{fromProfile:true});return;}   /* UGC: the platform’s normal login */
+  if(isUGC()&&PLATFORM_LOGIN){ugcLogin(b.dataset.p,{fromProfile:true});return;}   /* UGC: the platform’s normal login (once enabled) */
   openCodeVerify(b.dataset.p);};});
 $$('#gigBox [data-gig]').forEach(function(b){b.onclick=function(){openCodeVerify(b.dataset.gig);};});
 var CN_ID=null;
