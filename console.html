@@ -3883,24 +3883,27 @@ RENDERERS.easyupload.after=function(){
 RENDERERS.appeals=async function(){
   var r=await sb.rpc('appeal_list');
   if(r.error)throw new Error(r.error.message);
-  var all=(Array.isArray(r.data)?r.data:[]).filter(function(a){return a.kind==='support';});
+  var everything=Array.isArray(r.data)?r.data:[];
+  var all=everything.filter(function(a){return a.kind==='support';});
+  var clipAp=everything.filter(function(a){return a.kind!=='support';});
   var fromClients=all.filter(function(a){return a.requester_role==='client';}).length;
   var unread=all.reduce(function(n,a){return n+(a.unread||0);},0);
-  COUNTS.appeals=all.length||0;
+  COUNTS.appeals=everything.length||0;
   var mails=0; try{var o=await sb.rpc('appeal_outbox_count'); mails=Number(o.data)||0;}catch(e){}
   return '<div class="head"><div class="eyeb">Support</div><h1>Appeals.</h1>'+
-    '<p class="sub">Creators and clients writing to Clipency from Support → Appeal: tech issues, payouts, how to run a campaign, anything. Reply as the Clipency team and mark it resolved when done; resolved conversations are deleted for good. You are emailed for every new one. (Clip appeals between creators and clients live in the Live chat monitor.)</p></div>'+
+    '<p class="sub">Every open conversation that needs Clipency: <b>clip appeals</b> (a creator asking the client about a rejected clip; read along, reply, or settle it) and <b>support requests</b> (creators and clients writing to Clipency: tech issues, payouts, running a campaign). Settled or resolved conversations are deleted for good. You are emailed for every new one. Clip appeals are also in the Live chat monitor, filtered by campaign.</p></div>'+
     '<div class="kpis">'+
-      '<div class="kpi"><span class="lab">Open requests</span><div class="big"'+(all.length?' style="color:var(--warn)"':'')+'>'+fmt(all.length)+'</div><div class="sub-t">'+(unread?fmt(unread)+' unread':'all caught up')+'</div></div>'+
-      '<div class="kpi"><span class="lab">From creators</span><div class="big">'+fmt(all.length-fromClients)+'</div><div class="sub-t">clippers</div></div>'+
-      '<div class="kpi"><span class="lab">From clients</span><div class="big">'+fmt(fromClients)+'</div><div class="sub-t">brands</div></div>'+
+      '<div class="kpi"><span class="lab">Clip appeals</span><div class="big"'+(clipAp.length?' style="color:var(--warn)"':'')+'>'+fmt(clipAp.length)+'</div><div class="sub-t">creator ↔ client, open</div></div>'+
+      '<div class="kpi"><span class="lab">Support requests</span><div class="big"'+(all.length?' style="color:var(--warn)"':'')+'>'+fmt(all.length)+'</div><div class="sub-t">'+(unread?fmt(unread)+' unread':'all caught up')+'</div></div>'+
+      '<div class="kpi"><span class="lab">Support from clients</span><div class="big">'+fmt(fromClients)+'</div><div class="sub-t">brands · '+fmt(all.length-fromClients)+' from creators</div></div>'+
       '<div class="kpi"><span class="lab">Email alerts</span><div class="big">'+fmt(mails)+'</div><div class="sub-t">sent for new messages</div></div>'+
     '</div>'+
     '<div id="apMount"></div>';
 };
 RENDERERS.appeals.after=function(){
   if(!window.CXAppeals)return;
-  CXAppeals.mount($('#apMount'),{sb:sb,role:'admin',kinds:'support',onUnread:function(){},onResolved:function(){render(true);}});
+  /* everything in one place: clip appeals (creator ↔ client) and support requests to Clipency */
+  CXAppeals.mount($('#apMount'),{sb:sb,role:'admin',kinds:'all',onUnread:function(){},onResolved:function(){render(true);}});
 };
 
 /* ============================================================

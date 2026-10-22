@@ -876,6 +876,8 @@ CLIPSHELL.init(wanted());
     a.setAttribute('href', '?view=' + key);
     a.addEventListener('click', function (e) {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      /* the "no clips yet" screen replaced the sections: load the page fresh instead */
+      if (window.__cxEmptyShown) return;
       e.preventDefault();
       CX.go(key);
     });
@@ -2381,7 +2383,11 @@ CX.define('creators', function(document){
 /* emptyState() replaces .content wholesale, which would delete every section,
    so it runs ONCE here rather than inside each section. When a campaign has no
    clips there is nothing to show in any section anyway. */
-if (!CLIPSHELL.emptyState()) {
+/* Appeals and Group chat work before any clip is approved (a rejected clip can
+   already be appealed, and the chat is for briefing creators), so they skip it. */
+var CX_ALWAYS_OPEN = ['appeals', 'chat'];
+window.__cxEmptyShown = CX_ALWAYS_OPEN.indexOf(wanted()) === -1 && CLIPSHELL.emptyState();
+if (!window.__cxEmptyShown) {
   /* Keep the section's own parameters (?creator=, ?tab= on the Clips Feed),
      so a shared or reloaded filtered link opens filtered. */
   (function(){
