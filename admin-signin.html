@@ -184,7 +184,7 @@ button[disabled]{opacity:.55; cursor:default;}
       var r = await fetch(CFG.SUPABASE_URL + '/functions/v1/admin-password-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + CFG.SUPABASE_ANON_KEY },
-        body: JSON.stringify({ email: v, origin: location.origin })
+        body: JSON.stringify({ email: v, origin: location.origin, 'for': 'admin' })
       });
       var j = await r.json().catch(function(){ return {}; });
       if(!r.ok && j.message){ throw new Error(j.message); }

@@ -1113,8 +1113,14 @@ document.querySelectorAll('.peek').forEach(function(b){
       var c = client();
       var back = afterAuthURL();
       if(c){
-        var r = await c.auth.resetPasswordForEmail(em, { redirectTo: location.origin + '/reset-password?for=creator' });
-        if(r.error) throw r.error;
+        /* Clipency sends its own reset email (admin-password-reset function), with a link
+           straight to /reset-password, so a broken Supabase template can't break resets. */
+        var CX = window.CLIPENCY_SITE || {};
+        var u = (CX.SUPABASE_URL || 'https://spwtkdgpgeutrhwcjrpy.supabase.co') + '/functions/v1/admin-password-reset';
+        var k = CX.SUPABASE_ANON_KEY || 'sb_publishable_IInNrDBLK3dINHSyWaUDzg_UWF63j0B';
+        var r = await fetch(u, { method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': k, 'Authorization': 'Bearer ' + k },
+                                 body: JSON.stringify({ email: em, origin: location.origin, 'for': 'creator' }) });
+        if(!r.ok){ var j = await r.json().catch(function(){ return {}; }); throw new Error(j.message || 'Could not send the reset link. Try again in a minute.'); }
       } else {
         await rest('recover', { email: em });
       }

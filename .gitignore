@@ -33,11 +33,7 @@ incoming/
 *-backup-*.html
 incoming/
 
-# Secrets never go in the repo
 .env
 .env.*
-.vercel/
-
-# local tools
-.claude/
 .vercel
+.claude/
