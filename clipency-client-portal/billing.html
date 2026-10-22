@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipency — Spend &amp; Billing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){try{
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('clipency-theme') || 'light');
+  /* Gate: the portal used to be opened with a 6-digit PIN kept in
+     sessionStorage. It is now a real login, so the gate checks for a
+     Supabase session instead. This is the synchronous, no-dependency
+     version so it can run before anything paints; js/live.js does the
+     authoritative check (getUser) and redirects if the token is stale. */
+  /* Demo mode: ?demo=1 opens the real portal on the sample data in
+     data.js, with no account. The flag is kept in sessionStorage so the
+     other pages stay in demo as you click through the nav, and it dies
+     with the tab so nobody is left stuck in a fake dashboard. */
+  var __d = /[?&]demo=1/.test(location.search);
+  try{
+    if(__d) sessionStorage.setItem('clipency-demo','1');
+    if(/[?&]demo=0/.test(location.search)) sessionStorage.removeItem('clipency-demo');
+    __d = sessionStorage.getItem('clipency-demo') === '1';
+  }catch(e){}
+  if(!__d && !localStorage.getItem('sb-spwtkdgpgeutrhwcjrpy-auth-token')) location.replace('./client-signin.html');
+}catch(e){ document.documentElement.setAttribute('data-theme','light'); }})();
+</script>
+<link rel="stylesheet" href="./dashboard.css">
+<style>
+.panel.mt{margin-top:16px;}
+.rate-card{display:flex;flex-direction:column;gap:14px;justify-content:center;flex:1;}
+.rate-line{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:var(--ink-55);padding-bottom:12px;border-bottom:1px solid var(--hair);}
+.rate-line:last-child{border-bottom:none;padding-bottom:0;}
+.rate-line b{font-family:var(--serif);font-size:20px;color:var(--ink-2);font-weight:500;font-variant-numeric:tabular-nums;}
+.mini-cover{width:34px;height:52px;border-radius:6px;object-fit:cover;background:var(--surface-2);border:1px solid var(--hair);display:block;}
+.clip-cell{display:flex;align-items:center;gap:12px;min-width:0;}
+.clip-cell .t{font-weight:500;color:var(--ink-90);max-width:230px;overflow:hidden;text-overflow:ellipsis;}
+.clip-cell .c{font-size:12px;color:var(--ink-40);}
+.tbl tfoot td{
+  border-top:1px solid var(--hair-warm);border-bottom:none;
+  font-weight:500;color:var(--ink-2);padding-top:16px;
+}
+.tbl tfoot .total{font-family:var(--serif);font-size:22px;}
+.note{
+  margin-top:14px;font-size:12.5px;color:var(--ink-40);line-height:1.7;
+  border-left:2px solid var(--hair-warm);padding-left:14px;
+}
+</style>
+</head>
+<body>
+<div class="paper-field" aria-hidden="true"></div>
+<div class="shell">
+  <div id="side"></div>
+  <div class="main">
+    <div id="topbar"></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Spend &amp; Billing</span>
+          <h1>Every dollar, accounted for.</h1>
+          <p>You pay only for views delivered by live clips, at a fixed rate. Below is the full line-item breakdown of your campaign spend.</p>
+        </div>
+      </div>
+
+      <section class="stats">
+        <div class="stat"><span class="lbl">Total Spend</span><div class="num" id="stSpend">$0</div><div class="foot">billed to date</div></div>
+        <div class="stat"><span class="lbl">Rate</span><div class="num" id="stCpm">$0</div><div class="foot">per 1,000 views</div></div>
+        <div class="stat"><span class="lbl">Billable Views</span><div class="num" id="stViews">0</div><div class="foot">delivered by live clips</div></div>
+        <div class="stat"><span class="lbl">Avg Cost / Clip</span><div class="num" id="stAvg">$0</div><div class="foot" id="stAvgFoot"></div></div>
+      </section>
+
+      <section class="grid2">
+        <div class="panel">
+          <div class="panel-h"><h2>Spend by week</h2><span>Views delivered &times; rate</span></div>
+          <div class="chart-wrap" id="wkWrap"><div class="chart-tip" id="wkTip"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2>Billing summary</h2><span>Current period</span></div>
+          <div class="rate-card" id="rateCard"></div>
+        </div>
+      </section>
+
+      <section class="panel mt">
+        <div class="panel-h"><h2>Line items</h2><span id="liCount"></span></div>
+        <div style="overflow-x:auto;">
+        <table class="tbl" id="liTbl">
+          <thead><tr>
+            <th>Date</th><th>Clip</th><th>Creator</th>
+            <th class="num">Views</th><th class="num">Amount</th>
+          </tr></thead>
+          <tbody></tbody>
+          <tfoot><tr>
+            <td colspan="3">Total billed</td>
+            <td class="num" id="ftViews"></td>
+            <td class="num total" id="ftTotal"></td>
+          </tr></tfoot>
+        </table>
+        </div>
+        <p class="note">You are only ever billed for views delivered by live clips. Invoices and payment methods will appear here once billing is connected.</p>
+      </section>
+
+      <p class="foot-note" id="footNote"></p>
+    </main>
+  </div>
+</div>
+
+<script src="./data.js"></script>
+<script src="./db.js"></script>
+<script src="./export.js"></script>
+<script src="./shell.js"></script>
+<script src="./tour.js"></script>
+<!-- live data (read-only production Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script src="./js/live.js"></script>
+
+<script type="module">
+/* wait for live production data before painting; resolves to 'live' or 'mock' */
+if (window.CLIPENCY_LIVE) {
+  try { await window.CLIPENCY_LIVE.ready; }
+  catch (e) { console.error('[clipency] live load threw, painting anyway', e); }
+}
+
+CLIPSHELL.init('billing');
+(function(){
+  if(CLIPSHELL.emptyState()) return;
+  var C = CLIPENCY, T = C.totals();
+  document.getElementById('footNote').textContent = 'CLIPENCY — ' + C.campaign.label;
+
+  var avg = T.spend / T.approvedCount;
+  CLIPSHELL.count(document.getElementById('stSpend'), T.spend, function(v){ return C.money(v); });
+  /* The rate tile's footer is part of the number. A flat per-video fee
+     under "per 1,000 views" would read as a rate 1,000× off. */
+  (function(){
+    var pv = C.campaign.payoutModel === 'per_video';
+    var el = document.getElementById('stCpm');
+    el.textContent = C.money(pv ? C.campaign.ratePerVideo : C.campaign.cpm);
+    var foot = el.parentNode.querySelector('.foot');
+    if(foot) foot.textContent = pv ? 'per approved video' : 'per 1,000 views';
+  })();
+  CLIPSHELL.count(document.getElementById('stViews'), T.approvedViews, function(v){ return C.fmtFull(Math.round(v)); });
+  CLIPSHELL.count(document.getElementById('stAvg'), avg, function(v){ return C.money(v); });
+  document.getElementById('stAvgFoot').textContent = 'across ' + T.approvedCount + ' live clips';
+
+  /* ---------- weekly spend bars ---------- */
+  var days = C.daily();
+  var weeks = [];
+  for(var i = 0; i < days.length; i += 7){
+    var chunk = days.slice(i, i+7);
+    weeks.push({
+      label: chunk[0].date.slice(5).replace('-','/') + '–' + chunk[chunk.length-1].date.slice(5).replace('-','/'),
+      views: chunk.reduce(function(a,d){ return a+d.views; },0),
+      /* Real money, summed from each clip's own priced amount. Correct
+         under both payout models — nothing here derives money from views. */
+      spend: Math.round(chunk.reduce(function(a,d){ return a+(d.spend||0); },0) * 100) / 100
+    });
+  }
+
+  var wrap = document.getElementById('wkWrap'), tip = document.getElementById('wkTip');
+  function draw(){
+    var W = wrap.clientWidth || 600, H = Math.max(wrap.clientHeight, 230);
+    var P = {l:48, r:10, t:14, b:30};
+    var max = Math.max.apply(null, weeks.map(function(w){ return w.spend; })) * 1.15 || 1;
+    var bw = (W-P.l-P.r)/weeks.length;
+    var gold = CLIPSHELL.css('--gold'), hair = CLIPSHELL.css('--hair'), axis = CLIPSHELL.css('--ink-40');
+    var g = [0,.5,1].map(function(f){
+      var y = H-P.b - f*(H-P.t-P.b);
+      return '<line x1="'+P.l+'" y1="'+y+'" x2="'+(W-P.r)+'" y2="'+y+'" stroke="'+hair+'"/>' +
+             '<text x="'+(P.l-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10" fill="'+axis+'" font-family="Inter">$'+(max*f).toFixed(0)+'</text>';
+    }).join('');
+    var bars = weeks.map(function(w,i){
+      var h = w.spend/max*(H-P.t-P.b);
+      return '<rect data-i="'+i+'" x="'+(P.l+i*bw+bw*.2)+'" y="'+(H-P.b-h)+'" width="'+(bw*.6)+'" height="'+Math.max(h,1)+'" rx="4" fill="'+gold+'" opacity=".85"/>' +
+        '<text x="'+(P.l+i*bw+bw/2)+'" y="'+(H-10)+'" text-anchor="middle" font-size="10" fill="'+axis+'" font-family="Inter">W'+(i+1)+'</text>';
+    }).join('');
+    wrap.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+    var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    svg.innerHTML = g + bars;
+    wrap.appendChild(svg);
+    svg.addEventListener('mousemove', function(e){
+      var t = e.target;
+      if(t.tagName === 'rect'){
+        var w = weeks[+t.dataset.i];
+        tip.style.left = (parseFloat(t.getAttribute('x')) + parseFloat(t.getAttribute('width'))/2) + 'px';
+        tip.style.top = t.getAttribute('y') + 'px';
+        tip.style.opacity = '1';
+        tip.innerHTML = w.label + '<br><b>' + C.money(w.spend) + '</b> · ' + C.fmtFull(w.views) + ' views';
+      } else tip.style.opacity = '0';
+    });
+    svg.addEventListener('mouseleave', function(){ tip.style.opacity='0'; });
+  }
+  draw();
+  addEventListener('resize', draw);
+  document.getElementById('themeToggle').addEventListener('click', function(){ setTimeout(draw, 650); });
+
+  /* ---------- billing summary ---------- */
+  document.getElementById('rateCard').innerHTML =
+    '<div class="rate-line"><span>Campaign period</span><b style="font-size:15px;">Jun 21 – Jul 20</b></div>' +
+    '<div class="rate-line"><span>Views delivered</span><b>'+C.fmtFull(T.approvedViews)+'</b></div>' +
+    '<div class="rate-line"><span>Rate</span><b>'+
+      (C.campaign.payoutModel === 'per_video'
+        ? C.money(C.campaign.ratePerVideo)+' / video'
+        : C.money(C.campaign.cpm)+' / 1K')+'</b></div>' +
+    '<div class="rate-line"><span>Amount due</span><b style="color:var(--bronze)">'+C.money(T.spend)+'</b></div>';
+
+  /* ---------- line items ---------- */
+  var items = C.approved().slice().sort(function(a,b){ return b.submitted.localeCompare(a.submitted); });
+  document.querySelector('#liTbl tbody').innerHTML = items.map(function(r){
+    return '<tr>' +
+      '<td>'+r.submitted.slice(5).replace('-','/')+'</td>' +
+      '<td><div class="clip-cell"><img class="mini-cover" loading="lazy" src="'+r.cover+'" alt="">' +
+        '<div><div class="t">'+r.title+'</div><div class="c"><span class="plat '+r.platform+'" style="display:inline">'+r.platform+'</span></div></div></div></td>' +
+      '<td>'+r.creator+'</td>' +
+      '<td class="num">'+C.fmtFull(r.views)+'</td>' +
+      '<td class="num">'+C.money(r.spend)+'</td>' +
+    '</tr>';
+  }).join('');
+  document.getElementById('liCount').textContent = items.length + ' live clips';
+  document.getElementById('ftViews').textContent = C.fmtFull(T.approvedViews);
+  document.getElementById('ftTotal').textContent = C.money(T.spend);
+})();
+</script>
+</body>
+</html>

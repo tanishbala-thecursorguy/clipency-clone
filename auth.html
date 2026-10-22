@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZEP54G261Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-ZEP54G261Y');
+</script>
+<meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clipency — Sign In or Create Account</title>
+  <meta name="description" content="Sign in or create your Clipency account. The platform where brands/Creators discover clippers and clippers monitize their pages all in one place.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ambient glowing dots (grid intersections) -->
+  <div class="page-dot" style="width:4px;height:4px;background:#C4956A;top:12%;left:10%;box-shadow:0 0 8px 2px rgba(196,149,106,0.6);animation-duration:3.2s;"></div>
+  <div class="page-dot" style="width:3px;height:3px;background:#C4956A;top:22%;left:22%;box-shadow:0 0 6px 2px rgba(196,149,106,0.5);animation-duration:2.8s;animation-delay:0.7s;"></div>
+  <div class="page-dot" style="width:4px;height:4px;background:#C4956A;top:12%;right:14%;box-shadow:0 0 8px 2px rgba(196,149,106,0.6);animation-duration:3.6s;animation-delay:1.2s;"></div>
+  <div class="page-dot" style="width:3px;height:3px;background:#C4956A;top:30%;right:8%;box-shadow:0 0 6px 2px rgba(196,149,106,0.5);animation-duration:4s;animation-delay:0.4s;"></div>
+  <div class="page-dot" style="width:3px;height:3px;background:#C4956A;bottom:18%;left:14%;box-shadow:0 0 6px 2px rgba(196,149,106,0.45);animation-duration:3.4s;animation-delay:1.8s;"></div>
+  <div class="page-dot" style="width:4px;height:4px;background:#C4956A;bottom:10%;right:22%;box-shadow:0 0 8px 2px rgba(196,149,106,0.55);animation-duration:2.6s;animation-delay:0.9s;"></div>
+
+  <div class="page">
+    <div class="card" id="auth-card">
+      <!-- LEFT PANEL -->
+      <div class="left">
+        <div class="left-top">
+          <div class="logo-row">
+            <img src="Clipencylogo.png" alt="Clipency" class="logo-img">
+          </div>
+          <p class="eyebrow">For Creators</p>
+          <h1 class="headline">Clip smarter.<br>Earn <em>faster.</em></h1>
+          <p class="subtext">The platform where brands/Creators discover clippers and clippers monitize their pages all in one place.</p>
+        </div>
+        <div class="left-bottom">
+          <div class="pills">
+            <span class="pill pill-accent">Free to join</span>
+            <span class="pill">Earn To Post</span>
+            <span class="pill">Fast payouts</span>
+          </div>
+          <p class="left-footer">&copy; 2026 Clipency, Inc. — Built for creators.</p>
+        </div>
+
+        <!-- premium grid mesh -->
+        <div class="grid-mesh"></div>
+
+        <!-- amber-tinted ambient orbs -->
+        <div class="glow-orb glow-orb-1"></div>
+        <div class="glow-orb glow-orb-2"></div>
+
+        <!-- pulsing grid-intersection dots inside left panel -->
+        <div class="left-dot" style="position:absolute;width:4px;height:4px;background:#C4956A;top:40px;left:40px;box-shadow:0 0 8px 2px rgba(196,149,106,0.7);border-radius:50%;animation:pulse 3s ease-in-out infinite;"></div>
+        <div class="left-dot" style="position:absolute;width:3px;height:3px;background:#C4956A;top:80px;left:120px;box-shadow:0 0 6px 2px rgba(196,149,106,0.5);border-radius:50%;animation:pulse 2.7s ease-in-out infinite 0.6s;"></div>
+        <div class="left-dot" style="position:absolute;width:3px;height:3px;background:#C4956A;top:40px;right:40px;box-shadow:0 0 6px 2px rgba(196,149,106,0.5);border-radius:50%;animation:pulse 3.5s ease-in-out infinite 1.1s;"></div>
+        <div class="left-dot" style="position:absolute;width:4px;height:4px;background:#C4956A;bottom:80px;left:80px;box-shadow:0 0 8px 2px rgba(196,149,106,0.6);border-radius:50%;animation:pulse 4s ease-in-out infinite 0.3s;"></div>
+        <div class="left-dot" style="position:absolute;width:3px;height:3px;background:#C4956A;bottom:40px;right:80px;box-shadow:0 0 6px 2px rgba(196,149,106,0.45);border-radius:50%;animation:pulse 3.2s ease-in-out infinite 1.6s;"></div>
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div class="right">
+        <div class="tabs" role="tablist">
+          <button class="tab active" id="tab-signup" role="tab" aria-selected="true" onclick="switchTab('panel-signup', this)">Create account</button>
+          <button class="tab" id="tab-signin" role="tab" aria-selected="false" onclick="switchTab('panel-signin', this)">Sign in</button>
+        </div>
+
+        <!-- CREATE ACCOUNT PANEL -->
+        <div class="panel active" id="panel-signup">
+          <form id="signup-form" novalidate>
+            <div class="field-group">
+              <div class="field">
+                <label for="signup-firstname">First Name</label>
+                <input type="text" id="signup-firstname" placeholder="Jordan" required>
+                <span class="field-error" id="signup-firstname-error"></span>
+              </div>
+              <div class="field">
+                <label for="signup-lastname">Last Name</label>
+                <input type="text" id="signup-lastname" placeholder="Rivera" required>
+                <span class="field-error" id="signup-lastname-error"></span>
+              </div>
+            </div>
+            <div class="field">
+              <label for="signup-email">Email Address</label>
+              <input type="email" id="signup-email" placeholder="you@example.com" required>
+              <span class="field-error" id="signup-email-error"></span>
+            </div>
+            <div class="field">
+              <label for="signup-password">Password</label>
+              <input type="password" id="signup-password" placeholder="Min. 8 characters" required minlength="8">
+              <span class="field-error" id="signup-password-error"></span>
+            </div>
+            <label class="checkbox-label">
+              <input type="checkbox" id="signup-agree" required>
+              I agree to the <a href="#">Terms</a> and <a href="#">Privacy Policy</a>
+            </label>
+            <button type="submit" class="btn-primary btn-purple" id="btn-signup">Become a Clipper <span class="arrow">&rarr;</span></button>
+          </form>
+          <div class="divider"><span>or</span></div>
+          <button class="btn-google" id="btn-google-signup">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Continue with Google
+          </button>
+        </div>
+
+        <!-- SIGN IN PANEL -->
+        <div class="panel" id="panel-signin">
+          <form id="signin-form" novalidate>
+            <div class="field">
+              <label for="signin-email">Email Address</label>
+              <input type="email" id="signin-email" placeholder="you@example.com" required>
+              <span class="field-error" id="signin-email-error"></span>
+            </div>
+            <div class="field">
+              <div class="label-row">
+                <label for="signin-password">Password</label>
+                <a href="#" class="forgot-link" id="forgot-password-link">Forgot password?</a>
+              </div>
+              <input type="password" id="signin-password" placeholder="Your password" required>
+              <span class="field-error" id="signin-password-error"></span>
+            </div>
+            <button type="submit" class="btn-primary btn-dark" id="btn-signin">Sign in <span class="arrow">&rarr;</span></button>
+          </form>
+          <div class="divider"><span>or</span></div>
+          <button class="btn-google" id="btn-google-signin">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            Continue with Google
+          </button>
+          <p class="switch-prompt">New to Clipency? <a href="#" id="switch-to-signup">Create an account</a></p>
+        </div>
+
+        <!-- POST-AUTH SUCCESS VIEW -->
+        <div class="panel" id="panel-success">
+          <div class="success-view">
+            <div class="success-avatar" id="success-avatar">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <h2 class="success-heading">Welcome to Clipency!</h2>
+            <p class="success-name" id="success-name"></p>
+            <p class="success-email" id="success-email"></p>
+            <div class="success-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Account verified
+            </div>
+            <p class="success-note">Your dashboard is being built. You'll be redirected once it's ready.</p>
+            <button class="btn-primary btn-dark" id="btn-signout">Sign out <span class="arrow">&rarr;</span></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- FORGOT PASSWORD MODAL -->
+  <div class="modal-overlay" id="forgot-modal">
+    <div class="modal-card">
+      <button class="modal-close" id="forgot-modal-close">&times;</button>
+      <h3 class="modal-title">Reset your password</h3>
+      <p class="modal-desc">Enter your email and we'll send you a link to reset your password.</p>
+      <form id="forgot-form" novalidate>
+        <div class="field">
+          <label for="forgot-email">Email Address</label>
+          <input type="email" id="forgot-email" placeholder="you@example.com" required>
+          <span class="field-error" id="forgot-email-error"></span>
+        </div>
+        <button type="submit" class="btn-primary btn-purple" id="btn-forgot">Send reset link <span class="arrow">&rarr;</span></button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = 'https://spwtkdgpgeutrhwcjrpy.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_IInNrDBLK3dINHSyWaUDzg_UWF63j0B';
+    const { createClient } = supabase;
+    // CRITICAL: Set to window.supabaseClient to fix the "undefined is not an object" error in app.js
+    window.supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+  <script src="app.js"></script>
+
+
+<script defer src="/admin/admin-session-logger.js?v=logs-1"></script>
+<script defer src="/clipency-leads-direct-rest.js?v=direct-rest-leads-1"></script>
+</body>
+</html>

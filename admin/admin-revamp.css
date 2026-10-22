@@ -1,0 +1,237 @@
+/* ══ Clipency Admin OS — Animation Layer ══════════════════════════════
+   Loaded alongside clipency-admin-os.js via auth/admin/index.html
+   Pure CSS — no JS changes needed for visual revamp
+══════════════════════════════════════════════════════════════════════ */
+
+/* ── KEYFRAMES ──────────────────────────────────────────────────────── */
+@keyframes cxFadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cxFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes cxSlideRight{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+@keyframes cxScaleUp{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
+@keyframes cxShimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes cxPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:.85}}
+@keyframes cxPulseRing{0%{transform:scale(1);opacity:.8}100%{transform:scale(2.4);opacity:0}}
+@keyframes cxSlideToast{from{opacity:0;transform:translateX(110%)}to{opacity:1;transform:translateX(0)}}
+@keyframes cxRowIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+@keyframes cxCountUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── PAGE ENTRANCE ──────────────────────────────────────────────────── */
+.cx-wrap{animation:cxFadeUp .38s cubic-bezier(.4,0,.2,1) both}
+.cx-h1{animation:cxFadeUp .42s cubic-bezier(.4,0,.2,1) .04s both}
+.cx-sub{animation:cxFadeUp .42s cubic-bezier(.4,0,.2,1) .08s both}
+.cx-kicker{animation:cxFadeUp .38s cubic-bezier(.4,0,.2,1) both}
+
+/* ── STAT CARDS ─────────────────────────────────────────────────────── */
+.cx-stat{
+  animation:cxFadeUp .48s cubic-bezier(.34,1.1,.64,1) both;
+  position:relative;overflow:hidden;
+  transition:transform .25s cubic-bezier(.4,0,.2,1),background .2s,box-shadow .25s !important;
+}
+.cx-stat:nth-child(1){animation-delay:.04s}
+.cx-stat:nth-child(2){animation-delay:.08s}
+.cx-stat:nth-child(3){animation-delay:.12s}
+.cx-stat:nth-child(4){animation-delay:.16s}
+.cx-stat:nth-child(5){animation-delay:.20s}
+.cx-stat:nth-child(6){animation-delay:.24s}
+.cx-stat:nth-child(7){animation-delay:.28s}
+.cx-stat:nth-child(8){animation-delay:.32s}
+.cx-stat:nth-child(n+9){animation-delay:.36s}
+
+.cx-stat::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(99,102,241,.06),transparent 55%);
+  opacity:0;transition:opacity .3s;pointer-events:none;
+}
+.cx-stat:hover{
+  background:rgba(255,255,255,.07) !important;
+  transform:translateY(-3px) scale(1.015) !important;
+  box-shadow:0 10px 32px rgba(0,0,0,.5),0 0 0 1px rgba(99,102,241,.15) !important;
+}
+.cx-stat:hover::before{opacity:1}
+.cx-stat.ok:hover{box-shadow:0 10px 32px rgba(0,0,0,.5),0 0 0 1px rgba(74,222,128,.2) !important}
+.cx-stat.warn:hover{box-shadow:0 10px 32px rgba(0,0,0,.5),0 0 0 1px rgba(251,191,36,.2) !important}
+.cx-stat.info:hover{box-shadow:0 10px 32px rgba(0,0,0,.5),0 0 0 1px rgba(165,180,252,.2) !important}
+.cx-stat-v{transition:transform .2s cubic-bezier(.34,1.5,.64,1)}
+.cx-stat:hover .cx-stat-v{transform:scale(1.05)}
+
+/* ── SIDEBAR NAV ────────────────────────────────────────────────────── */
+.cx-side{
+  background:linear-gradient(180deg,rgba(6,5,5,.98) 0%,rgba(4,3,3,.98) 100%) !important;
+  border-right:1px solid rgba(255,255,255,.06) !important;
+}
+.cx-brand{transition:background .2s}
+.cx-brand:hover{background:rgba(255,255,255,.04)}
+.cx-brand img{transition:transform .3s cubic-bezier(.34,1.5,.64,1)}
+.cx-brand:hover img{transform:scale(1.07)}
+
+.cx-nav a{
+  position:relative;
+  transition:all .2s cubic-bezier(.4,0,.2,1);
+  overflow:hidden;border-radius:9px;
+}
+.cx-nav a::after{
+  content:'';position:absolute;left:0;top:50%;
+  width:3px;height:0;
+  background:linear-gradient(180deg,#6366f1,#8b5cf6);
+  border-radius:0 3px 3px 0;transform:translateY(-50%);
+  transition:height .22s cubic-bezier(.4,0,.2,1);
+}
+.cx-nav a.active::after{height:65%}
+.cx-nav a::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(99,102,241,.1),transparent);
+  opacity:0;transition:opacity .2s;
+}
+.cx-nav a.active::before{opacity:1}
+.cx-nav a.active{
+  background:rgba(99,102,241,.14) !important;
+  color:#c7d2fe !important;
+}
+.cx-nav a svg{transition:transform .2s cubic-bezier(.34,1.5,.64,1)}
+.cx-nav a:hover svg{transform:scale(1.12)}
+
+/* ── TABLE ROWS ─────────────────────────────────────────────────────── */
+table.cx-t tbody tr{
+  animation:cxRowIn .32s cubic-bezier(.4,0,.2,1) both;
+  transition:background .15s;
+}
+table.cx-t tbody tr:nth-child(1){animation-delay:.03s}
+table.cx-t tbody tr:nth-child(2){animation-delay:.06s}
+table.cx-t tbody tr:nth-child(3){animation-delay:.09s}
+table.cx-t tbody tr:nth-child(4){animation-delay:.12s}
+table.cx-t tbody tr:nth-child(5){animation-delay:.15s}
+table.cx-t tbody tr:nth-child(6){animation-delay:.18s}
+table.cx-t tbody tr:nth-child(7){animation-delay:.21s}
+table.cx-t tbody tr:nth-child(8){animation-delay:.24s}
+table.cx-t tbody tr:nth-child(n+9){animation-delay:.27s}
+table.cx-t tr:hover td{background:rgba(99,102,241,.04) !important}
+
+/* ── TABLE WRAPPER ──────────────────────────────────────────────────── */
+.cx-tw{
+  box-shadow:0 2px 24px rgba(0,0,0,.3);
+  transition:box-shadow .3s;
+}
+.cx-tw:hover{box-shadow:0 6px 44px rgba(0,0,0,.45)}
+
+/* ── BADGES ─────────────────────────────────────────────────────────── */
+.cx-badge{transition:all .2s;letter-spacing:.04em}
+.cx-badge.approved,.cx-badge.verified,.cx-badge.active,.cx-badge.paid{
+  box-shadow:0 0 10px rgba(74,222,128,.22);
+}
+.cx-badge.pending{
+  box-shadow:0 0 10px rgba(251,191,36,.22);
+  animation:cxPulse 3s ease-in-out infinite;
+}
+.cx-badge.rejected{box-shadow:0 0 10px rgba(248,113,113,.22)}
+
+/* ── BUTTONS ────────────────────────────────────────────────────────── */
+.cx-btn{
+  position:relative;overflow:hidden;
+  transition:all .18s cubic-bezier(.4,0,.2,1);
+}
+.cx-btn:active:not(:disabled){transform:scale(.97) !important}
+.cx-btn.pri:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(99,102,241,.38);
+}
+.cx-btn.ok:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(74,222,128,.28);
+}
+.cx-btn.danger:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 6px 20px rgba(248,113,113,.28);
+}
+.cx-btn.ghost:hover:not(:disabled){
+  transform:translateY(-1px);
+  box-shadow:0 4px 16px rgba(0,0,0,.3);
+}
+
+/* ── MODAL / OVERLAY ────────────────────────────────────────────────── */
+.cx-overlay{animation:cxFadeIn .18s ease both}
+.cx-modal{animation:cxScaleUp .24s cubic-bezier(.34,1.1,.64,1) both}
+
+/* ── INPUT FOCUS ────────────────────────────────────────────────────── */
+.cx-input:focus,.cx-select:focus,.cx-textarea:focus{
+  border-color:rgba(99,102,241,.7) !important;
+  box-shadow:0 0 0 3px rgba(99,102,241,.14),0 0 10px rgba(99,102,241,.08) !important;
+}
+
+/* ── SCROLLBARS ─────────────────────────────────────────────────────── */
+.cx-main::-webkit-scrollbar{width:5px}
+.cx-main::-webkit-scrollbar-track{background:transparent}
+.cx-main::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:10px}
+.cx-main::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.16)}
+.cx-side::-webkit-scrollbar{width:3px}
+.cx-side::-webkit-scrollbar-track{background:transparent}
+.cx-side::-webkit-scrollbar-thumb{background:rgba(255,255,255,.06);border-radius:10px}
+
+/* ── TOAST NOTIFICATIONS ────────────────────────────────────────────── */
+#cx-toast-wrap{
+  position:fixed;bottom:24px;right:24px;
+  z-index:999999;
+  display:flex;flex-direction:column-reverse;gap:8px;
+  pointer-events:none;max-width:360px;
+}
+
+/* ── EDIT BADGE ─────────────────────────────────────────────────────── */
+.cx-edited{
+  display:inline-block;
+  font-size:9.5px;font-weight:600;
+  color:#60a5fa;
+  background:rgba(96,165,250,.1);
+  border:1px solid rgba(96,165,250,.2);
+  padding:1px 6px;border-radius:4px;
+  margin-top:3px;
+}
+
+/* ── LOG ACTION CELLS ───────────────────────────────────────────────── */
+.cx-log-actor{font-size:11px;font-weight:700;letter-spacing:.04em}
+.cx-log-role{font-size:9px;background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px;margin-left:4px;color:rgba(255,255,255,.35)}
+.cx-log-action{font-size:12.5px;font-weight:600;color:#f5f5f7;line-height:1.4}
+.cx-log-detail{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px;line-height:1.5}
+
+/* ── QUICK ACCESS CARDS ─────────────────────────────────────────────── */
+a[href][style*="border-radius:12px"]{
+  transition:transform .22s cubic-bezier(.4,0,.2,1),box-shadow .22s !important;
+}
+a[href][style*="border-radius:12px"]:hover{
+  transform:translateY(-2px);
+  box-shadow:0 8px 28px rgba(0,0,0,.4) !important;
+}
+
+/* ── LIVE INDICATOR ─────────────────────────────────────────────────── */
+.cx-live{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:600;color:#4ade80;letter-spacing:.04em}
+.cx-live-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;position:relative;display:inline-block}
+.cx-live-dot::after{
+  content:'';position:absolute;inset:-3px;border-radius:50%;
+  background:rgba(74,222,250,.3);
+  animation:cxPulseRing 1.8s ease-out infinite;
+}
+
+/* ── SKELETON LOADER ────────────────────────────────────────────────── */
+.cx-skel{
+  background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);
+  background-size:400px 100%;
+  animation:cxShimmer 1.4s ease-in-out infinite;
+  border-radius:6px;height:14px;
+}
+
+/* ── USER AVATAR ────────────────────────────────────────────────────── */
+.cx-av{
+  transition:transform .3s cubic-bezier(.34,1.5,.64,1);
+}
+.cx-uc:hover .cx-av{transform:scale(1.1)}
+
+/* ── TABS ───────────────────────────────────────────────────────────── */
+.cx-tab{transition:all .18s cubic-bezier(.4,0,.2,1)}
+.cx-tab:hover:not(.on){transform:translateY(-1px)}
+.cx-tab.on{position:relative;overflow:hidden}
+.cx-tab.on::after{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:60%;height:2px;background:#6366f1;border-radius:2px 2px 0 0;
+}
+
+/* ── SECTION HEADERS ────────────────────────────────────────────────── */
+.cx-sec{animation:cxFadeUp .38s cubic-bezier(.4,0,.2,1) .06s both}
+.cx-st{font-size:17px;letter-spacing:-.015em}

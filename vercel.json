@@ -1,0 +1,433 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/r/:code",
+      "destination": "/clipathon-ref?c=:code"
+    },
+    {
+      "source": "/r",
+      "destination": "/clipathon-ref"
+    },
+    {
+      "source": "/clipathon/r/:code",
+      "destination": "/clipathon-ref?c=:code"
+    },
+    {
+      "source": "/clipathon/demo",
+      "destination": "/clipathon-admin-demo"
+    },
+    {
+      "source": "/clipathon/admin",
+      "destination": "/clipathon-admin"
+    },
+    {
+      "source": "/clipathon/dashboard",
+      "destination": "/clipathon-dashboard"
+    },
+    {
+      "source": "/clipathon/signin",
+      "destination": "/clipathon-signin"
+    },
+    {
+      "source": "/clipathon/register",
+      "destination": "/clipathon-register"
+    },
+    {
+      "source": "/admin/admin-os-enhancements.js",
+      "destination": "/auth/admin/admin-os-enhancements.js"
+    },
+    {
+      "source": "/admin/admin-session-logger.js",
+      "destination": "/auth/admin/admin-session-logger.js"
+    },
+    {
+      "source": "/admin/:path+",
+      "destination": "/auth/console"
+    },
+    {
+      "source": "/admin",
+      "destination": "/auth/console"
+    },
+    {
+      "source": "/admin-legacy",
+      "destination": "/auth/admin"
+    },
+    {
+      "source": "/admin-legacy/:file+",
+      "destination": "/auth/admin/:file+"
+    },
+    {
+      "source": "/console",
+      "destination": "/auth/console"
+    },
+    {
+      "source": "/review",
+      "destination": "/auth/review"
+    },
+    {
+      "source": "/clipency-admin-os.js",
+      "destination": "/auth/clipency-admin-os.js"
+    },
+    {
+      "source": "/clipency-profile-supabase.js",
+      "destination": "/auth/clipency-profile-supabase.js"
+    },
+    {
+      "source": "/clipency-account-connect.js",
+      "destination": "/auth/clipency-account-connect.js"
+    },
+    {
+      "source": "/clipency-clip-submit.js",
+      "destination": "/auth/clipency-clip-submit.js"
+    },
+    {
+      "source": "/clipency-wallet.js",
+      "destination": "/auth/clipency-wallet.js"
+    },
+    {
+      "source": "/clipency-:rest*",
+      "destination": "/auth/clipency-:rest*"
+    },
+    {
+      "source": "/supabaseClient.js",
+      "destination": "/auth/supabaseClient.js"
+    },
+    {
+      "source": "/access-control.js",
+      "destination": "/auth/access-control.js"
+    },
+    {
+      "source": "/role-router.js",
+      "destination": "/auth/role-router.js"
+    },
+    {
+      "source": "/experience.js",
+      "destination": "/auth/experience.js"
+    },
+    {
+      "source": "/app.js",
+      "destination": "/auth/app.js"
+    },
+    {
+      "source": "/styles.css",
+      "destination": "/auth/styles.css"
+    },
+    {
+      "source": "/assets/:file*",
+      "destination": "/auth/assets/:file*"
+    },
+    {
+      "source": "/client/js/:file*",
+      "destination": "/clipency-client-portal/js/:file*"
+    },
+    {
+      "source": "/client-signin",
+      "destination": "/clipency-client-portal/client-signin"
+    },
+    {
+      "source": "/client/:file*",
+      "destination": "/clipency-client-portal/:file*"
+    },
+    {
+      "source": "/site-config.js",
+      "destination": "/clipency-client-portal/site-config.js"
+    },
+    {
+      "source": "/:name.css",
+      "destination": "/auth/:name.css"
+    },
+    {
+      "source": "/:name.js",
+      "destination": "/auth/:name.js"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/art/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=2592000, stale-while-revalidate=86400"
+        }
+      ]
+    },
+    {
+      "source": "/(logo.webp|icon.png|og-image.jpg)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=2592000"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    },
+    {
+      "source": "/supabaseClient.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=3600"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+        },
+        {
+          "key": "Surrogate-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "Expires",
+          "value": "0"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://*.supabase.co https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.frankfurter.app https://cdn.jsdelivr.net https://www.google-analytics.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).(png|jpg|jpeg|webp|svg|ico|woff|woff2)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/clipathon-admin",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/clipathon-admin-demo",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/clipathon/admin",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    },
+    {
+      "source": "/clipathon/demo",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/client",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/client/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/client/landing",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/client/index",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/landing-mobile",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/landing-mobile/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/landing",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/clipper",
+      "destination": "/client/clipper",
+      "permanent": false
+    },
+    {
+      "source": "/client/client-dashboard",
+      "destination": "/client/home",
+      "permanent": false
+    },
+    {
+      "source": "/client-dashboard",
+      "destination": "/client/home",
+      "permanent": false
+    },
+    {
+      "source": "/clipency",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/clipency/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/clipency/:path*",
+      "destination": "/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/home",
+      "destination": "/client/home",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "destination": "/client/clipper-signin",
+      "permanent": false
+    },
+    {
+      "source": "/signup",
+      "destination": "/client/clipper-signin",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/client/clipper",
+      "permanent": false
+    },
+    {
+      "source": "/profile",
+      "destination": "/client/clipper",
+      "permanent": false
+    },
+    {
+      "source": "/campaigns",
+      "destination": "/client/clipper",
+      "permanent": false
+    },
+    {
+      "source": "/stats",
+      "destination": "/client/clipper",
+      "permanent": false
+    },
+    {
+      "source": "/payouts",
+      "destination": "/client/clipper",
+      "permanent": false
+    },
+    {
+      "source": "/wallet",
+      "destination": "/client/clipper",
+      "permanent": false
+    },
+    {
+      "source": "/accounts",
+      "destination": "/client/clipper",
+      "permanent": false
+    },
+    {
+      "source": "/workspace",
+      "destination": "/client/clipper",
+      "permanent": false
+    },
+    {
+      "source": "/admin/reviews",
+      "destination": "/console",
+      "permanent": false
+    },
+    {
+      "source": "/admin/review",
+      "destination": "/console",
+      "permanent": false
+    },
+    {
+      "source": "/admin/payouts",
+      "destination": "/console",
+      "permanent": false
+    },
+    {
+      "source": "/admin/connected-accounts",
+      "destination": "/console",
+      "permanent": false
+    }
+  ]
+}

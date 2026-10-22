@@ -1,0 +1,94 @@
+.cx-clipper-review-status-panel {
+  width: min(100%, 1120px);
+  margin: 0 auto 26px;
+  border: 1px solid rgba(167,139,250,0.16);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(124,58,237,0.13), transparent 34%),
+    rgba(255,255,255,0.035);
+  padding: 24px;
+}
+
+.cx-clipper-review-head span {
+  color: #a78bfa;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.16em;
+}
+
+.cx-clipper-review-head h2 {
+  margin: 8px 0 6px;
+  color: white;
+  font-size: 32px;
+  letter-spacing: -0.055em;
+}
+
+.cx-clipper-review-head p {
+  margin: 0;
+  color: rgba(255,255,255,0.54);
+}
+
+.cx-clipper-review-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.cx-clipper-review-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto minmax(260px,0.7fr);
+  gap: 14px;
+  align-items: center;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  background: rgba(255,255,255,0.035);
+  padding: 14px;
+}
+
+.cx-clipper-review-row strong {
+  display: block;
+  color: white;
+}
+
+.cx-clipper-review-row small {
+  display: block;
+  margin-top: 4px;
+  color: rgba(255,255,255,0.42);
+}
+
+.cx-review-status-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border-radius: 999px;
+  padding: 0 11px;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.cx-review-status-badge.approved {
+  color: #86efac;
+  background: rgba(34,197,94,0.14);
+}
+
+.cx-review-status-badge.rejected {
+  color: #fecaca;
+  background: rgba(248,113,113,0.13);
+}
+
+.cx-review-status-badge.pending {
+  color: #fde68a;
+  background: rgba(234,179,8,0.13);
+}
+
+.cx-clipper-review-note {
+  color: rgba(255,255,255,0.58);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .cx-clipper-review-row {
+    grid-template-columns: 1fr;
+  }
+}

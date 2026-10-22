@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipency — Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){try{
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('clipency-theme') || 'light');
+  /* Gate: the portal used to be opened with a 6-digit PIN kept in
+     sessionStorage. It is now a real login, so the gate checks for a
+     Supabase session instead. This is the synchronous, no-dependency
+     version so it can run before anything paints; js/live.js does the
+     authoritative check (getUser) and redirects if the token is stale. */
+  /* Demo mode: ?demo=1 opens the real portal on the sample data in
+     data.js, with no account. The flag is kept in sessionStorage so the
+     other pages stay in demo as you click through the nav, and it dies
+     with the tab so nobody is left stuck in a fake dashboard. */
+  var __d = /[?&]demo=1/.test(location.search);
+  try{
+    if(__d) sessionStorage.setItem('clipency-demo','1');
+    if(/[?&]demo=0/.test(location.search)) sessionStorage.removeItem('clipency-demo');
+    __d = sessionStorage.getItem('clipency-demo') === '1';
+  }catch(e){}
+  if(!__d && !localStorage.getItem('sb-spwtkdgpgeutrhwcjrpy-auth-token')) location.replace('./client-signin.html');
+}catch(e){ document.documentElement.setAttribute('data-theme','light'); }})();
+</script>
+<link rel="stylesheet" href="./dashboard.css">
+<style>
+/* ---------- home layout ---------- */
+.stat-link{text-decoration:none;display:block;}
+.stat-link:hover{border-color:var(--hair-warm);}
+.stat-link .foot{color:var(--bronze);}
+
+/* ---------- campaign cards ---------- */
+.camps{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.camp{
+  background:var(--surface);border:1px solid var(--hair);border-radius:14px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative;
+  transition:transform .5s var(--ease), border-color .4s ease, box-shadow .5s var(--ease);
+}
+.camp:hover{transform:translateY(-3px);border-color:var(--hair-warm);box-shadow:0 20px 44px -24px rgba(11,11,11,.35);}
+.camp-banner{
+  height:86px;position:relative;display:flex;align-items:flex-end;padding:14px 18px;cursor:pointer;
+}
+.camp-banner::after{
+  content:"";position:absolute;left:18px;right:18px;bottom:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.55;
+}
+.camp-banner .code{
+  width:34px;height:34px;border-radius:50%;background:rgba(237,232,223,.14);
+  border:1px solid rgba(237,232,223,.28);color:#EDE8DF;
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;letter-spacing:.03em;
+}
+.camp-banner .st{position:absolute;top:12px;right:12px;}
+/* one half of a split campaign: the banner image re-coloured for its platform,
+   as a layer under the badge, the pill and the gold rule */
+.camp-banner{isolation:isolate;overflow:hidden;}
+.camp-bg{position:absolute;inset:0;z-index:-1;}
+.camp-nobudget{font-size:12px;color:var(--ink-40);display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:28px;}
+.camp-nobudget b{color:var(--ink-55);font-weight:500;text-align:right;}
+.camp-body{padding:16px 18px 18px;display:flex;flex-direction:column;gap:13px;flex:1;}
+.camp-name{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.camp-name h3{font-family:var(--serif);font-weight:500;font-size:20px;color:var(--ink-2);cursor:pointer;line-height:1.2;}
+.camp-name h3:hover{color:var(--bronze);}
+.camp-plats{display:flex;gap:12px;font-size:11.5px;color:var(--ink-40);}
+.camp-nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.camp-nums .cn b{display:block;font-family:var(--serif);font-size:18px;color:var(--ink-2);font-weight:500;font-variant-numeric:tabular-nums;line-height:1.2;}
+.camp-nums .cn span{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-40);}
+.camp-budget .bt{display:flex;justify-content:space-between;font-size:11.5px;color:var(--ink-40);margin-bottom:7px;}
+.camp-budget .bt b{color:var(--ink-70);font-weight:500;}
+.camp-track{height:5px;border-radius:4px;background:var(--hair);overflow:hidden;}
+.camp-fill{height:100%;border-radius:4px;background:var(--ink-2);width:0;transition:width 1.2s var(--ease);}
+.camp-fill.warn{background:#C4553C;}
+.camp-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-top:1px solid var(--hair);padding-top:13px;margin-top:auto;
+}
+.camp-open{
+  font-size:13px;font-weight:500;color:var(--ink-90);text-decoration:none;cursor:pointer;
+  background:none;border:none;font-family:var(--sans);display:inline-flex;align-items:center;gap:7px;padding:0;
+}
+.camp-open .arr{color:var(--gold);transition:transform .4s var(--ease);}
+.camp-open:hover .arr{transform:translateX(3px);}
+.camp-meta{font-size:11px;color:var(--ink-40);}
+.camp-kebab{
+  position:absolute;top:10px;left:10px;width:29px;height:29px;border-radius:8px;
+  border:1px solid rgba(237,232,223,.25);background:rgba(11,11,11,.35);color:#EDE8DF;
+  cursor:pointer;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .3s;
+}
+.camp:hover .camp-kebab{opacity:1;}
+.camp-menu{
+  position:absolute;top:44px;left:10px;z-index:8;min-width:170px;
+  background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:6px;
+  box-shadow:0 20px 44px -18px rgba(11,11,11,.4);display:none;
+}
+.camp-menu.show{display:block;}
+.camp-menu button{
+  display:block;width:100%;text-align:left;background:none;border:none;cursor:pointer;
+  font-family:var(--sans);font-size:13px;color:var(--ink-70);padding:9px 12px;border-radius:7px;
+  transition:background .25s, color .25s;
+}
+.camp-menu button:hover{background:var(--sel);color:var(--ink);}
+.camp-menu button.danger:hover{color:var(--bad);}
+/* status pills sit on the dark banner — fixed light-on-dark colors in both themes */
+.camp-banner .pill{backdrop-filter:blur(2px);}
+.pill.live{color:#A8C89E;background:rgba(90,122,82,.3);}
+.pill.live b{background:#A8C89E;animation:lp 1.6s ease-in-out infinite;}
+.pill.review{color:#E3D3B4;background:rgba(216,170,116,.22);}
+.pill.review b{background:#E3D3B4;}
+.pill.ended{color:#C9C2B6;background:rgba(237,232,223,.14);}
+.pill.ended b{background:#C9C2B6;}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* new-campaign tile */
+.camp-new{
+  border:1.5px dashed var(--hair-warm);border-radius:14px;min-height:270px;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  color:var(--ink-40);background:transparent;font-family:var(--sans);
+  transition:border-color .35s, color .35s, background .35s;
+}
+.camp-new:hover{border-color:var(--bronze);color:var(--ink-70);background:var(--gold-08);}
+.camp-new .plus{
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--hair-warm);
+  display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--bronze);
+}
+.camp-new b{font-size:14px;font-weight:500;}
+.camp-new span{font-size:12px;}
+
+/* ---------- wallet ---------- */
+.wallet{position:sticky;top:92px;display:flex;flex-direction:column;gap:16px;}
+.wallet .panel{padding:22px;}
+.w-bal{font-family:var(--serif);font-size:40px;color:var(--ink-2);line-height:1.1;font-variant-numeric:tabular-nums;}
+.w-sub{font-size:12px;color:var(--ink-40);margin-top:3px;}
+.w-actions{display:flex;gap:10px;margin-top:18px;}
+.w-actions .btn{padding:10px 18px;font-size:13px;}
+.tx{display:flex;flex-direction:column;}
+.tx-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--hair);}
+.tx-row:last-child{border-bottom:none;}
+.tx-ic{
+  width:30px;height:30px;border-radius:50%;flex:none;border:1px solid var(--hair);
+  display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink-55);background:var(--card);
+}
+.tx-ic.in{color:var(--ok);border-color:rgba(90,122,82,.3);}
+.tx-main{min-width:0;flex:1;}
+.tx-note{font-size:13px;color:var(--ink-90);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tx-date{font-size:11px;color:var(--ink-40);}
+.tx-amt{font-size:13.5px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink-70);}
+.tx-amt.in{color:var(--ok);}
+
+/* ---------- banner picker & platform chips (modal) ---------- */
+.b-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.b-opt{height:56px;border-radius:9px;cursor:pointer;position:relative;border:2px solid transparent;transition:border-color .3s, transform .3s;}
+.b-opt:hover{transform:translateY(-2px);}
+.b-opt.on{border-color:var(--bronze);}
+.b-opt span{
+  position:absolute;left:9px;bottom:6px;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(237,232,223,.85);
+}
+.p-pick{display:flex;gap:10px;flex-wrap:wrap;}
+.p-opt{
+  font-family:var(--sans);font-size:13px;border:1px solid var(--hair);border-radius:999px;
+  padding:9px 18px;background:var(--card);color:var(--ink-55);cursor:pointer;transition:all .3s;
+}
+.p-opt.on{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg);}
+.amt-presets{display:flex;gap:9px;margin-top:10px;}
+.amt-presets .chip{padding:6px 14px;}
+.review-note{
+  display:flex;gap:12px;align-items:flex-start;margin-top:20px;padding:14px 16px;
+  border:1px solid var(--hair-warm);border-radius:10px;background:var(--gold-08);
+  font-size:12.5px;color:var(--ink-55);line-height:1.55;
+}
+.review-note b{color:var(--bronze);}
+</style>
+</head>
+<body>
+<div class="paper-field" aria-hidden="true"></div>
+<div class="shell">
+  <div id="side"></div>
+  <div class="main">
+    <div id="topbar"></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Home</span>
+          <h1>Your campaigns.</h1>
+          <p id="homeSummary"></p>
+        </div>
+        <button class="btn" id="newCampBtn" type="button">＋ &nbsp;New Campaign</button>
+      </div>
+
+      <section class="stats" id="homeStats" aria-label="Portfolio stats">
+        <div class="stat"><span class="lbl">Campaigns Running</span><div class="num" id="pRunning">0</div><div class="foot" id="pRunningFoot"></div></div>
+        <div class="stat"><span class="lbl">Views Delivered</span><div class="num" id="pViews">0</div><div class="foot">across all campaigns</div></div>
+        <div class="stat"><span class="lbl">Campaign Spend</span><div class="num" id="pSpend">$0</div><div class="foot" id="pSpendFoot"></div></div>
+        <a class="stat stat-link" href="./budget.html"><span class="lbl">Wallet Balance</span><div class="num" id="pWallet">$0</div><div class="foot">manage in Budget &#8594;</div></a>
+      </section>
+
+      <section style="margin-top:26px;">
+        <div class="panel-h" style="margin-bottom:14px;"><h2 style="font-family:var(--serif);font-weight:500;font-size:21px;color:var(--ink-2);">All campaigns</h2><span id="campCount"></span></div>
+        <div class="camps" id="camps"></div>
+      </section>
+
+      <p class="foot-note">CLIPENCY — client portal · campaigns are reviewed by our team before going live</p>
+    </main>
+  </div>
+</div>
+
+<!-- New campaign modal -->
+<div class="modal-veil" id="campVeil">
+  <div class="modal" style="max-width:640px;" role="dialog" aria-label="New campaign">
+    <button class="m-x" data-close="campVeil" type="button">×</button>
+    <h3>Launch a new campaign</h3>
+    <p class="m-sub">Set the brief, reserve budget from your wallet, and our team reviews it before it goes live.</p>
+
+    <div class="f-row">
+      <label>Campaign banner &amp; icon</label>
+      <div class="up-row">
+        <div class="up-tile" id="upBanner">
+          <b>Click to upload banner</b><span>1280 × 400px</span>
+          <input type="file" accept="image/*" hidden>
+        </div>
+        <div class="up-tile" id="upIcon">
+          <b>Icon</b><span>200 × 200px</span>
+          <input type="file" accept="image/*" hidden>
+        </div>
+      </div>
+      <p class="f-hint">Optional — no banner? Pick a style below instead.</p>
+      <div class="b-pick" id="bPick" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="f-row">
+      <label for="cName">Campaign title *</label>
+      <input type="text" id="cName" maxlength="60" placeholder="e.g. La Isla Bonita · Summer 2026">
+    </div>
+
+    <div class="f-row f-grid">
+      <div>
+        <label for="cBrand">Brand name</label>
+        <input type="text" id="cBrand" maxlength="48" placeholder="Client or brand">
+      </div>
+      <div>
+        <label for="cCat">Category</label>
+        <select id="cCat"></select>
+      </div>
+    </div>
+
+    <div class="f-row f-grid">
+      <div>
+        <label for="cBudget">Budget (USD)</label>
+        <input type="number" id="cBudget" min="50" step="10" placeholder="300">
+        <p class="f-hint" id="walletHint"></p>
+      </div>
+      <div>
+        <label for="cModel">Payout model</label>
+        <select id="cModel">
+          <option value="per_view" selected>Per view — pay for reach</option>
+          <option value="per_video">Per video — pay per approved clip</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="f-row f-grid">
+      <div id="cCpmCell">
+        <label for="cCpm">Rate — $ per 1,000 views</label>
+        <input type="number" id="cCpm" min="0" step="0.01" value="1.00" placeholder="1.00">
+        <p class="f-hint">Any rate. What a clip earns scales with the views it delivers.</p>
+      </div>
+      <div id="cRpvCell" hidden>
+        <label for="cRpv">Rate — $ per approved video</label>
+        <input type="number" id="cRpv" min="0" step="0.01" placeholder="25.00">
+        <p class="f-hint">A flat fee for every approved clip, whatever it goes on to do.</p>
+      </div>
+    </div>
+
+    <div class="f-row f-grid">
+      <div>
+        <label for="cStart">Start date</label>
+        <input type="date" id="cStart">
+      </div>
+      <div>
+        <label for="cEnd">End date</label>
+        <input type="date" id="cEnd">
+      </div>
+    </div>
+
+    <div class="f-row">
+      <label>Platforms</label>
+      <div class="p-pick" id="pPick"></div>
+    </div>
+
+    <div class="f-row f-grid">
+      <div>
+        <label for="cMin">Min views per clip</label>
+        <input type="number" id="cMin" min="0" step="100" value="1000">
+        <p class="f-hint">Clips below this don't count toward billing</p>
+      </div>
+      <div>
+        <label for="cMaxV">Max views per clip</label>
+        <input type="number" id="cMaxV" min="0" step="1000" value="250000">
+        <p class="f-hint">Views are capped here per clip</p>
+      </div>
+    </div>
+
+    <div class="f-row f-grid">
+      <div>
+        <label for="cMaxP">Max payment per clip (USD)</label>
+        <input type="number" id="cMaxP" min="0" step="5" value="25">
+        <p class="f-hint">Hard cap on any single clip payout</p>
+      </div>
+      <div></div>
+    </div>
+
+    <div class="f-row">
+      <label for="cReq">Requirements</label>
+      <textarea id="cReq" placeholder="One requirement per line&#10;e.g. Min 30 seconds&#10;Tag @clipency&#10;Use original audio"></textarea>
+      <p class="f-hint">One per line — shown as a checklist to clippers</p>
+    </div>
+
+    <div class="f-row">
+      <label for="cDesc">Description</label>
+      <textarea id="cDesc" placeholder="Campaign brief for clippers…"></textarea>
+    </div>
+
+    <div class="f-row">
+      <label for="cLink">Content access link</label>
+      <input type="text" id="cLink" placeholder="https://drive.google.com/… or docs.google.com/…">
+      <p class="f-hint">Where clippers find your raw content — Drive folder, sheet, or dropbox</p>
+    </div>
+
+    <div class="f-row">
+      <label for="cGuide">Content guidelines</label>
+      <textarea id="cGuide" placeholder="Editing style, tone, captions, do's and don'ts…"></textarea>
+    </div>
+
+    <div class="review-note"><span>◷</span><span><b>Review first.</b> After you submit, the campaign shows as “In Review”. Our team approves the brief, then it goes live to the clipper network — first clips usually land within 48 hours.</span></div>
+
+    <div class="f-err" id="campErr"></div>
+    <div class="m-actions">
+      <button class="btn btn-line" data-close="campVeil" type="button">Cancel</button>
+      <button class="btn" id="campGo" type="button">Submit for review</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm modal -->
+<div class="modal-veil" id="confirmVeil">
+  <div class="modal" style="max-width:440px;" role="dialog" aria-label="Confirm">
+    <h3 id="confTitle"></h3>
+    <p class="m-sub" id="confSub"></p>
+    <div class="m-actions">
+      <button class="btn btn-line" data-close="confirmVeil" type="button">Keep campaign</button>
+      <button class="btn" id="confGo" type="button">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="./data.js"></script>
+<script src="./db.js"></script>
+<script src="./export.js"></script>
+<script src="./shell.js"></script>
+<script src="./tour.js"></script>
+<!-- live data (read-only production Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script src="./js/live.js"></script>
+
+<script type="module">
+/* wait for live production data before painting; resolves to 'live' or 'mock' */
+if (window.CLIPENCY_LIVE) {
+  try { await window.CLIPENCY_LIVE.ready; }
+  catch (e) { console.error('[clipency] live load threw, painting anyway', e); }
+}
+
+CLIPSHELL.init('home');
+(function(){
+  var money = CLIPDB.money;
+  function fmt(v){ return CLIPENCY.fmt(v); }
+  function fmtFull(v){ return CLIPENCY.fmtFull(v); }
+  function fmtDate(iso){
+    if(!iso) return '—';
+    var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var p = iso.split('-'); return m[+p[1]-1] + ' ' + (+p[2]);
+  }
+  var STATUS = {
+    live:   {cls:'live',   label:'Live'},
+    review: {cls:'review', label:'In Review'},
+    ended:  {cls:'ended',  label:'Ended'}
+  };
+  var PLAT_LABEL = {instagram:'Instagram', youtube:'YouTube', tiktok:'TikTok'};
+  var PLAT_DOT = {instagram:'#C86A8A', youtube:'#C4553C', tiktok:'#7A6CD8'};
+  /* A split campaign's other halves keep the campaign's banner image, turned
+     to their platform's colour; without an image, a flat one in that colour.
+     The rotation assumes the usual blue-ish brand banner: blue lands on
+     YouTube red, Instagram magenta or TikTok purple, and white stays white. */
+  var TINT = {
+    youtube:   'hue-rotate(120deg) saturate(1.15)',
+    instagram: 'hue-rotate(90deg) saturate(1.1)',
+    tiktok:    'hue-rotate(20deg) saturate(1.1)'
+  };
+  var TINT_BG = {
+    youtube:   'linear-gradient(135deg,#8E1F17 0%,#C4553C 60%,#7A1810 100%)',
+    instagram: 'linear-gradient(135deg,#7E2A52 0%,#C86A8A 60%,#6A2244 100%)',
+    tiktok:    'linear-gradient(135deg,#352A86 0%,#7A6CD8 60%,#2B2270 100%)'
+  };
+
+  /* ---------- render ---------- */
+  function renderStats(){
+    var P = CLIPDB.portfolio(), W = CLIPDB.wallet();
+    var all = CLIPDB.campaigns();
+    document.getElementById('homeSummary').textContent =
+      P.running + ' campaign' + (P.running===1?'':'s') + ' running · ' +
+      fmtFull(P.views) + ' views delivered · ' + money(W.balance) + ' in your wallet.';
+    CLIPSHELL.count(document.getElementById('pRunning'), P.running, function(v){ return Math.round(v); }, 900);
+    CLIPSHELL.count(document.getElementById('pViews'), P.views, function(v){ return fmtFull(Math.round(v)); });
+    CLIPSHELL.count(document.getElementById('pSpend'), P.spend, function(v){ return money(v); });
+    CLIPSHELL.count(document.getElementById('pWallet'), W.balance, function(v){ return money(v); });
+    document.getElementById('pRunningFoot').textContent = all.length + ' total, incl. ended';
+    document.getElementById('pSpendFoot').textContent = 'of ' + money(P.budget) + ' reserved budget';
+    document.getElementById('campCount').textContent = all.length + (all.length===1?' campaign':' campaigns');
+    var nc = document.querySelector('.snav .navcount');
+    if(nc) nc.textContent = P.running;
+  }
+
+  function campCard(c){
+    var s = CLIPDB.stats(c), st = STATUS[c.status] || STATUS.review;
+    var tint = c.bannerTint && TINT[c.bannerTint] ? c.bannerTint : null;
+    var banner = tint ? TINT_BG[tint]
+      : c.bannerImg
+      ? 'url(' + c.bannerImg + ') center/cover no-repeat, ' + (CLIPDB.BANNERS[c.banner] || CLIPDB.BANNERS.ink).css
+      : (CLIPDB.BANNERS[c.banner] || CLIPDB.BANNERS.ink).css;
+    var bgLayer = (tint && c.bannerImg)
+      ? '<span class="camp-bg" style="background:url(' + c.bannerImg + ') center/cover no-repeat;filter:' + TINT[tint] + ';"></span>'
+      : '';
+    var codeEl = c.iconImg
+      ? '<span class="code" style="padding:0;overflow:hidden;"><img src="' + c.iconImg + '" alt="" style="width:100%;height:100%;object-fit:cover;"></span>'
+      : '<span class="code">' + c.code + '</span>';
+    var used = c.budget ? Math.min(100, (s.budgetSpend != null ? s.budgetSpend : s.spend) / c.budget * 100) : 0;
+    var plats = c.platforms.map(function(p){
+      return '<span style="display:inline-flex;align-items:center;gap:6px;"><i style="width:7px;height:7px;border-radius:50%;background:' + PLAT_DOT[p] + ';display:inline-block;"></i>' + (PLAT_LABEL[p]||p) + '</span>';
+    }).join('');
+    var meta = c.status === 'review' ? 'Submitted ' + fmtDate(c.created)
+             : c.status === 'ended'  ? fmtDate(c.start||c.created) + ' – ' + fmtDate(c.end)
+             : 'Live since ' + fmtDate(c.start||c.created);
+    return '<article class="camp" data-id="' + c.id + '">' +
+      '<div class="camp-banner' + (tint ? ' tint-' + tint : '') + '" style="background:' + banner + ';" data-open="1">' + bgLayer +
+        '<button class="camp-kebab" data-kebab type="button" aria-label="Campaign actions">⋮</button>' +
+        '<div class="camp-menu">' +
+          '<button data-act="open" type="button">Open dashboard</button>' +
+          '<button data-act="export" type="button">Export report</button>' +
+          (c.status !== 'ended' ? '<button data-act="end" class="danger" type="button">End campaign</button>' : '') +
+          (c.status !== 'live'  ? '<button data-act="remove" class="danger" type="button">Remove campaign</button>' : '') +
+        '</div>' +
+        codeEl +
+        '<span class="st pill ' + st.cls + '"><b></b>' + st.label + '</span>' +
+      '</div>' +
+      '<div class="camp-body">' +
+        '<div class="camp-name"><h3 data-open="1">' + c.name + '</h3>' +
+          (c.category ? '<span class="camp-meta">' + c.category + '</span>' : '') + '</div>' +
+        '<div class="camp-plats">' + plats + '</div>' +
+        '<div class="camp-nums">' +
+          '<div class="cn"><b>' + fmt(s.views) + '</b><span>Views</span></div>' +
+          '<div class="cn"><b>' + s.clips + '</b><span>Clips</span></div>' +
+          '<div class="cn"><b>' + (c.payoutModel === 'per_video' ? CLIPDB.moneyC(c, c.ratePerVideo) : CLIPDB.moneyC(c, c.cpm)) +
+            '</b><span>' + (c.payoutModel === 'per_video' ? 'RPV' : 'RPM') + '</span></div>' +
+        '</div>' +
+        (c.noBudget
+          ? '<div class="camp-budget camp-nobudget"><span>No separate budget</span><b>billed with ' + c.budgetWith + '</b></div>'
+          : '<div class="camp-budget">' +
+            '<div class="bt"><span>Budget <b>' + CLIPDB.moneyC(c, c.budget) + '</b></span><span><b>' + used.toFixed(1) + '%</b> used</span></div>' +
+            '<div class="camp-track"><div class="camp-fill' + (used>=85?' warn':'') + '" data-w="' + used + '"></div></div>' +
+          '</div>') +
+        '<div class="camp-foot">' +
+          '<button class="camp-open" data-open="1" type="button">Open dashboard <span class="arr">&#8594;</span></button>' +
+          '<span class="camp-meta">' + meta + '</span>' +
+        '</div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  function renderCamps(){
+    var order = {live:0, review:1, ended:2};
+    var list = CLIPDB.campaigns().sort(function(a,b){
+      return (order[a.status]-order[b.status]) || (b.created||'').localeCompare(a.created||'');
+    });
+    document.getElementById('camps').innerHTML =
+      list.map(campCard).join('') +
+      '<button class="camp-new" id="campNewTile" type="button">' +
+        '<span class="plus">＋</span><b>New campaign</b><span>Reserve budget from your wallet</span>' +
+      '</button>';
+    setTimeout(function(){
+      document.querySelectorAll('.camp-fill').forEach(function(f){ f.style.width = f.dataset.w + '%'; });
+    }, 150);
+    document.getElementById('campNewTile').addEventListener('click', openCampModal);
+  }
+
+  function renderAll(){ renderStats(); renderCamps(); }
+
+  /* ---------- card interactions ---------- */
+  document.getElementById('camps').addEventListener('click', function(e){
+    var card = e.target.closest('.camp'); if(!card) return;
+    var id = card.dataset.id;
+    if(e.target.closest('[data-kebab]')){
+      document.querySelectorAll('.camp-menu.show').forEach(function(m){ if(!card.contains(m)) m.classList.remove('show'); });
+      card.querySelector('.camp-menu').classList.toggle('show');
+      e.stopPropagation(); return;
+    }
+    var act = e.target.closest('[data-act]');
+    if(act){
+      card.querySelector('.camp-menu').classList.remove('show');
+      handleAction(act.dataset.act, id);
+      e.stopPropagation(); return;
+    }
+    if(e.target.closest('[data-open]')){
+      CLIPDB.setActive(id);
+      location.href = './campaign.html';
+    }
+  });
+  document.addEventListener('click', function(e){
+    if(!e.target.closest('.camp-menu') && !e.target.closest('[data-kebab]'))
+      document.querySelectorAll('.camp-menu.show').forEach(function(m){ m.classList.remove('show'); });
+  });
+
+  function handleAction(act, id){
+    var c = CLIPDB.get(id); if(!c) return;
+    if(act === 'open'){ CLIPDB.setActive(id); location.href = './campaign.html'; }
+    if(act === 'export'){
+      CLIPDB.setActive(id); CLIPDB.applyActive();
+      CLIPSHELL.toast('Preparing your report…');
+      CLIPEXPORT.download().then(function(){ CLIPSHELL.toast('Report downloaded.'); })
+        .catch(function(){ CLIPSHELL.toast('Export failed — try again.', true); });
+    }
+    if(act === 'end') confirm(
+      'End “' + c.name + '”?',
+      'The campaign stops immediately. Unspent budget (' + CLIPDB.moneyC(c, Math.max(0, c.budget - CLIPDB.stats(c).spend)) + ') returns to your wallet. Data stays available.',
+      function(){ var r = CLIPDB.endCampaign(id);
+        CLIPSHELL.toast(r.refund > 0 ? 'Campaign ended — ' + money(r.refund) + ' returned to wallet.' : 'Campaign ended.');
+        renderAll(); });
+    if(act === 'remove') confirm(
+      'Remove “' + c.name + '”?',
+      c.status === 'review'
+        ? 'The campaign is cancelled before launch and its full budget (' + CLIPDB.moneyC(c, c.budget) + ') returns to your wallet.'
+        : 'This removes the campaign card from your portal. This can\'t be undone.',
+      function(){ var r = CLIPDB.removeCampaign(id);
+        if(r.ok){ CLIPSHELL.toast('Campaign removed.'); renderAll(); }
+        else CLIPSHELL.toast(r.error || 'Could not remove campaign.', true); });
+  }
+
+  /* ---------- confirm modal ---------- */
+  var confCb = null;
+  function confirm(title, sub, cb){
+    document.getElementById('confTitle').textContent = title;
+    document.getElementById('confSub').textContent = sub;
+    confCb = cb;
+    show('confirmVeil');
+  }
+  document.getElementById('confGo').addEventListener('click', function(){
+    hide('confirmVeil');
+    if(confCb) confCb(); confCb = null;
+  });
+
+  /* ---------- modals ---------- */
+  function show(id){ document.getElementById(id).classList.add('show'); }
+  function hide(id){ document.getElementById(id).classList.remove('show'); }
+  document.querySelectorAll('[data-close]').forEach(function(b){
+    b.addEventListener('click', function(){ hide(b.dataset.close); });
+  });
+  document.querySelectorAll('.modal-veil').forEach(function(v){
+    v.addEventListener('click', function(e){ if(e.target === v) v.classList.remove('show'); });
+  });
+
+  /* new campaign */
+  var selBanner = 'ink', selPlats = ['instagram','youtube'];
+  var upBannerImg = null, upIconImg = null;
+
+  /* image upload → downscaled dataURL (kept small for localStorage) */
+  function wireUpload(tileId, maxW, cb){
+    var tile = document.getElementById(tileId);
+    var input = tile.querySelector('input[type=file]');
+    tile.addEventListener('click', function(e){
+      if(e.target.classList.contains('up-x')){
+        e.stopPropagation(); cb(null); paintUpload(tileId, null); input.value = '';
+        return;
+      }
+      input.click();
+    });
+    input.addEventListener('change', function(){
+      var f = input.files[0]; if(!f) return;
+      var img = new Image();
+      img.onload = function(){
+        var scale = Math.min(1, maxW / img.width);
+        var cv = document.createElement('canvas');
+        cv.width = Math.round(img.width * scale);
+        cv.height = Math.round(img.height * scale);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        var url = cv.toDataURL('image/jpeg', 0.82);
+        cb(url); paintUpload(tileId, url);
+      };
+      img.src = URL.createObjectURL(f);
+    });
+  }
+  function paintUpload(tileId, url){
+    var tile = document.getElementById(tileId);
+    tile.querySelectorAll('img,.up-x').forEach(function(n){ n.remove(); });
+    if(url){
+      var im = document.createElement('img'); im.src = url;
+      var x = document.createElement('button'); x.className = 'up-x'; x.type = 'button'; x.textContent = '×'; x.title = 'Remove';
+      tile.appendChild(im); tile.appendChild(x);
+    }
+  }
+  wireUpload('upBanner', 1280, function(u){ upBannerImg = u; });
+  wireUpload('upIcon', 200, function(u){ upIconImg = u; });
+  function buildPickers(){
+    document.getElementById('bPick').innerHTML = Object.keys(CLIPDB.BANNERS).map(function(k){
+      var b = CLIPDB.BANNERS[k];
+      return '<div class="b-opt' + (k===selBanner?' on':'') + '" data-b="' + k + '" style="background:' + b.css + ';"><span>' + b.name + '</span></div>';
+    }).join('');
+    document.getElementById('pPick').innerHTML = CLIPDB.PLATFORMS.map(function(p){
+      return '<button class="p-opt' + (selPlats.indexOf(p.key)>-1?' on':'') + '" data-p="' + p.key + '" type="button">' + p.label + '</button>';
+    }).join('');
+    document.querySelectorAll('#bPick .b-opt').forEach(function(o){
+      o.addEventListener('click', function(){ selBanner = o.dataset.b; buildPickers(); });
+    });
+    document.querySelectorAll('#pPick .p-opt').forEach(function(o){
+      o.addEventListener('click', function(){
+        var k = o.dataset.p, i = selPlats.indexOf(k);
+        if(i > -1) selPlats.splice(i,1); else selPlats.push(k);
+        buildPickers();
+      });
+    });
+  }
+  function openCampModal(){
+    selBanner = 'ink'; selPlats = ['instagram','youtube'];
+    upBannerImg = null; upIconImg = null;
+    paintUpload('upBanner', null); paintUpload('upIcon', null);
+    ['cName','cBrand','cBudget','cReq','cDesc','cLink','cGuide','cStart','cEnd'].forEach(function(id){
+      document.getElementById(id).value = '';
+    });
+    var cat = document.getElementById('cCat');
+    cat.innerHTML = CLIPDB.CATEGORIES.map(function(c){ return '<option>' + c + '</option>'; }).join('');
+    document.getElementById('campErr').textContent = '';
+    document.getElementById('walletHint').textContent = money(CLIPDB.wallet().balance) + ' available in wallet';
+
+    /* Only one rate is ever live, so the form shows one. The unit is part of
+       the number — a flat per-video fee under "per 1,000 views" reads as a
+       rate a thousand times off. */
+    var model = document.getElementById('cModel');
+    model.value = 'per_view';
+    document.getElementById('cCpm').value = '1.00';
+    document.getElementById('cRpv').value = '';
+    function paintModel(){
+      var pv = model.value === 'per_video';
+      document.getElementById('cCpmCell').hidden = pv;
+      document.getElementById('cRpvCell').hidden = !pv;
+    }
+    model.onchange = paintModel;
+    paintModel();
+
+    buildPickers();
+    show('campVeil');
+  }
+  document.getElementById('newCampBtn').addEventListener('click', openCampModal);
+  document.getElementById('campGo').addEventListener('click', function(){
+    var r = CLIPDB.createCampaign({
+      name: document.getElementById('cName').value,
+      brand: document.getElementById('cBrand').value,
+      category: document.getElementById('cCat').value,
+      banner: selBanner,
+      bannerImg: upBannerImg,
+      iconImg: upIconImg,
+      platforms: selPlats,
+      budget: document.getElementById('cBudget').value,
+      payoutModel: document.getElementById('cModel').value,
+      cpm: document.getElementById('cCpm').value,
+      ratePerVideo: document.getElementById('cRpv').value,
+      start: document.getElementById('cStart').value || null,
+      end: document.getElementById('cEnd').value || null,
+      minViews: document.getElementById('cMin').value,
+      maxViewsPerVideo: document.getElementById('cMaxV').value,
+      maxPayPerVideo: document.getElementById('cMaxP').value,
+      requirements: document.getElementById('cReq').value,
+      description: document.getElementById('cDesc').value,
+      contentLink: document.getElementById('cLink').value,
+      guidelines: document.getElementById('cGuide').value
+    });
+    if(!r.ok){ document.getElementById('campErr').textContent = r.error; return; }
+    hide('campVeil');
+    CLIPSHELL.toast('“' + r.campaign.name + '” submitted — our team will review it shortly.');
+    renderAll();
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="dns-prefetch" href="https://spwtkdgpgeutrhwcjrpy.supabase.co"/>
+<link rel="preconnect" href="https://spwtkdgpgeutrhwcjrpy.supabase.co" crossorigin/>
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net"/>
+<link rel="prefetch" href="/stats"/>
+<link rel="prefetch" href="/campaigns"/>
+<link rel="prefetch" href="/wallet"/>
+<link rel="prefetch" href="/profile"/>
+
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Clipency | Payouts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#0A0908;--s1:#111009;--s2:#181410;--s3:#221D18;--s4:#332B23;
+  --amber:#C4956A;--amber2:#D4A57A;--adim:rgba(196,149,106,.1);
+  --green:#6EE7B7;--red:#F87171;--yellow:#FACC15;
+  --tp:#F5F0EB;--ts:#B8AFA8;--tm:#6A6158;
+  --border:rgba(196,149,106,.18);--bsoft:rgba(242,237,232,.065);
+  --sw:256px;--ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--tp);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;}
+#app{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:var(--sw);flex-shrink:0;background:var(--s1);border-right:1px solid var(--bsoft);display:flex;flex-direction:column;height:100vh;z-index:200;}
+.sb-logo{padding:18px 14px 16px;border-bottom:1px solid var(--bsoft);display:flex;align-items:center;justify-content:center;}
+.sb-logo-img{height:26px;width:auto;object-fit:contain;}
+.sb-nav{flex:1;overflow-y:auto;padding:16px 10px;}
+.sb-nav::-webkit-scrollbar{width:0;}
+.nav-label{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.22em;text-transform:uppercase;color:var(--tm);padding:18px 12px 6px;opacity:.65;}
+.nav-item{display:flex;align-items:center;gap:11px;width:100%;padding:11px 13px;border-radius:11px;border:none;background:transparent;color:var(--ts);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.91rem;font-weight:500;transition:all .22s var(--ease-out);text-align:left;position:relative;}
+.nav-item:hover{background:var(--adim);color:var(--tp);}
+.nav-item.active{background:linear-gradient(90deg,rgba(196,149,106,.14),rgba(196,149,106,.06));color:var(--amber);}
+.nav-item.active::before{content:'';position:absolute;left:0;top:18%;bottom:18%;width:2.5px;background:var(--amber);border-radius:0 3px 3px 0;}
+.nav-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.65;}
+.nav-item.active .nav-icon,.nav-item:hover .nav-icon{opacity:1;}
+.nav-dot{margin-left:auto;width:5px;height:5px;border-radius:50%;background:var(--amber);opacity:0;}
+.nav-item.active .nav-dot{opacity:.7;}
+.sb-profile{padding:12px;border-top:1px solid var(--bsoft);display:flex;align-items:center;gap:10px;}
+.sb-av{width:32px;height:32px;border-radius:50%;background:var(--s3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Instrument Serif',serif;font-size:1rem;color:var(--amber);flex-shrink:0;overflow:hidden;}
+.sb-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.sb-info{flex:1;min-width:0;}
+.sb-name{font-size:.84rem;font-weight:600;color:var(--tp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-role{font-size:.71rem;color:var(--tm);}
+.sb-signout{background:none;border:none;color:var(--tm);cursor:pointer;padding:5px;border-radius:7px;transition:all .2s;flex-shrink:0;}
+.sb-signout:hover{color:var(--red);background:rgba(248,113,113,.1);}
+.curr-toggle{display:flex;align-items:center;gap:9px;width:100%;padding:10px 13px;border-radius:10px;border:1px solid var(--bsoft);background:var(--s2);color:var(--ts);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.87rem;transition:all .2s;margin-top:6px;}
+.curr-toggle:hover{border-color:var(--border);color:var(--tp);}
+.curr-menu{position:absolute;bottom:140px;left:10px;width:226px;background:var(--s2);border:1px solid var(--border);border-radius:13px;overflow:hidden;z-index:100;box-shadow:0 8px 40px rgba(0,0,0,.6);}
+.curr-menu.hidden{display:none;}
+.curr-opt{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border:none;background:transparent;color:var(--ts);font-family:'DM Sans',sans-serif;font-size:.84rem;cursor:pointer;transition:background .15s;text-align:left;}
+.curr-opt:hover{background:var(--s3);}
+.curr-opt.active{color:var(--amber);}
+.curr-rate{margin-left:auto;font-family:'Space Mono',monospace;font-size:.7rem;color:var(--tm);}
+.main{flex:1;overflow-y:auto;background:var(--bg);padding:40px 44px 80px;}
+.main::-webkit-scrollbar{width:5px;}
+.main::-webkit-scrollbar-thumb{background:var(--s4);border-radius:3px;}
+.pg-eyebrow{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);margin-bottom:6px;}
+.pg-title{font-family:'Instrument Serif',serif;font-size:2.6rem;color:var(--tp);font-weight:400;margin-bottom:4px;line-height:1.1;}
+.pg-sub{font-size:.88rem;color:var(--tm);margin-bottom:36px;}
+.bal-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px;}
+.bal-card{background:var(--s2);border:1px solid var(--bsoft);border-radius:16px;padding:24px 26px;position:relative;overflow:hidden;transition:all .25s;}
+.bal-card:hover{border-color:var(--border);}
+.bal-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(196,149,106,.25),transparent);opacity:0;transition:opacity .3s;}
+.bal-card:hover::before{opacity:1;}
+.bal-label{font-family:'Space Mono',monospace;font-size:.57rem;letter-spacing:.18em;text-transform:uppercase;color:var(--tm);margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.bal-icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;}
+.bal-val{font-family:'Instrument Serif',serif;font-size:2.4rem;line-height:1;margin-bottom:6px;}
+.bal-val.amber{color:var(--amber);}
+.bal-val.yellow{color:var(--yellow);}
+.bal-val.green{color:var(--green);}
+.bal-sub{font-size:.74rem;color:var(--tm);}
+.withdraw-btn{
+  margin-top:18px;width:100%;padding:11px 18px;border-radius:10px;
+  background:var(--amber);color:#0A0908;font-family:'DM Sans',sans-serif;
+  font-weight:700;font-size:.88rem;border:none;cursor:pointer;
+  transition:all .25s var(--ease-out);letter-spacing:.01em;
+}
+.withdraw-btn:hover{background:var(--amber2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(196,149,106,.3);}
+.withdraw-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.hist-card{background:var(--s2);border:1px solid var(--bsoft);border-radius:18px;overflow:hidden;}
+.hist-head{padding:18px 22px;border-bottom:1px solid var(--bsoft);display:flex;align-items:center;justify-content:space-between;}
+.hist-title{font-family:'Instrument Serif',serif;font-size:1.1rem;color:var(--tp);}
+.hist-sub{font-size:.75rem;color:var(--tm);}
+.txn-list{padding:0;}
+.txn-item{display:flex;align-items:center;gap:14px;padding:14px 22px;border-bottom:1px solid var(--bsoft);transition:background .15s;}
+.txn-item:hover{background:rgba(196,149,106,.025);}
+.txn-item:last-child{border-bottom:none;}
+.txn-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.txn-icon.out{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.15);}
+.txn-icon.in{background:rgba(110,231,183,.1);border:1px solid rgba(110,231,183,.15);}
+.txn-info{flex:1;min-width:0;}
+.txn-name{font-size:.88rem;font-weight:600;color:var(--tp);margin-bottom:2px;}
+.txn-date{font-size:.72rem;color:var(--tm);}
+.txn-right{text-align:right;flex-shrink:0;}
+.txn-amt{font-family:'Instrument Serif',serif;font-size:1rem;font-weight:600;}
+.txn-amt.neg{color:var(--red);}
+.txn-amt.pos{color:var(--green);}
+.txn-status{font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:2px;}
+.st-pending{background:rgba(250,204,21,.08);border:1px solid rgba(250,204,21,.2);color:var(--yellow);}
+.st-paid{background:rgba(110,231,183,.1);border:1px solid rgba(110,231,183,.2);color:var(--green);}
+.st-rejected{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.2);color:var(--red);}
+.empty-state{padding:60px 24px;text-align:center;color:var(--tm);}
+.empty-state span{font-size:2rem;display:block;margin-bottom:12px;}
+.empty-state p{font-size:.88rem;line-height:1.7;}
+/* WITHDRAW MODAL */
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:9000;display:none;align-items:center;justify-content:center;padding:20px;}
+.moverlay.on{display:flex;}
+.mbox{background:var(--s2);border:1px solid var(--border);border-radius:20px;width:100%;max-width:440px;padding:28px;box-shadow:0 24px 80px rgba(0,0,0,.7);animation:mIn .25s var(--ease-out);}
+@keyframes mIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.meyebrow{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);margin-bottom:6px;}
+.mtitle{font-family:'Instrument Serif',serif;font-size:1.5rem;color:var(--tp);margin-bottom:4px;}
+.msub{font-size:.82rem;color:var(--tm);margin-bottom:24px;line-height:1.6;}
+.mbal{background:var(--s3);border:1px solid var(--bsoft);border-radius:10px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;}
+.mbal-label{font-size:.72rem;color:var(--tm);}
+.mbal-val{font-family:'Instrument Serif',serif;font-size:1.3rem;color:var(--amber);}
+.minput-label{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--tm);margin-bottom:6px;display:block;}
+.minput{width:100%;background:var(--s3);border:1px solid var(--bsoft);border-radius:10px;padding:12px 14px;color:var(--tp);font-family:'DM Sans',sans-serif;font-size:.95rem;outline:none;transition:border-color .2s;margin-bottom:18px;}
+.minput:focus{border-color:var(--amber);}
+.mwallet{background:var(--s3);border:1px solid var(--bsoft);border-radius:10px;padding:12px 16px;margin-bottom:18px;}
+.mwallet-label{font-size:.68rem;color:var(--tm);margin-bottom:4px;font-family:'Space Mono',monospace;letter-spacing:.1em;text-transform:uppercase;}
+.mwallet-val{font-size:.88rem;color:var(--tp);font-weight:500;}
+.mwallet-none{font-size:.82rem;color:var(--tm);font-style:italic;}
+.mbtns{display:flex;gap:9px;}
+.mbtn-ghost{flex:1;padding:11px;border-radius:9px;border:1px solid var(--bsoft);background:transparent;color:var(--ts);font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.mbtn-ghost:hover{border-color:var(--border);color:var(--tp);}
+.mbtn-amber{flex:2;padding:11px;border-radius:9px;background:var(--amber);color:#0A0908;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;border:none;cursor:pointer;transition:all .2s;}
+.mbtn-amber:hover{background:var(--amber2);}
+.mbtn-amber:disabled{opacity:.4;cursor:not-allowed;}
+.merr{font-size:.78rem;color:var(--red);margin-bottom:12px;display:none;padding:8px 12px;background:rgba(248,113,113,.08);border-radius:8px;}
+.toast{position:fixed;bottom:24px;right:24px;z-index:9999;padding:12px 18px;border-radius:11px;background:var(--s3);border:1px solid var(--border);color:var(--tp);font-size:.82rem;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:tIn .2s var(--ease-out);max-width:320px;pointer-events:none;}
+@keyframes tIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.spin{width:18px;height:18px;border:2px solid var(--s4);border-top-color:var(--amber);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@media(max-width:900px){.bal-row{grid-template-columns:1fr 1fr;}.main{padding:24px 20px 60px;}}
+@media(max-width:600px){.bal-row{grid-template-columns:1fr;}.main{padding:20px 16px 60px;}}
+</style>
+<style id="cx-auth-css">
+#cx-auth-overlay{position:fixed;inset:0;background:#0A0908;z-index:99999;display:flex;align-items:center;justify-content:center;}
+.cx-spin{width:24px;height:24px;border:2px solid #332B23;border-top-color:#C4956A;border-radius:50%;animation:cx-s .7s linear infinite;}
+@keyframes cx-s{to{transform:rotate(360deg);}}
+</style>
+<style id="cx-transition">
+body{animation:cx-fadein .18s ease-out;}
+@keyframes cx-fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+<div id="cx-auth-overlay"><div class="cx-spin"></div></div>
+<div id="app">
+<aside class="sidebar">
+  <div class="sb-logo"><img src="/auth/Clipencylogo.png" alt="Clipency" class="sb-logo-img" /></div>
+  <div class="sb-nav">
+    <p class="nav-label">Clipper</p>
+    <nav>
+      <button class="nav-item" onclick="location.href='/campaigns'"><span class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></span><span>Campaigns</span><span class="nav-dot"></span></button>
+      <button class="nav-item" onclick="location.href='/stats'"><span class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span><span>Stats</span><span class="nav-dot"></span></button>
+      <button class="nav-item active"><span class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg></span><span>Payouts</span><span class="nav-dot"></span></button>
+      <button class="nav-item" onclick="location.href='/wallet'"><span class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span><span>Wallet</span><span class="nav-dot"></span></button>
+    </nav>
+    <p class="nav-label" style="margin-top:6px;">Account</p>
+    <nav>
+      <button class="nav-item" onclick="location.href='/profile'"><span class="nav-icon"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg></span><span>Profile</span><span class="nav-dot"></span></button>
+    </nav>
+    <p class="nav-label" style="margin-top:6px;">Currency</p>
+    <div style="position:relative;">
+      <button class="curr-toggle" id="currency-toggle"><span id="cf">$</span><span id="cc">USD</span><svg style="margin-left:auto;" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+      <div class="curr-menu hidden" id="currency-menu">
+        <button class="curr-opt active" data-code="USD" data-symbol="$" data-rate="1"><span>$</span><span>USD</span><span class="curr-rate">1.00</span></button>
+        <button class="curr-opt" data-code="INR" data-symbol="₹" data-rate="83.2"><span>₹</span><span>INR</span><span class="curr-rate" id="rate-INR">—</span></button>
+        <button class="curr-opt" data-code="EUR" data-symbol="€" data-rate="0.92"><span>€</span><span>EUR</span><span class="curr-rate" id="rate-EUR">—</span></button>
+        <button class="curr-opt" data-code="GBP" data-symbol="£" data-rate="0.79"><span>£</span><span>GBP</span><span class="curr-rate" id="rate-GBP">—</span></button>
+      </div>
+    </div>
+  </div>
+  <div class="sb-profile">
+    <div class="sb-av" id="sb-av">A</div>
+    <div class="sb-info"><div class="sb-name" id="sb-name">Loading…</div><div class="sb-role">Clipper</div></div>
+    <button class="sb-signout" id="btn-signout" title="Sign out"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+  </div>
+</aside>
+<main class="main">
+  <div class="pg-eyebrow">Clipency</div>
+  <h1 class="pg-title">Payouts</h1>
+  <p class="pg-sub">Track your earnings, pending payouts, and completed payments — all in one place.</p>
+  <div class="bal-row">
+    <div class="bal-card">
+      <div class="bal-label"><div class="bal-icon" style="background:rgba(196,149,106,.1)">💰</div>Available Balance</div>
+      <div class="bal-val amber" id="bal-avail">—</div>
+      <div class="bal-sub" id="bal-avail-sub">Earned from approved clips</div>
+      <button class="withdraw-btn" id="withdraw-btn" onclick="openWithdraw()">Withdraw →</button>
+    </div>
+    <div class="bal-card">
+      <div class="bal-label"><div class="bal-icon" style="background:rgba(250,204,21,.08)">⏳</div>Pending Payout</div>
+      <div class="bal-val yellow" id="bal-pending">—</div>
+      <div class="bal-sub">Expected within 5–7 days</div>
+    </div>
+    <div class="bal-card">
+      <div class="bal-label"><div class="bal-icon" style="background:rgba(110,231,183,.1)">✅</div>Total Paid</div>
+      <div class="bal-val green" id="bal-paid">—</div>
+      <div class="bal-sub">Already paid by Clipency</div>
+    </div>
+  </div>
+  <div class="hist-card">
+    <div class="hist-head">
+      <div><div class="hist-title">Payout History</div><div class="hist-sub" id="hist-count"></div></div>
+    </div>
+    <div class="txn-list" id="txn-list"></div>
+  </div>
+</main>
+</div>
+
+<!-- WITHDRAW MODAL -->
+<div class="moverlay" id="wd-modal">
+  <div class="mbox">
+    <div class="meyebrow">Withdraw Funds</div>
+    <div class="mtitle">Request a payout</div>
+    <div class="msub">Your funds will be transferred to your saved payment method within 5–7 business days.</div>
+    <div class="mbal">
+      <span class="mbal-label">Available to withdraw</span>
+      <span class="mbal-val" id="wd-avail">—</span>
+    </div>
+    <div id="wd-wallet-info" class="mwallet">
+      <div class="mwallet-label">Payout destination</div>
+      <div class="mwallet-val" id="wd-wallet-val"><span class="mwallet-none">No payment method — add one in Wallet</span></div>
+    </div>
+    <label class="minput-label">Amount to withdraw</label>
+    <input class="minput" type="number" id="wd-amount" placeholder="e.g. 50.00" min="1" step="0.01"/>
+    <div class="merr" id="wd-err"></div>
+    <div class="mbtns">
+      <button class="mbtn-ghost" onclick="closeWithdraw()">Cancel</button>
+      <button class="mbtn-amber" id="wd-confirm" onclick="confirmWithdraw()">Confirm Withdrawal</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" crossorigin></script>
+<script src="/supabaseClient.js"></script>
+<script>
+(function(){
+  var o=document.getElementById('cx-auth-overlay');
+  function show(){if(o)o.remove();document.getElementById('cx-auth-css')?.remove();}
+  function bail(){document.body.innerHTML='';location.replace('/login');}
+  async function run(){
+    var t=0,sb;
+    while(!(sb=window.clipencySupabase||window.supabaseClient||window.sbClient)&&t++<30)
+      await new Promise(function(r){setTimeout(r,100);});
+    if(!sb){bail();return;}
+    window._cxShow=show;
+    try{var r=await sb.auth.getUser();if(r.data&&r.data.user){/* wait for data */}else bail();}
+    catch(e){bail();}
+  }
+  run();
+})();
+</script>
+
+
+
+<script>
+'use strict';
+let sb, user, availBal=0, paymentMethod=null;
+let cur={code:'USD',symbol:'$',rate:1};
+const fm=v=>{const x=v*cur.rate;return cur.symbol+(x>=1000?x.toLocaleString('en-US',{maximumFractionDigits:0}):x.toFixed(2));};
+const fmtDate=d=>new Date(d).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
+
+(async()=>{
+  sb=window.clipencySupabase||window.supabaseClient||window.sbClient;
+  if(!sb){
+    const l=document.getElementById('txn-list'),c=document.getElementById('hist-count');
+    if(l)l.innerHTML='<div class="empty-state"><span>💳</span><p>No transactions yet.</p></div>';
+    if(c)c.textContent='0 transactions';
+    return;
+  }
+  const{data:{user:u}}=await sb.auth.getUser();
+  if(!u){location.replace('/login');return;}
+  user=u;
+
+  const{data:p}=await sb.from('profiles').select('full_name,avatar_url').eq('id',u.id).single();
+  const name=p?.full_name||u.email?.split('@')[0]||'Clipper';
+  document.getElementById('sb-name').textContent=name;
+  const av=document.getElementById('sb-av');
+  if(p?.avatar_url)av.innerHTML=`<img src="${p.avatar_url}" alt="av"/>`;
+  else av.textContent=name[0]?.toUpperCase()||'A';
+
+  document.getElementById('btn-signout').onclick=async()=>{await sb.auth.signOut();location.replace('/login');};
+
+  await Promise.all([loadPayouts(), loadPaymentMethod()]);
+  if(window._cxShow){window._cxShow();window._cxShow=null;}
+  fetchRates();
+  sb.channel('payouts-rt-'+u.id)
+    .on('postgres_changes',{event:'*',schema:'public',table:'payout_requests',filter:`user_id=eq.${u.id}`},()=>loadPayouts())
+    .subscribe();
+})();
+
+async function loadPayouts(){
+  const{data:reqs,error}=await sb.from('payout_requests')
+    .select('id,amount,status,note,requested_at,paid_at,transaction_reference,created_at')
+    .eq('user_id',user.id)
+    .order('created_at',{ascending:false});
+
+  if(error){
+    console.warn('[payouts]',error.message);
+    const l=document.getElementById('txn-list'),c=document.getElementById('hist-count');
+    if(l)l.innerHTML='<div class="empty-state"><span>💳</span><p>No transactions yet.</p></div>';
+    if(c)c.textContent='0 transactions';
+    return;
+  }
+
+  // Also load approved clip earnings to calculate available balance
+  const{data:clips}=await sb.from('clip_submissions')
+    .select('approved_amount,earning_amount,status')
+    .eq('user_id',user.id)
+    .in('status',['approved','paid']);
+
+  const totalEarned=(clips||[]).reduce((a,c)=>a+Number(c.approved_amount||c.earning_amount||0),0);
+  const totalPaid=(reqs||[]).filter(r=>r.status==='paid').reduce((a,r)=>a+Number(r.amount||0),0);
+  const totalPending=(reqs||[]).filter(r=>r.status==='pending').reduce((a,r)=>a+Number(r.amount||0),0);
+  availBal=Math.max(0, totalEarned - totalPaid - totalPending);
+
+  document.getElementById('bal-avail').textContent=fm(availBal);
+  document.getElementById('bal-pending').textContent=fm(totalPending);
+  document.getElementById('bal-paid').textContent=fm(totalPaid);
+  document.getElementById('wd-avail').textContent=fm(availBal);
+
+  const wBtn=document.getElementById('withdraw-btn');
+  wBtn.disabled=availBal<=0;
+
+  // Build transaction list: merge payouts + earned clips
+  const all=[];
+  (reqs||[]).forEach(r=>all.push({type:'payout',date:r.created_at,name:'Withdrawal request',sub:r.transaction_reference?`Ref: ${r.transaction_reference}`:'',amt:-Number(r.amount),status:r.status}));
+  (clips||[]).forEach(c=>all.push({type:'earn',date:null,name:'Clip earnings',sub:'',amt:Number(c.approved_amount||c.earning_amount||0),status:'paid'}));
+
+  // Also add approved clips with campaign info
+  const{data:fullClips}=await sb.from('clip_submissions')
+    .select('campaign_title,approved_amount,earning_amount,status,created_at,platform')
+    .eq('user_id',user.id)
+    .in('status',['approved','paid'])
+    .order('created_at',{ascending:false});
+
+  const list=document.getElementById('txn-list');
+  const txns=[];
+  (reqs||[]).forEach(r=>txns.push({icon:'💸',iconClass:'out',name:'Withdrawal request',date:r.created_at,amt:-Number(r.amount),status:r.status}));
+  (fullClips||[]).forEach(c=>txns.push({icon:'🎬',iconClass:'in',name:(c.campaign_title||'Campaign')+' · '+(c.platform||''),date:c.created_at,amt:Number(c.approved_amount||c.earning_amount||0),status:'paid'}));
+  txns.sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  document.getElementById('hist-count').textContent=txns.length+' transaction'+(txns.length!==1?'s':'');
+
+  if(!txns.length){
+    list.innerHTML=`<div class="empty-state"><span>💳</span><p>No transactions yet.<br>Earn from clips and request your first payout.</p></div>`;
+    return;
+  }
+
+  list.innerHTML=txns.map(t=>{
+    const stCls=t.status==='paid'?'st-paid':t.status==='pending'?'st-pending':'st-rejected';
+    const amtCls=t.amt<0?'neg':'pos';
+    const amtStr=(t.amt<0?'-':'+')+ fm(Math.abs(t.amt));
+    return`<div class="txn-item">
+      <div class="txn-icon ${t.iconClass}">${t.icon}</div>
+      <div class="txn-info">
+        <div class="txn-name">${t.name}</div>
+        <div class="txn-date">${t.date?fmtDate(t.date):'—'}</div>
+      </div>
+      <div class="txn-right">
+        <div class="txn-amt ${amtCls}">${amtStr}</div>
+        <span class="txn-status ${stCls}">${t.status.charAt(0).toUpperCase()+t.status.slice(1)}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadPaymentMethod(){
+  const{data}=await sb.from('user_payment_methods')
+    .select('*').eq('user_id',user.id)
+    .order('is_primary',{ascending:false}).limit(1).single();
+  paymentMethod=data||null;
+  const el=document.getElementById('wd-wallet-val');
+  if(data){
+    const type=data.method_type||'';
+    const detail=data.upi_id||data.paypal_email||data.bank_account||'—';
+    const label={upi:'UPI',paypal:'PayPal',crypto:'Crypto'}[type]||type;
+    el.innerHTML=`<strong>${label}</strong> · ${detail}`;
+  }
+}
+
+function openWithdraw(){
+  if(availBal<=0)return;
+  document.getElementById('wd-amount').value='';
+  document.getElementById('wd-err').style.display='none';
+  document.getElementById('wd-modal').classList.add('on');
+}
+function closeWithdraw(){document.getElementById('wd-modal').classList.remove('on');}
+document.getElementById('wd-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeWithdraw();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeWithdraw();});
+
+async function confirmWithdraw(){
+  const amt=parseFloat(document.getElementById('wd-amount').value)||0;
+  const err=document.getElementById('wd-err');
+  err.style.display='none';
+  if(amt<=0){err.textContent='Enter a valid amount.';err.style.display='block';return;}
+  if(amt>availBal){err.textContent=`Max available: ${fm(availBal)}`;err.style.display='block';return;}
+  if(!paymentMethod){err.textContent='Add a payment method in Wallet first.';err.style.display='block';return;}
+  const btn=document.getElementById('wd-confirm');btn.disabled=true;btn.textContent='Requesting…';
+  try{
+    const snapshot=paymentMethod?{type:paymentMethod.method_type,detail:paymentMethod.upi_id||paymentMethod.paypal_email||paymentMethod.bank_account}:null;
+    const{error}=await sb.from('payout_requests').insert([{
+      user_id:user.id,
+      amount:amt,
+      status:'pending',
+      payment_method_id:paymentMethod?.id||null,
+      payment_method_snapshot:snapshot,
+      requested_at:new Date().toISOString(),
+      created_at:new Date().toISOString(),
+    }]);
+    if(error)throw error;
+    closeWithdraw();
+    toast('✓ Withdrawal request submitted!');
+    await loadPayouts();
+  }catch(e){err.textContent=e.message;err.style.display='block';btn.disabled=false;btn.textContent='Confirm Withdrawal';}
+}
+
+// Currency
+async function fetchRates(){
+  try{const r=await fetch('https://api.frankfurter.app/latest?from=USD&to=INR,EUR,GBP');const d=await r.json();
+    ['INR','EUR','GBP'].forEach(c=>{const el=document.getElementById('rate-'+c);if(el&&d.rates[c]){el.textContent=d.rates[c].toFixed(2);document.querySelector(`.curr-opt[data-code="${c}"]`)?.setAttribute('data-rate',d.rates[c]);}});}catch{}
+}
+document.getElementById('currency-toggle').addEventListener('click',()=>document.getElementById('currency-menu').classList.toggle('hidden'));
+document.querySelectorAll('.curr-opt').forEach(b=>b.addEventListener('click',()=>{
+  cur={code:b.dataset.code,symbol:b.dataset.symbol,rate:parseFloat(b.dataset.rate)||1};
+  document.getElementById('cf').textContent=cur.symbol;
+  document.getElementById('cc').textContent=cur.code;
+  document.querySelectorAll('.curr-opt').forEach(x=>x.classList.remove('active'));b.classList.add('active');
+  document.getElementById('currency-menu').classList.add('hidden');
+  loadPayouts();
+}));
+
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3500);}
+</script>
+<script id="cx-router">
+/* ═══ CLIPENCY CLIENT ROUTER — instant page transitions ═══ */
+(function(){
+  const PAGES = {
+    '/campaigns': '/campaigns',
+    '/stats':     '/stats',
+    '/payouts':   '/payouts',
+    '/wallet':    '/wallet',
+    '/profile':   '/profile',
+  };
+
+  const cache = {};
+
+  function currentPath(){ return window.location.pathname; }
+
+  /* Prefetch a page into cache */
+  function prefetch(url){
+    if(cache[url]) return;
+    fetch(url).then(r=>r.text()).then(html=>{ cache[url]=html; }).catch(()=>{});
+  }
+
+  /* Extract just the <main> or main content area from fetched HTML */
+  function extractMain(html){
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    return doc.querySelector('.main-content, main, [class*="main"]');
+  }
+
+  /* Navigate with instant swap */
+  async function go(url){
+    if(url === currentPath()) return;
+    if(!PAGES[url] && !url.startsWith('/')) return;
+
+    /* Show transition overlay */
+    let overlay = document.getElementById('cx-nav-overlay');
+    if(!overlay){
+      overlay = document.createElement('div');
+      overlay.id = 'cx-nav-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:#0A0908;z-index:88888;opacity:0;pointer-events:none;transition:opacity .12s';
+      document.body.appendChild(overlay);
+    }
+    overlay.style.opacity = '0.7';
+    overlay.style.pointerEvents = 'all';
+
+    /* Navigate */
+    window.location.href = url;
+  }
+
+  /* Intercept all nav clicks */
+  document.addEventListener('click', function(e){
+    const a = e.target.closest('a[href],button[onclick*="location.href"]');
+    const btn = e.target.closest('.nav-item');
+    if(!btn) return;
+    const onclick = btn.getAttribute('onclick') || '';
+    const match = onclick.match(/location\.href\s*=\s*['"]([^'"]+)['"]/);
+    if(!match) return;
+    const url = match[1];
+    if(PAGES[url]){
+      e.preventDefault();
+      e.stopPropagation();
+      go(url);
+    }
+  }, true);
+
+  /* Prefetch all pages after load */
+  window.addEventListener('load', function(){
+    setTimeout(()=>{
+      Object.keys(PAGES).forEach(url => {
+        if(url !== currentPath()) prefetch(url);
+      });
+    }, 1000);
+  });
+})();
+</script>
+<script>
+/* Universal logout — runs immediately, no dependency on main init */
+(function(){
+  function wire(){
+    var btn = document.getElementById('btn-signout');
+    if(!btn) return;
+    btn.onclick = async function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      var sb = window.clipencySupabase||window.supabaseClient||window.sbClient;
+      try{ if(sb) await sb.auth.signOut(); }catch(e){}
+      window.location.replace('/login');
+    };
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', wire);
+  else wire();
+  setTimeout(wire, 500);
+})();
+</script>
+</body>
+</html>

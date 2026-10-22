@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Opening Clipathon</title>
+
+<!-- ============================================================
+     CLIPATHON · the bridge
+     ============================================================
+     A creator taps a link in an Instagram bio. Instagram opens it in
+     its own webview, which is a bad place to sign up: the OTP email
+     opens in a different app, passwords do not autofill, and the
+     session is thrown away when the webview closes. So this page
+     exists to do three things in under a second:
+
+       1. record the tap against the referrer's code
+       2. remember the code, so registration can fill it in itself
+       3. get the person out of the webview and into their real browser
+
+     Step 3 is best effort, and the honesty about that is the whole
+     design. Android can be handed off reliably with an intent:// URL.
+     iOS cannot: x-safari-https:// worked for years and modern iOS
+     ignores it more often than not, and nothing else is available to
+     a web page. So the page tries, waits, and if it is still on
+     screen it stops pretending and shows the person a card that
+     tells them exactly what to tap, with the link already copied.
+
+     Nobody is ever trapped here. "Continue here" is always offered,
+     because a registration completed inside the webview still beats
+     a creator who gave up on a page nagging them.
+     ============================================================ -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+
+<style>
+:root{
+  --ink:#0B0B0B; --paper:#F5F2ED; --gold:#D8AA74; --bronze:#8C6A45;
+  --ink-70:rgba(11,11,11,.7); --ink-55:rgba(11,11,11,.55); --ink-40:rgba(11,11,11,.42);
+  --hair:rgba(11,11,11,.12); --card:#FDFBF8;
+  --btn-bg:#0B0B0B; --btn-fg:#EDE8DF; --btn-line:rgba(11,11,11,.22);
+  --serif:'Cormorant Garamond', Georgia, serif;
+  --sans:'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --ok:#5C8A5E;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ink:#E9E4DA; --paper:#141210; --gold:#DDB07C; --bronze:#BE9A67;
+    --ink-70:rgba(233,228,218,.72); --ink-55:rgba(233,228,218,.56); --ink-40:rgba(233,228,218,.42);
+    --hair:rgba(233,228,218,.13); --card:#181512;
+    --btn-bg:#E9E4DA; --btn-fg:#161310; --btn-line:rgba(233,228,218,.26);
+    --ok:#8FBF91;
+  }
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.6;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;text-align:center;
+}
+.wrap{width:100%;max-width:420px;}
+
+/* ---- the first second: a mark and a line, nothing to read ---- */
+.spin{
+  width:34px;height:34px;margin:0 auto 22px;border-radius:50%;
+  border:1.5px solid var(--hair);border-top-color:var(--gold);
+  animation:turn .8s linear infinite;
+}
+@keyframes turn{to{transform:rotate(360deg)}}
+.mark{font-family:var(--serif);font-size:27px;letter-spacing:-.01em;}
+.mark em{font-style:italic;color:var(--bronze);}
+.sub{margin-top:9px;font-size:13.5px;color:var(--ink-55);}
+
+/* ---- the fallback card ---- */
+.card{
+  display:none;background:var(--card);border:1px solid var(--hair);
+  border-radius:16px;padding:26px 22px 22px;text-align:left;
+  box-shadow:0 2px 4px rgba(80,55,25,.05), 0 40px 90px -40px rgba(90,60,20,.4);
+  animation:rise .5s var(--ease) both;
+}
+.card.on{display:block;}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}}
+@media (prefers-reduced-motion: reduce){
+  .card{animation:none;} .spin{animation-duration:2s;}
+}
+.eyebrow{
+  font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--bronze);font-weight:600;
+}
+.card h1{font-family:var(--serif);font-size:26px;line-height:1.2;margin-top:11px;font-weight:500;}
+.card h1 em{font-style:italic;color:var(--bronze);}
+.card p{font-size:14px;color:var(--ink-70);margin-top:12px;}
+
+.steps{margin:18px 0 4px;border-top:1px solid var(--hair);}
+.step{
+  display:flex;gap:12px;align-items:flex-start;
+  padding:13px 0;border-bottom:1px solid var(--hair);
+}
+.step b{
+  flex:none;width:21px;height:21px;border-radius:50%;
+  border:1px solid var(--hair);display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;color:var(--bronze);margin-top:1px;
+}
+.step span{font-size:13.5px;color:var(--ink-70);text-align:left;}
+.step span i{font-style:normal;color:var(--ink);font-weight:600;}
+
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;margin-top:14px;padding:14px 18px;border-radius:11px;
+  font-family:var(--sans);font-size:14.5px;font-weight:600;
+  border:1px solid var(--btn-bg);background:var(--btn-bg);color:var(--btn-fg);
+  cursor:pointer;transition:transform .25s var(--ease),opacity .25s var(--ease);
+  text-decoration:none;
+}
+.btn:active{transform:scale(.985);}
+.btn-line{background:transparent;color:var(--ink);border-color:var(--btn-line);}
+.btn.done{border-color:var(--ok);color:var(--ok);background:transparent;}
+@media (prefers-reduced-motion: reduce){ .btn{transition:none;} }
+
+.url{
+  margin-top:14px;padding:11px 13px;border-radius:10px;
+  border:1px dashed var(--hair);font-size:12px;color:var(--ink-55);
+  word-break:break-all;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+.foot{margin-top:16px;font-size:11.5px;color:var(--ink-40);text-align:center;}
+.foot a{color:var(--ink-55);}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- what the first second looks like -->
+  <div id="hold">
+    <div class="spin" aria-hidden="true"></div>
+    <div class="mark">Clip<em>athon</em>.</div>
+    <p class="sub" id="holdSub">Opening in your browser</p>
+  </div>
+
+  <!-- what it looks like when the webview refuses to let go -->
+  <div class="card" id="card" role="dialog" aria-labelledby="cardTitle">
+    <span class="eyebrow">One tap left</span>
+    <h1 id="cardTitle">Open this in your <em>browser</em>.</h1>
+    <p id="cardWhy">Instagram is holding this page inside its own browser. Registration needs a real
+      browser so your email code and password work properly.</p>
+
+    <div class="steps" id="steps"></div>
+
+    <button class="btn" id="copyBtn" type="button">Copy the link</button>
+    <a class="btn btn-line" id="goBtn" href="/clipathon">Continue here anyway</a>
+
+    <div class="url" id="urlBox"></div>
+    <p class="foot" id="creditLine"></p>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   CLIPATHON · bridge logic
+   ============================================================
+   Order matters. The click is recorded and the code is stored BEFORE
+   any handoff is attempted, because the moment the handoff works this
+   page is gone and no further code of ours runs.
+   ============================================================ */
+(function(){
+  'use strict';
+
+  var CFG = {
+    supabaseUrl : 'https://kszlfvsplkkmsgxqnakj.supabase.co',
+    supabaseKey : 'sb_publishable_NvoWhIjNxWubRKKPo34JDw_13iNZkPd',
+    /* Whatever domain the bio link actually used. Hardcoding one would
+       send somebody who tapped a clipathon.vercel.app link across to
+       clipency.in, and the handoff has to be absolute, so it has to be
+       read rather than assumed. */
+    origin      : (/^https?:/.test(location.origin) ? location.origin : 'https://clipency.in'),
+    fallbackDest: '/clipathon',
+    waitMs      : 1400          /* how long we give the handoff */
+  };
+
+  var $ = function(s){ return document.querySelector(s); };
+
+  /* ---------- the code ---------- */
+  /* Where the code actually is depends on how the person arrived.
+
+     /r/AARAV is a REWRITE in vercel.json, not a redirect. The server
+     serves this page from /clipathon-ref?c=AARAV, but the browser's
+     address bar still says /r/AARAV, so location.search is EMPTY.
+     Reading only the query string meant every link handed to an
+     influencer resolved to no code at all: no click recorded, no
+     cookie set, and the landing page reached without ?ref, so the
+     registration that followed was credited to nobody. The path is
+     therefore the first place to look, not an afterthought.
+
+     ?c= / ?ref= / ?code= still work, for /clipathon-ref?c=AARAV hit
+     directly and for any older link already in circulation. */
+  var Q = new URLSearchParams(location.search);
+
+  function codeFromPath(){
+    /* Matches /r/AARAV and /clipathon/r/AARAV, with or without a
+       trailing slash. Nothing else on this site sits under /r/. */
+    try{
+      var m = /\/r\/([^\/?#]+)/i.exec(location.pathname || '');
+      return m ? decodeURIComponent(m[1]) : '';
+    }catch(e){ return ''; }
+  }
+
+  var CODE = (Q.get('c') || Q.get('ref') || Q.get('code') || codeFromPath() || '')
+               .trim().toUpperCase();
+  if(!/^[A-Z0-9][A-Z0-9._-]{2,23}$/.test(CODE)) CODE = '';
+
+  /* ---------- environment ---------- */
+  var UA = navigator.userAgent || '';
+  var OS = /iPhone|iPad|iPod/i.test(UA) ? 'ios'
+         : /Android/i.test(UA)          ? 'android' : 'other';
+
+  /* The in-app browsers worth naming. FBAN/FBAV is Facebook's own,
+     and Instagram's webview carries both Instagram and FBAV. */
+  function whichApp(){
+    if(/Instagram/i.test(UA))            return 'instagram';
+    if(/FBAN|FBAV|FB_IAB/i.test(UA))     return 'facebook';
+    if(/TikTok|BytedanceWebview/i.test(UA)) return 'tiktok';
+    if(/Snapchat/i.test(UA))             return 'snapchat';
+    if(/Twitter/i.test(UA))              return 'x';
+    if(/LinkedInApp/i.test(UA))          return 'linkedin';
+    if(/Line\//i.test(UA))               return 'line';
+    /* An iOS WebView with no Safari token is somebody's in-app browser
+       even when it does not say whose. */
+    if(OS === 'ios' && /AppleWebKit/i.test(UA) && !/Safari/i.test(UA)) return 'webview';
+    return null;
+  }
+  var APP    = whichApp();
+  var IN_APP = !!APP;
+
+  /* ---------- a visitor id, not an identity ---------- */
+  /* Random, kept in this browser, never sent anywhere but our own
+     click row. It is what separates 40 taps from 40 people. */
+  function visitorId(){
+    var k = 'clipathon-visitor';
+    try{
+      var v = localStorage.getItem(k);
+      if(!v){
+        v = (Math.random().toString(36).slice(2) + Date.now().toString(36)).slice(0, 24);
+        localStorage.setItem(k, v);
+      }
+      return v;
+    }catch(e){ return null; }
+  }
+
+  /* ---------- remember the referral ---------- */
+  /* Two places on purpose. localStorage survives the hop into the real
+     browser only if the browser is the same one, which it is not, so
+     the code also rides in the URL. The store is the belt for anyone
+     who wanders off and comes back. */
+  function remember(code){
+    if(!code) return;
+    try{
+      localStorage.setItem('clipathon-ref', JSON.stringify({ code: code, at: Date.now() }));
+    }catch(e){}
+    try{
+      document.cookie = 'clipathon_ref=' + encodeURIComponent(code) +
+        ';path=/;max-age=' + (60 * 60 * 24 * 30) + ';samesite=lax';
+    }catch(e){}
+  }
+
+  var DEST    = CFG.fallbackDest;
+  var CLICKID = null;
+
+  function target(){
+    var d = DEST || CFG.fallbackDest;
+    /* Never navigate anywhere the server did not hand us, and never
+       anywhere absolute. A destination is a path on this site or it is
+       the default, full stop. */
+    if(typeof d !== 'string' || d.charAt(0) !== '/' || d.charAt(1) === '/' || d.indexOf(':') >= 0){
+      d = CFG.fallbackDest;
+    }
+    return CFG.origin + d + (CODE ? '?ref=' + encodeURIComponent(CODE) : '');
+  }
+
+  /* ---------- record the tap ---------- */
+  function record(){
+    if(!CODE || !window.supabase) return Promise.resolve();
+    var sb;
+    try{
+      sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey, {
+        db: { schema: 'clipathon' },
+        auth: { persistSession: false }
+      });
+    }catch(e){ return Promise.resolve(); }
+
+    var stop = new Promise(function(res){ setTimeout(res, 1100); });
+    var call = sb.rpc('track_ref_click', {
+      p_code   : CODE,
+      p_visitor: visitorId(),
+      p_in_app : IN_APP,
+      p_app    : APP,
+      p_os     : OS
+    }).then(function(r){
+      var d = r && r.data;
+      if(d && d.ok){
+        if(d.dest) DEST = d.dest;
+        if(d.click_id) CLICKID = d.click_id;
+      }
+    }).catch(function(){});
+
+    /* Whichever finishes first. A slow network must not hold a creator
+       on a spinner, so the tracking loses the race by design. */
+    return Promise.race([call, stop]);
+  }
+
+  /* Told only when we know: the webview kept them, or it let them go. */
+  function reportEscape(did){
+    if(!CLICKID || !window.supabase) return;
+    try{
+      var sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey, {
+        db: { schema: 'clipathon' }, auth: { persistSession: false }
+      });
+      sb.rpc('mark_ref_click_escaped', { p_click_id: CLICKID, p_escaped: !!did }).catch(function(){});
+    }catch(e){}
+  }
+
+  /* ---------- the handoff ---------- */
+  /* Android: an intent with a fallback URL. Chrome takes it, and any
+     device without Chrome follows browser_fallback_url instead, so
+     there is no dead end.
+     iOS: x-safari-https:// is the only lever a web page has, and it is
+     ignored on a good number of modern builds. We try it once. */
+  function attempt(){
+    var url  = target();
+    var bare = url.replace(/^https?:\/\//, '');
+
+    if(OS === 'android'){
+      var intent = 'intent://' + bare + '#Intent;scheme=https;' +
+                   'package=com.android.chrome;' +
+                   'S.browser_fallback_url=' + encodeURIComponent(url) + ';end';
+      try{ location.href = intent; return; }catch(e){}
+    }
+
+    if(OS === 'ios'){
+      try{ location.href = 'x-safari-https://' + bare; return; }catch(e){}
+    }
+
+    /* Not a webview at all, or an OS we cannot address: this IS the
+       real browser, so just go. */
+    location.replace(url);
+  }
+
+  /* ---------- the fallback card ---------- */
+  var HOW = {
+    instagram: [
+      ['Tap the <i>&#8943;</i> in the top right corner', true],
+      ['Choose <i>Open in external browser</i>', true],
+      ['Register there, the code is already applied', false]
+    ],
+    ios: [
+      ['Tap the <i>&#8943;</i> or <i>compass</i> icon in the corner', true],
+      ['Choose <i>Open in Safari</i>', true],
+      ['Register there, the code is already applied', false]
+    ],
+    other: [
+      ['Open the menu in the corner of this window', true],
+      ['Choose <i>Open in browser</i>', true],
+      ['Register there, the code is already applied', false]
+    ]
+  };
+
+  function showCard(){
+    var how = HOW[APP === 'instagram' ? 'instagram' : (OS === 'ios' ? 'ios' : 'other')];
+    $('#steps').innerHTML = how.map(function(s, i){
+      return '<div class="step"><b>' + (i + 1) + '</b><span>' + s[0] + '</span></div>';
+    }).join('');
+
+    var appName = APP === 'instagram' ? 'Instagram'
+                : APP === 'facebook'  ? 'Facebook'
+                : APP === 'tiktok'    ? 'TikTok'
+                : APP === 'x'         ? 'X'
+                : APP === 'snapchat'  ? 'Snapchat'
+                : APP === 'linkedin'  ? 'LinkedIn' : 'This app';
+    $('#cardWhy').textContent = appName + ' is holding this page inside its own browser. ' +
+      'Registration needs a real browser so your email code and your password both work properly.';
+
+    var url = target();
+    $('#urlBox').textContent = url.replace(/^https?:\/\//, '');
+    $('#goBtn').setAttribute('href', (DEST || CFG.fallbackDest) + (CODE ? '?ref=' + encodeURIComponent(CODE) : ''));
+    $('#creditLine').textContent = CODE ? 'Invited on code ' + CODE : '';
+
+    $('#hold').style.display = 'none';
+    $('#card').classList.add('on');
+
+    var btn = $('#copyBtn');
+    btn.onclick = function(){
+      var done = function(){
+        btn.textContent = 'Link copied. Now paste it in your browser';
+        btn.classList.add('done');
+      };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(url).then(done).catch(legacy);
+      } else { legacy(); }
+      function legacy(){
+        try{
+          var t = document.createElement('textarea');
+          t.value = url; t.setAttribute('readonly','');
+          t.style.position = 'fixed'; t.style.opacity = '0';
+          document.body.appendChild(t); t.select();
+          document.execCommand('copy'); document.body.removeChild(t);
+          done();
+        }catch(e){
+          btn.textContent = 'Press and hold the link below to copy it';
+        }
+      }
+    };
+  }
+
+  /* ---------- run ---------- */
+  /* If the handoff works the page is hidden or unloaded within a beat.
+     Still visible after the wait means it did not, and the person gets
+     told the truth rather than left on a spinner. */
+  var settled = false;
+  function onGone(){
+    if(settled) return;
+    settled = true;
+    reportEscape(true);
+  }
+  document.addEventListener('visibilitychange', function(){ if(document.hidden) onGone(); });
+  window.addEventListener('pagehide', onGone);
+
+  function start(){
+    remember(CODE);
+
+    /* Not in an in-app browser: there is nothing to escape from. */
+    if(!IN_APP){
+      record().then(function(){
+        remember(CODE);
+        location.replace(target());
+      });
+      return;
+    }
+
+    record().then(function(){
+      remember(CODE);
+      attempt();
+      setTimeout(function(){
+        if(document.hidden || settled) return;
+        settled = true;
+        reportEscape(false);
+        showCard();
+      }, CFG.waitMs);
+    });
+  }
+
+  /* supabase-js is deferred, so wait for it, but never for long. */
+  (function boot(tries){
+    if(window.supabase || tries <= 0){ start(); return; }
+    setTimeout(function(){ boot(tries - 1); }, 40);
+  })(25);
+})();
+</script>
+</body>
+</html>

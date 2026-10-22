@@ -1,0 +1,42 @@
+# OS
+.DS_Store
+Thumbs.db
+*~
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Temp / backup
+*.bak
+*.backup
+*.old
+*.tmp
+*.log
+*-backup-*/
+*-old-*/
+
+# Build
+node_modules/
+.cache/
+dist/
+build/
+
+# Backup file variants (suffix style, e.g. app.js.backup-some-fix)
+*.backup-*
+*-backup-*.html
+incoming/
+
+# Backup file variants (suffix style, e.g. app.js.backup-some-fix)
+*.backup-*
+*-backup-*.html
+incoming/
+
+# Secrets never go in the repo
+.env
+.env.*
+.vercel/
+
+# local tools
+.claude/

@@ -1,0 +1,35 @@
+# Scripts and one-offs — never serve these
+*.py
+*.sh
+*.log
+
+# Dead files
+index.backup.html
+clipency_v2.html
+
+# Backup sprawl
+*.backup-*
+*-backup-*.html
+
+# Scratch staging area
+incoming/
+
+# Docs (no need to serve)
+README.md
+CONTRIBUTING.md
+
+# Database migrations. These are not secrets, but serving them hands anyone
+# a complete map of the schema, every RLS policy and every function body.
+# RLS is still the real gate; there is just no reason to publish the map.
+clipathon-db/
+*.sql
+
+# Source notes and specs
+*.docx
+*.xlsx
+
+# Not part of the site: QA tests, edge-function source, and parked backup folders
+tests/
+supabase/
+_to_delete/
+_clipathon-port-backup/

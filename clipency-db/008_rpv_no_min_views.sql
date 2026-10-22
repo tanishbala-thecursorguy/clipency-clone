@@ -1,0 +1,60 @@
+-- =============================================================
+-- CLIPENCY · 008 · RPV pays for a video, not for views
+-- =============================================================
+-- cx_settle_creator_campaign demanded two things of every clip that do
+-- not belong in a flat per-video payout:
+--
+--   coalesce(s.views_count, 0) >= coalesce(c.min_views_per_clip, 0)
+--   coalesce(s.metrics_status, '') = 'ok'
+--
+-- The first is a per-view idea that leaked across. RPV has no minimum
+-- views: the creator made the video, a human approved it, it is owed.
+--
+-- The second was the dangerous one, because it fails silently. It tied
+-- payment to a successful views scrape, so the day Instagram rate-limits
+-- us, or a clip sits on an account the scraper cannot read, an APPROVED
+-- clip earns zero and nothing on any screen explains why. Payment must
+-- never depend on the health of a metrics job.
+--
+-- Both are gone. The function returns early for anything that is not
+-- per_video, so per-view campaigns are untouched: cs_calc_earning still
+-- owns those and min_views_per_clip still means what it always did there.
+--
+-- What still gates an RPV payout, all of it deliberate:
+--   status = 'approved'          a human passed it
+--   min_videos_per_creator       the retroactive minimum
+--   max_videos_per_creator       per-creator volume cap
+--   max_pay_per_creator          per-creator money cap
+--   max_pay_per_clip             per-clip money cap
+--   the creator pool             cannot overspend the brand's budget
+--
+-- v_cx_creator_campaign_earnings was updated in the same breath, because
+-- it counted "eligible" clips with the old gates. Left alone, the screen
+-- and the money would have disagreed about which clips count toward the
+-- minimum.
+--
+-- Proven against production inside a rolled-back transaction, three
+-- consecutive clean rounds, with views forced to 0, metrics forced to
+-- 'error' and min_views_per_clip forced to 500000:
+--   RPV pays with zero views and failed metrics   ok, paid 6.00
+--   the minimum videos rule still holds           ok, zero below it
+--   max pay per creator still caps                ok, capped at 3.00
+--   max videos per creator still caps             ok, one clip paid
+--   the creator pool is never overspent           ok, 4.00 of a 4.00 pool
+--   per_view still returns early, untouched       ok
+--   no views or metrics gate remains in RPV       ok
+--
+-- Note on the metrics write: cs_freeze_metrics reverts untrusted writes
+-- to metrics columns, so the first attempt at this test silently proved
+-- nothing. clipency.trusted_write has to be claimed for the sabotage to
+-- land. Worth knowing before writing any test that fakes metrics.
+--
+-- Known and deliberately NOT changed: lowering a campaign's budget after
+-- creators have settled does not claw their money back, so the sum paid
+-- can exceed a reduced pool until every creator is re-settled. Un-earning
+-- money somebody was already told they had is worse than the arithmetic.
+--
+-- ALREADY APPLIED to the live project, as migrations
+-- per_video_ignores_views_and_metrics and
+-- pending_view_matches_settlement_gates.
+-- =============================================================

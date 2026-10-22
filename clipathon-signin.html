@@ -1,0 +1,1723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipency | Clipathon Sign In</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Sign in to your Clipathon creator dashboard.">
+<script>
+/* Self-contained, same as the other auth pages in this folder. The
+   publishable key is meant to be public: anon can execute exactly one
+   function in the clipathon schema and reach no table at all. */
+window.CLIPATHON_AUTH = {
+  SUPABASE_URL:      "https://kszlfvsplkkmsgxqnakj.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_NvoWhIjNxWubRKKPo34JDw_13iNZkPd",
+  DASHBOARD_URL:     "./clipathon-dashboard.html",
+  REGISTER_URL:      "./clipathon-register.html",
+  CLIPATHON_URL:     "./clipathon.html"
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){try{
+  var t = localStorage.getItem('clipency-theme');
+  document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+}catch(e){ document.documentElement.setAttribute('data-theme','light'); }})();
+</script>
+<style>
+/* ============================================================
+   CLIPENCY, tokens (matched to portal landing)
+   ============================================================ */
+:root{
+  --ink:#0B0B0B; --ink-2:#111111; --paper:#F5F2ED;
+  --gold:#D8AA74; --bronze:#8C6A45;
+  --ink-90:rgba(11,11,11,.9); --ink-70:rgba(11,11,11,.7);
+  --ink-55:rgba(11,11,11,.55); --ink-40:rgba(11,11,11,.42); --ink-25:rgba(11,11,11,.25);
+  --hair:rgba(11,11,11,.12); --hair-warm:rgba(140,106,69,.28);
+  --gold-08:rgba(216,170,116,.08);
+  --serif:'Cormorant Garamond', Georgia, serif;
+  --sans:'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --card:#F5F2ED;
+  --field:rgba(255,255,255,.55); --field-focus:rgba(255,255,255,.9);
+  --btn-bg:#0B0B0B; --btn-fg:#EDE8DF; --btn-line-border:rgba(11,11,11,.22);
+
+  /* glass */
+  --glass:rgba(253,251,248,.72);
+  --glass-line:rgba(255,255,255,.75);
+  --glass-shadow:0 2px 4px rgba(80,55,25,.08), 0 60px 140px -48px rgba(90,60,20,.55);
+  --grid-line:rgba(140,106,69,.09);
+
+  /* brand pane, the INVERSE of the page: ink panel on paper page */
+  --pane:rgba(14,12,11,.93);
+  --pane-fg:#EDE8DF; --pane-fg-70:rgba(237,232,223,.72); --pane-fg-45:rgba(237,232,223,.48);
+  --pane-hair:rgba(237,232,223,.14); --pane-hair-warm:rgba(216,170,116,.32);
+  --pane-chip:rgba(255,255,255,.06); --pane-chip-line:rgba(255,255,255,.12);
+  --pane-accent:#D8AA74;
+  --sheen:rgba(255,255,255,.05);
+  --chip-shadow:0 14px 34px -18px rgba(0,0,0,.55);
+}
+[data-theme="dark"]{
+  /* exact landing dark tokens */
+  --ink:#E9E4DA; --ink-2:#F2EDE3; --paper:#141210;
+  --ink-90:rgba(233,228,218,.92); --ink-70:rgba(233,228,218,.72);
+  --ink-55:rgba(233,228,218,.56); --ink-40:rgba(233,228,218,.42); --ink-25:rgba(233,228,218,.26);
+  --hair:rgba(233,228,218,.13); --hair-warm:rgba(216,170,116,.3);
+  --gold:#DDB07C; --bronze:#BE9A67; --gold-08:rgba(221,176,124,.1);
+  --card:#181512;
+  --field:rgba(255,255,255,.05); --field-focus:rgba(255,255,255,.1);
+  --btn-bg:#E9E4DA; --btn-fg:#161310; --btn-line-border:rgba(233,228,218,.26);
+
+  --glass:rgba(24,21,18,.58);
+  --glass-line:rgba(255,255,255,.09);
+  --glass-shadow:0 2px 4px rgba(0,0,0,.3), 0 50px 120px -40px rgba(0,0,0,.8);
+  --grid-line:rgba(233,228,218,.045);
+
+  /* INVERTED: paper panel on ink page */
+  --pane:rgba(243,240,234,.95);
+  --pane-fg:#0B0B0B; --pane-fg-70:rgba(11,11,11,.72); --pane-fg-45:rgba(11,11,11,.5);
+  --pane-hair:rgba(11,11,11,.12); --pane-hair-warm:rgba(140,106,69,.3);
+  --pane-chip:rgba(11,11,11,.045); --pane-chip-line:rgba(11,11,11,.1);
+  --pane-accent:#8C6A45;
+  --sheen:rgba(11,11,11,.04);
+  --chip-shadow:0 14px 34px -20px rgba(11,11,11,.35);
+  color-scheme:dark;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+@keyframes pageIn{from{opacity:0}}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh; overflow-x:hidden;
+  animation:pageIn .7s ease-out both;
+}
+::selection{background:rgba(216,170,116,.3);}
+
+/* ============================================================
+   Living background, grid, drifting orbs, cursor glow, grain
+   ============================================================ */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+
+/* faint grid, fading out radially */
+.bg-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size:56px 56px;
+  -webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 45%, #000 30%, transparent 78%);
+          mask-image:radial-gradient(ellipse 90% 80% at 50% 45%, #000 30%, transparent 78%);
+}
+
+/* drifting orbs, parallax via --mx/--my set from JS */
+.orb{
+  position:absolute;border-radius:50%;filter:blur(80px);
+  will-change:transform;
+  transform:translate3d(calc(var(--mx,0)*var(--p,20px)), calc(var(--my,0)*var(--p,20px)), 0);
+}
+.orb i{
+  position:absolute;inset:0;border-radius:50%;
+  animation:drift var(--t,26s) ease-in-out infinite alternate;
+}
+.orb-1{top:-16%;right:-8%;width:52vw;height:52vw;--p:26px;}
+.orb-1 i{background:radial-gradient(closest-side, rgba(216,170,116,.42), transparent 70%);}
+.orb-2{bottom:-24%;left:-12%;width:58vw;height:58vw;--p:-34px;--t:32s;}
+.orb-2 i{background:radial-gradient(closest-side, rgba(140,106,69,.3), transparent 70%);animation-delay:-8s;}
+.orb-3{top:30%;left:34%;width:34vw;height:34vw;--p:44px;--t:22s;filter:blur(95px);}
+.orb-3 i{background:radial-gradient(closest-side, rgba(224,164,92,.26), transparent 70%);animation-delay:-15s;}
+.orb-4{top:4%;left:-10%;width:38vw;height:38vw;--p:18px;--t:28s;filter:blur(85px);}
+.orb-4 i{background:radial-gradient(closest-side, rgba(180,120,60,.2), transparent 70%);animation-delay:-20s;}
+[data-theme="dark"] .orb-4 i{background:radial-gradient(closest-side, rgba(224,181,131,.07), transparent 70%);}
+[data-theme="dark"] .orb-1 i{background:radial-gradient(closest-side, rgba(224,181,131,.14), transparent 70%);}
+[data-theme="dark"] .orb-2 i{background:radial-gradient(closest-side, rgba(199,162,110,.1), transparent 70%);}
+[data-theme="dark"] .orb-3 i{background:radial-gradient(closest-side, rgba(224,181,131,.08), transparent 70%);}
+@keyframes drift{
+  0%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(4%,-5%) scale(1.07);}
+  100%{transform:translate(-4%,4%) scale(.96);}
+}
+
+/* warm sunbeam from the top, light mode's hero moment */
+.bg-sun{
+  position:absolute;top:-30%;left:50%;width:120vw;height:80vh;
+  transform:translateX(-50%);
+  background:radial-gradient(ellipse 55% 100% at 50% 0%, rgba(232,186,130,.32), rgba(216,170,116,.1) 55%, transparent 75%);
+  animation:sunPulse 11s ease-in-out infinite;
+}
+[data-theme="dark"] .bg-sun{opacity:.22;}
+@keyframes sunPulse{0%,100%{opacity:.85;}50%{opacity:1;}}
+
+/* soft glow that trails the cursor */
+.bg-glow{
+  position:absolute;top:0;left:0;width:520px;height:520px;border-radius:50%;
+  background:radial-gradient(closest-side, rgba(216,170,116,.2), transparent 70%);
+  transform:translate(-50%,-50%);will-change:left,top;opacity:0;
+  transition:opacity .8s ease;
+}
+[data-theme="dark"] .bg-glow{background:radial-gradient(closest-side, rgba(224,181,131,.09), transparent 70%);}
+
+/* paper grain on top of everything in the bg */
+.bg-grain{position:absolute;inset:0;}
+.bg-grain::before{
+  content:"";position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity:.05;mix-blend-mode:multiply;
+}
+[data-theme="dark"] .bg-grain::before{opacity:.07;mix-blend-mode:overlay;}
+
+/* ============================================================
+   Stage + glass box (3D tilt)
+   ============================================================ */
+.stage{
+  position:relative;z-index:1;min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:96px 30px 60px;
+  perspective:1600px;
+}
+.box{
+  position:relative;width:100%;max-width:1020px;
+  display:grid;grid-template-columns:45% 55%;
+  border-radius:24px;overflow:hidden;
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(26px) saturate(1.5);
+          backdrop-filter:blur(26px) saturate(1.5);
+  border:1px solid var(--glass-line);
+  box-shadow:var(--glass-shadow);
+  animation:boxIn .9s var(--ease) both;
+  transform-style:preserve-3d;
+  will-change:transform;
+  transition:box-shadow .5s ease;
+}
+@keyframes boxIn{from{opacity:0;transform:translateY(22px) scale(.98);}to{opacity:1;transform:none;}}
+/* shimmering gold hairline across the top edge */
+.box::before{
+  content:"";position:absolute;top:0;left:60px;right:60px;height:1px;z-index:3;
+  background:linear-gradient(90deg,transparent 0%,var(--gold) 35%,#F2D5AE 50%,var(--gold) 65%,transparent 100%);
+  background-size:220% 100%;
+  animation:hairline 7s ease-in-out infinite;
+  opacity:.95;
+}
+@keyframes hairline{
+  0%,100%{background-position:0% 0;}
+  50%{background-position:100% 0;}
+}
+
+/* ---- left · brand pane (dark glass) ---- */
+.pane-brand{
+  position:relative;display:flex;flex-direction:column;
+  padding:46px 46px 38px;overflow:hidden;
+  background:var(--pane);
+  -webkit-backdrop-filter:blur(30px) saturate(1.3);
+          backdrop-filter:blur(30px) saturate(1.3);
+  color:var(--pane-fg);
+  border-right:1px solid var(--glass-line);
+}
+/* moving sheen across the dark glass */
+.pane-brand::before{
+  content:"";position:absolute;top:-60%;left:-80%;width:60%;height:220%;
+  background:linear-gradient(100deg, transparent, var(--sheen) 45%, rgba(216,170,116,.07) 50%, transparent 58%);
+  transform:rotate(8deg);
+  animation:sheen 9s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes sheen{
+  0%, 55%{left:-80%;}
+  100%{left:160%;}
+}
+.pane-brand::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(560px 400px at -10% 115%, rgba(216,170,116,.12), transparent 65%);
+}
+
+.brand{display:inline-flex;align-items:center;gap:11px;color:var(--pane-fg);text-decoration:none;width:max-content;position:relative;z-index:2;}
+.brand svg{width:21px;height:21px;}
+.brand-name{font-family:var(--sans);font-weight:600;font-size:14px;letter-spacing:.22em;}
+.brand-sub{
+  font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--pane-accent);
+  border-left:1px solid var(--pane-hair-warm);padding-left:11px;margin-left:2px;white-space:nowrap;
+}
+
+.pitch{position:relative;z-index:2;margin-top:auto;padding-top:36px;}
+.pitch h1{
+  font-family:var(--serif);font-weight:500;color:var(--pane-fg);
+  font-size:clamp(38px,3.9vw,54px);line-height:1.08;letter-spacing:-.01em;
+}
+.pitch h1 em{font-style:italic;color:var(--pane-accent);}
+.pitch p{color:var(--pane-fg-70);font-size:14.5px;margin-top:16px;max-width:330px;}
+
+/* single hairline word-row instead of chips */
+.creed{
+  display:flex;align-items:center;gap:12px;margin-top:26px;
+  font-size:10px;font-weight:500;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--pane-fg-45);white-space:nowrap;
+}
+.creed i{width:3px;height:3px;border-radius:50%;background:var(--pane-accent);flex:none;}
+
+/* ---- floating glass chips (the "alive" bit) ---- */
+.float-zone{position:relative;z-index:2;margin-top:34px;min-height:150px;}
+.fchip{
+  position:absolute;display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-radius:14px;
+  background:var(--pane-chip);
+  border:1px solid var(--pane-chip-line);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:var(--chip-shadow), inset 0 1px 0 rgba(255,255,255,.08);
+  animation:hover1 7s ease-in-out infinite;
+  transition:transform .5s var(--ease), border-color .4s ease;
+}
+.fchip:hover{transform:translateY(-4px) scale(1.03);border-color:var(--pane-hair-warm);}
+.fchip .ic{
+  width:34px;height:34px;border-radius:10px;flex:none;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(216,170,116,.16);color:var(--pane-accent);
+}
+.fchip .ic svg{width:16px;height:16px;}
+.fchip .t1{font-size:12.5px;font-weight:500;color:var(--pane-fg);line-height:1.35;}
+.fchip .t2{font-size:10.5px;letter-spacing:.08em;color:var(--pane-fg-45);line-height:1.4;}
+.fchip .amt{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--pane-accent);}
+.fchip-1{top:0;left:0;animation-delay:0s;}
+.fchip-2{top:74px;right:0;animation:hover2 8s ease-in-out infinite;animation-delay:-3s;}
+@keyframes hover1{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+@keyframes hover2{0%,100%{transform:translateY(-6px);}50%{transform:translateY(4px);}}
+/* keep hover lift working alongside float */
+.fchip:hover{animation-play-state:paused;}
+
+.foot{font-size:11px;letter-spacing:.05em;color:var(--pane-fg-45);position:relative;z-index:2;margin-top:34px;}
+
+/* faint oversized serif mark */
+.ghost{
+  position:absolute;right:-46px;bottom:-84px;z-index:1;
+  font-family:var(--serif);font-style:italic;font-size:300px;line-height:1;
+  color:var(--pane-fg);opacity:.04;pointer-events:none;user-select:none;
+}
+
+/* ---- right · auth pane ---- */
+.pane-auth{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  padding:44px 52px;
+}
+.gate{width:100%;max-width:384px;}
+
+/* tabs */
+.tabs{
+  display:grid;grid-template-columns:1fr 1fr;position:relative;
+  border:1px solid var(--hair);border-radius:10px;
+  background:var(--field);
+  padding:4px;margin-bottom:26px;
+}
+.tabs .pill{
+  position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
+  border-radius:7px;background:var(--btn-bg);
+  transition:transform .5s var(--ease);
+}
+.tabs.up .pill{transform:translateX(100%);}
+.tabs button{
+  position:relative;z-index:1;appearance:none;background:none;border:none;cursor:pointer;
+  font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:.04em;
+  padding:10px 0;color:var(--ink-55);transition:color .35s ease;
+}
+.tabs button[aria-selected="true"]{color:var(--btn-fg);}
+.tabs button:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;border-radius:6px;}
+
+.gate h2{
+  font-family:var(--serif);font-weight:500;color:var(--ink-2);
+  font-size:28px;line-height:1.15;
+}
+.gate .sub{color:var(--ink-55);font-size:13.5px;margin-top:6px;}
+
+/* forms */
+form{margin-top:22px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fld{margin-bottom:13px;text-align:left;}
+.fld label{
+  display:block;font-size:10.5px;font-weight:500;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink-40);margin-bottom:7px;
+}
+.fld .wrap{position:relative;}
+.fld input{
+  width:100%;font-family:var(--sans);font-size:14.5px;color:var(--ink-2);
+  background:var(--field);border:1px solid var(--hair);border-radius:10px;
+  padding:12px 15px;outline:none;caret-color:var(--bronze);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  transition:border-color .3s ease, background .3s ease, box-shadow .3s ease;
+}
+.fld input::placeholder{color:var(--ink-25);}
+.fld input:focus{
+  border-color:var(--bronze);background:var(--field-focus);
+  box-shadow:0 0 0 3px var(--gold-08);
+}
+.fld .peek{
+  position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;padding:4px;display:flex;
+  color:var(--ink-40);transition:color .3s ease;
+}
+.fld .peek:hover{color:var(--bronze);}
+.fld .peek svg{width:16px;height:16px;}
+.fld-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.fld-meta label{margin-bottom:0;}
+.forgot{font-size:11.5px;color:var(--bronze);text-decoration:none;letter-spacing:.04em;}
+.forgot:hover{text-decoration:underline;}
+
+/* terms */
+.terms{display:flex;align-items:flex-start;gap:10px;margin:2px 0 4px;font-size:12.5px;color:var(--ink-55);line-height:1.55;text-align:left;}
+.terms input{
+  appearance:none;flex:none;width:16px;height:16px;margin-top:2px;cursor:pointer;
+  border:1px solid var(--hair-warm);border-radius:4px;background:var(--field);
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:background .3s ease, border-color .3s ease;
+}
+.terms input:checked{background:var(--bronze);border-color:var(--bronze);}
+.terms input:checked::after{
+  content:"";width:8px;height:4.5px;margin-top:-2px;
+  border-left:1.8px solid var(--paper);border-bottom:1.8px solid var(--paper);
+  transform:rotate(-45deg);
+}
+.terms a{color:var(--bronze);text-decoration:none;}
+.terms a:hover{text-decoration:underline;}
+
+/* buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  font-family:var(--sans);font-size:14px;font-weight:500;letter-spacing:.01em;
+  cursor:pointer;border:none;margin-top:12px;
+  padding:14px 30px;border-radius:10px;
+  background:var(--btn-bg);color:var(--btn-fg);
+  box-shadow:0 1px 2px rgba(11,11,11,.18), 0 12px 34px -14px rgba(11,11,11,.4);
+  transition:transform .45s var(--ease), box-shadow .45s var(--ease), opacity .3s ease;
+}
+.btn .arr{color:var(--gold);transition:transform .45s var(--ease);display:inline-flex;}
+.btn:hover{transform:translateY(-1px);}
+.btn:hover .arr{transform:translateX(4px);}
+.btn:disabled{opacity:.45;cursor:default;transform:none;}
+.btn:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;}
+
+.or{
+  display:flex;align-items:center;gap:14px;margin:18px 0 6px;
+  font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-25);
+}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--hair);}
+
+.btn-google{
+  display:inline-flex;align-items:center;justify-content:center;gap:11px;width:100%;
+  font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;
+  margin-top:10px;padding:12px 30px;border-radius:10px;
+  background:var(--field);color:var(--ink-90);border:1px solid var(--btn-line-border);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  transition:transform .45s var(--ease), border-color .35s ease, background .35s ease;
+}
+.btn-google:hover{border-color:var(--bronze);transform:translateY(-1px);background:var(--gold-08);}
+.btn-google svg{width:17px;height:17px;flex:none;}
+.btn-google:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;}
+
+.msg{min-height:20px;margin-top:12px;font-size:12.5px;letter-spacing:.04em;text-align:center;}
+.msg.err{color:#B4543C;}
+.msg.ok{color:var(--bronze);}
+@keyframes shake{
+  10%,90%{transform:translateX(-1px);} 20%,80%{transform:translateX(2px);}
+  30%,50%,70%{transform:translateX(-4px);} 40%,60%{transform:translateX(4px);}
+}
+.gate.shake{animation:shake .5s ease;}
+
+.swap{margin-top:16px;font-size:12.5px;color:var(--ink-40);letter-spacing:.04em;text-align:center;}
+.swap a{color:var(--bronze);text-decoration:none;cursor:pointer;}
+.swap a:hover{text-decoration:underline;}
+
+/* panel switch */
+.panel{display:none;}
+.panel.on{display:block;animation:panelIn .45s var(--ease) both;}
+@keyframes panelIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+/* ============================================================
+   Back button, glass pill, arrow slides
+   ============================================================ */
+.back{
+  position:fixed;top:24px;left:28px;z-index:5;
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--sans);font-size:12.5px;font-weight:500;letter-spacing:.06em;
+  color:var(--ink-70);text-decoration:none;
+  padding:10px 18px 10px 14px;border-radius:999px;
+  border:1px solid var(--glass-line);background:var(--glass);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  box-shadow:0 1px 2px rgba(11,11,11,.06), 0 10px 26px -16px rgba(11,11,11,.3);
+  transition:color .35s ease, border-color .35s ease, background .35s ease,
+             transform .45s var(--ease), box-shadow .45s var(--ease);
+}
+.back .b-arr{display:inline-flex;color:var(--bronze);transition:transform .45s var(--ease);}
+.back .b-arr svg{width:15px;height:15px;}
+.back:hover{
+  color:var(--ink);border-color:var(--bronze);
+  transform:translateY(-1px);
+  box-shadow:0 2px 3px rgba(11,11,11,.08), 0 14px 30px -16px rgba(11,11,11,.35);
+}
+.back:hover .b-arr{transform:translateX(-4px);}
+.back:active{transform:translateY(0) scale(.97);}
+.back:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;}
+
+/* theme switch (corner) */
+.theme-switch{position:fixed;top:24px;right:30px;z-index:5;display:flex;align-items:center;gap:11px;background:none;border:none;cursor:pointer;padding:0;}
+.ts-label{font-family:var(--sans);font-size:10.5px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-55);transition:color .35s ease;white-space:nowrap;}
+.theme-switch:hover .ts-label{color:var(--bronze);}
+.ts-track{position:relative;width:54px;height:29px;flex:none;border-radius:15px;border:1px solid var(--hair-warm);background:var(--glass);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:border-color .5s ease, background .5s ease;}
+.theme-switch:hover .ts-track{border-color:var(--bronze);}
+.ts-knob{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:var(--gold);color:#141210;display:flex;align-items:center;justify-content:center;transition:transform .55s var(--ease), background .5s ease, color .5s ease;}
+[data-theme="dark"] .ts-knob{transform:translateX(25px);}
+.ts-knob svg{position:absolute;width:13px;height:13px;transition:opacity .4s ease, transform .55s var(--ease);}
+.ts-sun{opacity:1;} .ts-moon{opacity:0;transform:rotate(-100deg) scale(.4);}
+[data-theme="dark"] .ts-sun{opacity:0;transform:rotate(100deg) scale(.4);}
+[data-theme="dark"] .ts-moon{opacity:1;transform:none;}
+.theme-switch:active .ts-knob{transform:scale(.88);}
+[data-theme="dark"] .theme-switch:active .ts-knob{transform:translateX(25px) scale(.88);}
+
+/* One frame, one theme. Without this the glass panes, the backdrop
+   filters and the knob all cross-fade on their own clocks and the page
+   spends half a second in neither theme. */
+html.theme-snap *,html.theme-snap *::before,html.theme-snap *::after{transition:none !important;}
+html.theme-snap .ts-knob{transition:transform .55s var(--ease),width .35s var(--ease) !important;}
+html.theme-snap .ts-knob svg{transition:opacity .4s ease,transform .55s var(--ease) !important;}
+
+/* reset modal */
+.modal-veil{
+  position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;
+  background:rgba(11,11,11,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:26px;
+}
+[data-theme="dark"] .modal-veil{background:rgba(0,0,0,.55);}
+.modal-veil.on{display:flex;animation:pageIn .35s ease both;}
+.modal{
+  position:relative;width:100%;max-width:400px;text-align:center;
+  background:var(--glass);border:1px solid var(--glass-line);border-radius:18px;
+  -webkit-backdrop-filter:blur(26px) saturate(1.5);backdrop-filter:blur(26px) saturate(1.5);
+  padding:40px 38px 34px;
+  box-shadow:0 30px 80px -20px rgba(11,11,11,.5);
+}
+.modal::before{
+  content:"";position:absolute;top:0;left:50px;right:50px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.modal h3{font-family:var(--serif);font-weight:500;font-size:25px;color:var(--ink-2);}
+.modal p{font-size:13.5px;color:var(--ink-55);margin-top:10px;}
+.modal .fld{margin-top:20px;}
+.modal-x{
+  position:absolute;top:14px;right:18px;background:none;border:none;cursor:pointer;
+  font-size:22px;line-height:1;color:var(--ink-40);transition:color .3s ease, transform .3s ease;
+}
+.modal-x:hover{color:var(--bronze);transform:rotate(90deg);}
+
+body.leaving{opacity:0;transition:opacity .5s ease;}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width:980px){
+  .stage{padding:84px 18px 46px;perspective:none;}
+  .box{grid-template-columns:1fr;max-width:520px;}
+  .pane-brand{padding:38px 30px 30px;border-right:none;border-bottom:1px solid var(--glass-line);}
+  .pitch{margin-top:0;padding-top:26px;}
+  .pitch h1{font-size:clamp(32px,8vw,42px);}
+  .pitch p{max-width:none;}
+  .float-zone{min-height:132px;margin-top:26px;}
+  .ghost{font-size:190px;right:-30px;bottom:-60px;}
+  .foot{margin-top:26px;}
+  .pane-auth{padding:34px 26px 38px;}
+  .back{top:16px;left:16px;padding:9px 15px 9px 12px;}
+  .back .b-txt{display:none;}
+  .ts-label{display:none;}
+  .theme-switch{top:20px;right:20px;}
+}
+@media (prefers-reduced-motion: reduce){
+  body,.box,.panel.on,.modal-veil.on{animation:none !important;}
+  .orb i,.pane-brand::before,.fchip,.bg-sun,.box::before{animation:none !important;}
+  .bg-glow{display:none;}
+}
+/* ============================================================
+   CLIPATHON ADDITIONS
+   Everything above is the shared Clipency auth design, lifted
+   unchanged so this page and clipper-signin cannot drift apart.
+   Below is only what the Clipathon flow needs on top.
+   ============================================================ */
+
+/* The stat strip that replaces the clipper "creed" line. */
+.stats3{display:flex;gap:0;margin-top:26px;border-top:1px solid var(--pane-hair);padding-top:20px;}
+.stats3 .s{flex:1;padding-right:14px;}
+.stats3 .s + .s{border-left:1px solid var(--pane-hair);padding-left:16px;}
+.stats3 b{display:block;font-family:var(--serif);font-size:26px;line-height:1.1;color:var(--pane-fg);}
+.stats3 b i{font-style:normal;color:var(--gold);}
+.stats3 span{display:block;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--pane-fg-45);margin-top:5px;}
+
+/* A status line the auth pane can raise above the tabs, used when the
+   creator is signed in but has nowhere useful to go yet. */
+.gate-note{display:flex;gap:11px;align-items:flex-start;padding:14px 16px;border-radius:12px;
+  border:1px solid var(--hair-warm);background:var(--gold-08);margin-bottom:20px;}
+.gate-note .gn-i{flex:none;font-size:14px;color:var(--bronze);line-height:1.4;}
+.gate-note b{display:block;font-size:13.5px;font-weight:600;color:var(--ink-2);}
+.gate-note p{font-size:12.5px;color:var(--ink-55);margin-top:3px;line-height:1.55;}
+.gate-note a{color:var(--bronze);font-weight:500;}
+
+/* Password rules, shown live rather than as an error after the fact. */
+.pw-rules{display:flex;gap:14px;flex-wrap:wrap;margin-top:9px;}
+.pw-rules span{font-size:11.5px;color:var(--ink-40);display:inline-flex;align-items:center;gap:5px;}
+.pw-rules span::before{content:"○";font-size:9px;}
+.pw-rules span.ok{color:#5A7A52;}
+.pw-rules span.ok::before{content:"●";}
+
+/* A full-pane state for "check your inbox", which is a destination and
+   not an error, so it should not look like one. */
+.sent{text-align:center;padding:14px 0 4px;}
+.sent .sent-mk{width:60px;height:60px;border-radius:50%;margin:0 auto 20px;
+  border:1px solid var(--hair-warm);background:var(--gold-08);
+  display:flex;align-items:center;justify-content:center;color:var(--bronze);}
+.sent .sent-mk svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round;}
+.sent h2{margin-bottom:8px;}
+.sent .sent-mail{font-family:var(--sans);font-size:13.5px;font-weight:500;color:var(--ink-2);
+  background:var(--gold-08);border:1px solid var(--hair-warm);border-radius:9px;
+  padding:9px 14px;display:inline-block;margin:4px 0 16px;}
+.sent p{font-size:13.5px;color:var(--ink-55);line-height:1.65;}
+
+/* ============================================================
+   AUTH FLOW ADDITIONS
+   ============================================================
+   The gate is now a three step machine rather than two tabs and a
+   modal: email, then the code from the inbox, then the password.
+   These are the parts the original stylesheet did not need.
+   ============================================================ */
+
+/* Where you are in the sequence. Three dots, because three steps is
+   short enough that a full progress bar would be self important. */
+.steps{display:flex;align-items:center;gap:9px;margin:0 0 22px;}
+.steps i{width:7px;height:7px;border-radius:50%;background:var(--line,rgba(0,0,0,.16));
+  transition:background .3s ease,transform .3s ease;font-style:normal;}
+.steps i.on{background:var(--accent,#8A6224);transform:scale(1.25);}
+.steps i.done{background:var(--accent,#8A6224);opacity:.42;}
+.steps span{font-family:var(--mono,ui-monospace,monospace);font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.5;margin-left:5px;}
+
+/* The address we sent the code to, echoed so nobody is left wondering
+   which inbox to open. Clickable to go back and fix a typo. */
+.echo{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:11px 14px;border-radius:11px;margin:0 0 20px;
+  background:rgba(0,0,0,.035);border:1px solid var(--line,rgba(0,0,0,.10));}
+.echo .em{font-weight:600;word-break:break-all;}
+.echo button{margin-left:auto;background:none;border:none;padding:0;cursor:pointer;
+  font-family:inherit;font-size:13px;color:var(--accent,#8A6224);text-decoration:underline;
+  text-underline-offset:3px;}
+
+/* Six boxes. A single field would be simpler to build and worse to
+   use: this way the shape of the input tells you how long the code is
+   before you start typing. */
+.otp{display:flex;gap:9px;margin:4px 0 6px;}
+.otp input{flex:1;min-width:0;aspect-ratio:1/1;max-width:56px;
+  text-align:center;font-family:var(--mono,ui-monospace,monospace);
+  font-size:22px;font-weight:500;line-height:1;
+  border:1px solid var(--line,rgba(0,0,0,.16));border-radius:12px;
+  background:var(--field,#fff);color:inherit;
+  transition:border-color .18s ease,box-shadow .18s ease;
+  -moz-appearance:textfield;}
+.otp input::-webkit-outer-spin-button,
+.otp input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.otp input:focus{outline:none;border-color:var(--accent,#8A6224);
+  box-shadow:0 0 0 3px rgba(138,98,36,.14);}
+.otp input.filled{border-color:var(--accent,#8A6224);}
+.otp.bad input{border-color:#C4553C;}
+@keyframes otpshake{
+  10%,90%{transform:translateX(-2px);} 30%,70%{transform:translateX(3px);}
+  50%{transform:translateX(-3px);} 100%{transform:translateX(0);}
+}
+.otp.bad{animation:otpshake .4s ease;}
+@media (prefers-reduced-motion:reduce){ .otp.bad{animation:none;} }
+
+/* Resend, with the sixty second wall Supabase enforces made visible
+   rather than left as a mystery failure. */
+.resend{display:flex;align-items:center;gap:6px;font-size:13px;margin-top:16px;}
+.resend button{background:none;border:none;padding:0;cursor:pointer;font-family:inherit;
+  font-size:13px;color:var(--accent,#8A6224);text-decoration:underline;text-underline-offset:3px;}
+.resend button[disabled]{color:inherit;opacity:.4;cursor:default;text-decoration:none;}
+
+/* Live password rules. Same idea as the original page, kept because it
+   stops the "8 characters with a number" guessing game. */
+.rules{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-wrap:wrap;gap:6px 16px;}
+.rules li{font-size:12.5px;opacity:.55;display:flex;align-items:center;gap:6px;}
+.rules li::before{content:'';width:14px;height:14px;border-radius:50%;flex:0 0 auto;
+  border:1.5px solid currentColor;transition:background .2s,border-color .2s;}
+.rules li.ok{opacity:1;color:#3F7A52;}
+.rules li.ok::before{background:#3F7A52;border-color:#3F7A52;}
+
+/* A quiet line under the form for the secondary route out. */
+.swap{font-size:13.5px;text-align:center;margin-top:20px;opacity:.75;}
+.swap a{color:var(--accent,#8A6224);cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+
+/* Success interstitial before the redirect, so the jump is explained. */
+.done-mk{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;
+  background:rgba(63,122,82,.12);border:1px solid rgba(63,122,82,.3);margin-bottom:18px;}
+.done-mk svg{width:22px;height:22px;stroke:#3F7A52;fill:none;stroke-width:2.4;
+  stroke-linecap:round;stroke-linejoin:round;}
+
+</style>
+</head>
+<body>
+
+<!-- living background, unchanged from the clipper auth page -->
+<div class="bg" aria-hidden="true">
+  <div class="bg-sun"></div>
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"><i></i></div>
+  <div class="orb orb-2"><i></i></div>
+  <div class="orb orb-3"><i></i></div>
+  <div class="orb orb-4"><i></i></div>
+  <div class="bg-glow" id="bgGlow"></div>
+  <div class="bg-grain"></div>
+</div>
+
+<a class="back" href="./clipathon.html" aria-label="Back to the Clipathon page">
+  <span class="b-arr">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M11 18l-6-6 6-6"/>
+    </svg>
+  </span>
+  <span class="b-txt">Back to Clipathon</span>
+</a>
+
+<button class="theme-switch" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Switch theme">
+  <span class="ts-label" id="tsLabel">Dark Mode</span>
+  <span class="ts-track" aria-hidden="true"><span class="ts-knob">
+    <svg class="ts-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="12" cy="12" r="3.4" fill="currentColor" stroke="none"/>
+      <path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M18.7 5.3L17 7M7 17l-1.7 1.7"/>
+    </svg>
+    <svg class="ts-moon" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+    </svg>
+  </span></span>
+</button>
+
+<div class="stage">
+  <div class="box" id="box">
+
+    <!-- ================= left · brand ================= -->
+    <aside class="pane-brand">
+      <a class="brand" href="./clipathon.html" aria-label="Clipathon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <circle cx="6.2" cy="6.2" r="2.7"/>
+          <circle cx="6.2" cy="17.8" r="2.7"/>
+          <line x1="8.3" y1="8.1" x2="20.5" y2="19"/>
+          <line x1="8.3" y1="15.9" x2="20.5" y2="5"/>
+        </svg>
+        <span class="brand-name">CLIPENCY</span>
+        <span class="brand-sub">Clipathon</span>
+      </a>
+
+      <div class="pitch">
+        <h1>A hackathon,<br>but for <em>UGC creators.</em></h1>
+        <p>Five brands. Seventy two hours. One clip that decides where you finish.</p>
+
+        <div class="stats3">
+          <div class="s"><b>&#8377;<i>1,50,000</i></b><span>Prize pool</span></div>
+          <div class="s"><b data-cy="total">1,000</b><span>Creators</span></div>
+          <div class="s"><b data-cy="brands">5</b><span>Brands</span></div>
+        </div>
+      </div>
+
+      <div class="float-zone" aria-hidden="true">
+        <div class="fchip fchip-1">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          </span>
+          <span>
+            <span class="t1">Slot confirmed</span><br>
+            <span class="t2">Orbit Audio &middot; <span class="amt"><span data-cy="per">200</span> slots</span></span>
+          </span>
+        </div>
+        <div class="fchip fchip-2">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>
+            </svg>
+          </span>
+          <span>
+            <span class="t1">Clip approved</span><br>
+            <span class="t2"><span class="amt" id="viewsTicker">1,204,516</span> views</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="ghost" aria-hidden="true">C</div>
+      <p class="foot">&copy; 2026 Clipency, Inc. &middot; Cycle 01, Bangalore.</p>
+    </aside>
+
+    <!-- ================= right · auth ================= -->
+    <main class="pane-auth">
+      <div class="gate" id="gate">
+
+        <!-- Raised when the creator is signed in but not yet where they
+             need to be: pending review, rejected, or no registration at
+             all. Better than bouncing them to a dashboard that would
+             only tell them the same thing. -->
+        <div class="gate-note" id="gateNote" style="display:none">
+          <span class="gn-i" id="gnIcon">&#9673;</span>
+          <div><b id="gnTitle"></b><p id="gnBody"></p></div>
+        </div>
+
+        <!-- =========================================================
+             The gate is one machine with four faces:
+               in       sign in with a password you already have
+               email    address AND the password they are choosing,
+                        then we send a code to that address
+               code     the digits from that email. Verifying it both
+                        proves the inbox and commits the password.
+               pass     fallback only: the email was proven but the
+                        password could not be saved, so ask again.
+             Forgot password walks the same email and code steps, so
+             there is one implementation rather than two that drift.
+             ========================================================= -->
+
+        <div class="tabs" id="tabs" role="tablist" aria-label="Log in, or sign in for the first time">
+          <span class="pill" aria-hidden="true"></span>
+          <button id="tabIn" role="tab" aria-selected="true" aria-controls="panelIn">Log In</button>
+          <button id="tabUp" role="tab" aria-selected="false" aria-controls="panelEmail">Sign In</button>
+        </div>
+
+        <!-- ---- sign in ---- -->
+        <section class="panel on" id="panelIn" role="tabpanel" aria-labelledby="tabIn">
+          <h2>Welcome back.</h2>
+          <p class="sub">Log in to open your Clipathon dashboard.</p>
+
+          <form novalidate id="formIn">
+            <div class="fld">
+              <label for="inEmail">Email address</label>
+              <div class="wrap"><input id="inEmail" type="email" autocomplete="email"
+                     placeholder="you@example.com"></div>
+            </div>
+            <div class="fld">
+              <div class="fld-meta">
+                <label for="inPass">Password</label>
+                <span class="forgot" id="forgotLink" tabindex="0" role="button">Forgot?</span>
+              </div>
+              <div class="wrap">
+                <input id="inPass" type="password" autocomplete="current-password" placeholder="Your password">
+                <button class="peek" type="button" data-peek="inPass" aria-label="Show password">
+                  <svg viewBox="0 0 24 24"><path d="M1.8 12S5.6 5 12 5s10.2 7 10.2 7-3.8 7-10.2 7S1.8 12 1.8 12z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                </button>
+              </div>
+            </div>
+            <button class="btn" type="submit" id="btnIn">Log In <span class="arr">&#8594;</span></button>
+            <p class="msg" id="msgIn" role="status"></p>
+          </form>
+
+          <p class="swap">New to Clipathon? <a data-goto="email">Sign in</a></p>
+        </section>
+
+        <!-- ---- step 1 · the address ---- -->
+        <section class="panel" id="panelEmail" role="tabpanel" aria-labelledby="tabUp">
+          <div class="steps" aria-hidden="true"><i class="on"></i><i></i><span>Step 1 of 2</span></div>
+          <h2 id="emailTitle">Email and password.</h2>
+          <p class="sub" id="emailSub">Pick the password you'll sign in with from now on. We'll send a six
+            digit code to that address to make sure it's really yours.</p>
+
+          <form novalidate id="formEmail">
+            <div class="fld">
+              <label for="upEmail">Email address</label>
+              <div class="wrap"><input id="upEmail" type="email" autocomplete="email"
+                     placeholder="you@example.com"></div>
+            </div>
+            <div class="fld">
+              <label for="upPw1" id="upPwLabel">Create a password</label>
+              <div class="wrap">
+                <input id="upPw1" type="password" autocomplete="new-password" placeholder="At least 8 characters">
+                <button class="peek" type="button" data-peek="upPw1" aria-label="Show password">
+                  <svg viewBox="0 0 24 24"><path d="M1.8 12S5.6 5 12 5s10.2 7 10.2 7-3.8 7-10.2 7S1.8 12 1.8 12z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                </button>
+              </div>
+              <ul class="rules" id="upRules">
+                <li data-urule="len">8 characters or more</li>
+                <li data-urule="mix">A letter and a number</li>
+              </ul>
+            </div>
+            <div class="fld">
+              <label for="upPw2">Confirm password</label>
+              <div class="wrap">
+                <input id="upPw2" type="password" autocomplete="new-password" placeholder="Type it again">
+                <button class="peek" type="button" data-peek="upPw2" aria-label="Show password">
+                  <svg viewBox="0 0 24 24"><path d="M1.8 12S5.6 5 12 5s10.2 7 10.2 7-3.8 7-10.2 7S1.8 12 1.8 12z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                </button>
+              </div>
+            </div>
+            <button class="btn" type="submit" id="btnEmail">Send me the code <span class="arr">&#8594;</span></button>
+            <p class="msg" id="msgEmail" role="status"></p>
+          </form>
+
+          <p class="swap">Already have a login? <a data-goto="in">Log in</a></p>
+        </section>
+
+        <!-- ---- step 2 · the code ---- -->
+        <section class="panel" id="panelCode" role="tabpanel">
+          <div class="steps" aria-hidden="true"><i class="done"></i><i class="on"></i><span>Step 2 of 2</span></div>
+          <h2>Check your inbox.</h2>
+          <p class="sub">The code from that email, valid for an hour. It can take a minute to arrive,
+            and it does sometimes land in spam.</p>
+
+          <div class="echo">
+            <span class="em" id="codeEmail">you@example.com</span>
+            <button type="button" id="changeEmail">Change</button>
+          </div>
+
+          <form novalidate id="formCode">
+            <div class="fld">
+              <label for="otp1">Your code</label>
+              <!-- Filled in by buildOtp() so the row matches whatever
+                   length this project's codes actually are. -->
+              <div class="otp" id="otpWrap"></div>
+            </div>
+            <button class="btn" type="submit" id="btnCode">Verify <span class="arr">&#8594;</span></button>
+            <p class="msg" id="msgCode" role="status"></p>
+          </form>
+
+          <p class="resend">
+            <span id="resendWhen">Didn't get it?</span>
+            <button type="button" id="resendBtn">Send another</button>
+          </p>
+        </section>
+
+        <!-- ---- step 3 · the password ---- -->
+        <section class="panel" id="panelPass" role="tabpanel">
+          <div class="steps" aria-hidden="true"><i class="done"></i><i class="done"></i><i class="on"></i><span>Last step</span></div>
+          <h2 id="passTitle">One more time on the password.</h2>
+          <p class="sub" id="passSub">Your email is confirmed but the password didn't save. Set it here and you're in.</p>
+
+          <form novalidate id="formPass">
+            <div class="fld">
+              <label for="pw1">Password</label>
+              <div class="wrap">
+                <input id="pw1" type="password" autocomplete="new-password" placeholder="At least 8 characters">
+                <button class="peek" type="button" data-peek="pw1" aria-label="Show password">
+                  <svg viewBox="0 0 24 24"><path d="M1.8 12S5.6 5 12 5s10.2 7 10.2 7-3.8 7-10.2 7S1.8 12 1.8 12z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                </button>
+              </div>
+              <ul class="rules" id="pwRules">
+                <li data-rule="len">8 characters or more</li>
+                <li data-rule="mix">A letter and a number</li>
+              </ul>
+            </div>
+            <div class="fld">
+              <label for="pw2">Confirm password</label>
+              <div class="wrap">
+                <input id="pw2" type="password" autocomplete="new-password" placeholder="Type it again">
+                <button class="peek" type="button" data-peek="pw2" aria-label="Show password">
+                  <svg viewBox="0 0 24 24"><path d="M1.8 12S5.6 5 12 5s10.2 7 10.2 7-3.8 7-10.2 7S1.8 12 1.8 12z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                </button>
+              </div>
+            </div>
+            <button class="btn" type="submit" id="btnPass">Save and continue <span class="arr">&#8594;</span></button>
+            <p class="msg" id="msgPass" role="status"></p>
+          </form>
+        </section>
+
+        <!-- ---- landing strip between here and wherever they go ---- -->
+        <section class="panel" id="panelDone" role="tabpanel">
+          <div class="sent">
+            <div class="done-mk"><svg viewBox="0 0 24 24"><path d="m4 12.5 5 5L20 7"/></svg></div>
+            <h2 id="doneTitle">You're in.</h2>
+            <p id="doneBody">Taking you to the next step.</p>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CLIPATHON · the way in
+   ============================================================
+   One gate, four faces, two journeys through them.
+
+     sign in   email + password, straight to the dashboard
+     new       email + password -> code -> the questions
+     forgot    email + new password -> code -> the dashboard
+
+   The middle two steps are shared, so there is one code path for
+   "prove you own this inbox" rather than two that slowly diverge.
+
+   Nothing on this page decides where a person ends up. That comes
+   from one server call, clipathon.me(), which resolves their state
+   against the database and hands back a verdict. The page only
+   renders it.
+   ============================================================ */
+(function(){
+  'use strict';
+
+  var CFG = window.CLIPATHON_AUTH;
+  var $  = function(s, r){ return (r || document).querySelector(s); };
+  var $$ = function(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+
+  var sb = null;
+  function client(){
+    if(sb) return sb;
+    try{
+      /* Everything Clipathon owns lives in its own schema. Without this
+         the client asks PostgREST for public.me, which does not exist. */
+      sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, {
+        db: { schema: 'clipathon' }
+      });
+    }catch(e){ sb = null; }
+    return sb;
+  }
+
+  /* The pane figures come off the cycle row rather than the markup, so a
+     cycle with a different shape cannot leave the page advertising numbers
+     that stopped being true. Purely additive: if this never resolves, the
+     values already in the HTML stand. */
+  (function(){
+    var c = client(); if(!c) return;
+    c.from('v_public_cycle')
+     .select('brand_count,slots_per_brand,slots_total')
+     .limit(1).maybeSingle()
+     .then(function(res){
+       var cy = res && res.data; if(!cy) return;
+       var v = { brands: cy.brand_count, per: cy.slots_per_brand, total: cy.slots_total };
+       $$('[data-cy]').forEach(function(el){
+         var n = v[el.getAttribute('data-cy')];
+         if(n != null) el.textContent = Number(n).toLocaleString('en-IN');
+       });
+     })
+     .catch(function(){});
+  })();
+
+  /* ---------- state ---------- */
+  var view   = 'in';        /* in | email | code | pass | done */
+  var intent = 'signup';    /* signup | reset */
+  var addr   = '';          /* the address we sent a code to */
+  var resendAt = 0;
+  var tick   = null;
+
+  /* ---------- small helpers ---------- */
+  function msg(el, text, kind){
+    var n = $(el);
+    if(!n) return;
+    n.textContent = text || '';
+    n.className = 'msg' + (text ? ' show' : '') + (kind ? ' ' + kind : '');
+  }
+  function busy(btn, on, label){
+    var b = $(btn);
+    if(!b) return;
+    if(on){
+      if(!b.dataset.label) b.dataset.label = b.innerHTML;
+      b.disabled = true;
+      b.textContent = label || 'Working…';
+    } else {
+      b.disabled = false;
+      if(b.dataset.label) b.innerHTML = b.dataset.label;
+    }
+  }
+  function validEmail(v){ return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(v || '').trim()); }
+
+  /* Supabase speaks in codes and stack traces. Creators should not. */
+  function friendly(err, fallback){
+    var m = String((err && err.message) || err || '');
+    if(/Invalid login credentials/i.test(m))
+      return 'That email and password do not match. Check both, or use Forgot.';
+    if(/Email not confirmed/i.test(m))
+      return 'That email has not been confirmed yet. Use Sign In to get a fresh code.';
+    if(/already registered|already been registered/i.test(m))
+      return 'You already have a login for that email. Sign in instead, or use Forgot.';
+    if(/Token has expired|expired/i.test(m))
+      return 'That code has expired. Ask for a new one.';
+    if(/Invalid token|invalid otp|Token not found/i.test(m))
+      return 'That code is not right. Check the newest email, older codes stop working.';
+    if(/rate limit|too many|For security purposes/i.test(m))
+      return 'Too many attempts just now. Wait a minute and try again.';
+    /* GoTrue owns the password policy, and it can be tightened in the
+       dashboard without this page ever knowing. Hardcoding one sentence
+       here meant a creator could be told "a letter and a number" while
+       the server was quietly demanding an uppercase and a symbol, with
+       no way to ever satisfy it. So read the requirement back out of
+       the server's own message and say it plainly. */
+    /* GoTrue phrases "New password should be different from the old
+       password." with the words "password should be" in it, so a loose
+       weak-password test swallows it and tells the person to lengthen a
+       password that was never too short. Answer that case first. */
+    if(/different from the old password/i.test(m))
+      return 'That is already your password. Sign in with it instead, or pick a different one.';
+    if(/Password should be at least|Password should contain|weak_password/i.test(m)){
+      var need = [];
+      if(/abcdefghijklmnopqrstuvwxyz/.test(m)) need.push('a lowercase letter');
+      if(/ABCDEFGHIJKLMNOPQRSTUVWXYZ/.test(m)) need.push('an uppercase letter');
+      if(/0123456789/.test(m))                 need.push('a number');
+      if(/[!@#$%^&*()_+\-=\[\]{}]/.test(m))    need.push('a symbol');
+      var lenM = m.match(/at least (\d+) character/i);
+      var len  = lenM ? lenM[1] : '8';
+      if(need.length)
+        return 'That password does not meet the rules. Use at least ' + len +
+               ' characters including ' + need.join(', ') + '.';
+      return 'That password is too weak. Use at least ' + len + ' characters.';
+    }
+    if(/[Ff]ailed to fetch|NetworkError/i.test(m))
+      return 'We could not reach the server. Check your connection.';
+    return fallback || m || 'Something went wrong. Try again in a moment.';
+  }
+
+  /* ---------- the panels ---------- */
+  var PANEL = { in:'panelIn', email:'panelEmail', code:'panelCode', pass:'panelPass', done:'panelDone' };
+
+  function show(next){
+    view = next;
+    $$('.panel').forEach(function(p){ p.classList.remove('on'); });
+    var p = $('#' + PANEL[next]);
+    if(p) p.classList.add('on');
+
+    /* The tab strip only makes sense on the two entry faces. Once the
+       creator is mid sequence, offering a tab that would throw the code
+       away is a trap, so it goes. */
+    var tabs = $('#tabs');
+    if(tabs){
+      tabs.style.display = (next === 'in' || next === 'email') ? '' : 'none';
+      tabs.classList.toggle('up', next === 'email');
+      $('#tabIn').setAttribute('aria-selected', String(next === 'in'));
+      $('#tabUp').setAttribute('aria-selected', String(next === 'email'));
+    }
+    ['#msgIn','#msgEmail','#msgCode','#msgPass'].forEach(function(m){ msg(m, ''); });
+
+    var focus = { in:'#inEmail', email:'#upEmail', code:'#otp1', pass:'#pw1' }[next];
+    if(focus) setTimeout(function(){ var f = $(focus); if(f) f.focus(); }, 90);
+  }
+
+  $('#tabIn').addEventListener('click', function(){ show('in'); });
+  $('#tabUp').addEventListener('click', function(){ intent = 'signup'; paintIntent(); show('email'); });
+  document.addEventListener('click', function(e){
+    var g = e.target.closest('[data-goto]');
+    if(g){
+      e.preventDefault();
+      if(g.dataset.goto === 'email'){ intent = 'signup'; paintIntent(); }
+      show(g.dataset.goto);
+    }
+  });
+
+  /* The two journeys share panels, so the words have to change even
+     though the fields do not. */
+  function paintIntent(){
+    var reset = (intent === 'reset');
+    $('#emailTitle').textContent = reset ? 'Reset your password.' : 'Email and password.';
+    $('#emailSub').textContent = reset
+      ? 'Choose the new password, then we will send a six digit code to the address you registered with to confirm it is you.'
+      : "Pick the password you'll sign in with from now on. We'll send a six digit code to that address to make sure it's really yours.";
+    var upLbl = $('#upPwLabel');
+    if(upLbl) upLbl.textContent = reset ? 'New password' : 'Create a password';
+    $('#btnEmail').innerHTML = reset
+      ? 'Send me the code <span class="arr">&#8594;</span>'
+      : 'Send me the code <span class="arr">&#8594;</span>';
+    $('#passTitle').textContent = reset ? 'Pick a new password.' : 'Set your password.';
+    $('#passSub').textContent = reset
+      ? 'Your email is confirmed. Choose a new password and we will sign you straight in.'
+      : "Your email is confirmed. Pick a password and you're in.";
+  }
+
+  /* ---------- show and hide a password ---------- */
+  $$('[data-peek]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var f = $('#' + b.dataset.peek);
+      if(!f) return;
+      f.type = f.type === 'password' ? 'text' : 'password';
+      b.classList.toggle('on', f.type === 'text');
+    });
+  });
+
+  /* ---------- live password rules ---------- */
+  function checkRules(){
+    var v = $('#pw1').value || '';
+    $('[data-rule="len"]').classList.toggle('ok', v.length >= 8);
+    $('[data-rule="mix"]').classList.toggle('ok', /[A-Za-z]/.test(v) && /[0-9]/.test(v));
+  }
+  $('#pw1').addEventListener('input', checkRules);
+
+  /* The same two rules, on the copy that now lives on step 1. Separate
+     attribute so checkRules() above keeps pointing at the fallback panel. */
+  function checkUpRules(){
+    var v = ($('#upPw1') && $('#upPw1').value) || '';
+    var a = $('[data-urule="len"]'), b = $('[data-urule="mix"]');
+    if(a) a.classList.toggle('ok', v.length >= 8);
+    if(b) b.classList.toggle('ok', /[A-Za-z]/.test(v) && /[0-9]/.test(v));
+  }
+  if($('#upPw1')) $('#upPw1').addEventListener('input', checkUpRules);
+
+  /* Held in memory only, between "send me the code" and the moment the
+     code comes back verified. Never written to storage, and cleared the
+     instant GoTrue has it. */
+  var upPass = '';
+
+  /* Shared by step 1 and the fallback panel so the policy is written once. */
+  function pwProblem(a, b){
+    if(a.length < 8) return 'Use at least 8 characters.';
+    if(!/[A-Za-z]/.test(a) || !/[0-9]/.test(a)) return 'Mix at least one letter and one number.';
+    if(a !== b) return 'Those two do not match.';
+    return null;
+  }
+
+  /* ---------- theme ---------- */
+  var themeBtn = $('#themeToggle');
+  (function(){
+    var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if(themeBtn) themeBtn.setAttribute('aria-checked', String(dark));
+    var l0 = $('#tsLabel'); if(l0) l0.textContent = dark ? 'Light Mode' : 'Dark Mode';
+  })();
+  if(themeBtn) themeBtn.addEventListener('click', function(){
+    var html = document.documentElement;
+    var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.classList.add('theme-snap');
+    html.setAttribute('data-theme', next);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){ html.classList.remove('theme-snap'); });
+    });
+    themeBtn.setAttribute('aria-checked', String(next === 'dark'));
+    var lab = $('#tsLabel');
+    if(lab) lab.textContent = next === 'dark' ? 'Light Mode' : 'Dark Mode';
+    try{ localStorage.setItem('clipency-theme', next); }catch(e){}
+  });
+
+  /* ---------- the note above the tabs ---------- */
+  function note(icon, title, body){
+    var n = $('#gateNote');
+    if(!title){ n.style.display = 'none'; return; }
+    $('#gnIcon').innerHTML = icon;
+    $('#gnTitle').textContent = title;
+    $('#gnBody').innerHTML = body;
+    n.style.display = '';
+  }
+
+  /* ============================================================
+     The six boxes
+     ============================================================
+     Typing moves forward, backspace moves back, arrows work, and a
+     pasted code fills the row rather than dropping five digits on the
+     floor. Autofill from the email lands in the first box and spreads
+     the same way. */
+  /* How many boxes there are is not a constant. GoTrue's email OTP
+     length is a project setting, and newer projects are provisioned at
+     eight rather than six. Hardcoding six means a project configured
+     any other way silently drops digits and fails to verify with no
+     useful message. So the row is built to whatever length turns up. */
+  var OTP_LEN = 6;
+  var boxes = [];
+
+  function buildOtp(n){
+    n = Math.max(4, Math.min(10, n | 0));
+    if(n === OTP_LEN && boxes.length === n) return;
+    OTP_LEN = n;
+    var wrap = $('#otpWrap');
+    wrap.innerHTML = '';
+    for(var i = 0; i < n; i++){
+      var b = document.createElement('input');
+      b.id = 'otp' + (i + 1);
+      b.setAttribute('inputmode', 'numeric');
+      b.setAttribute('maxlength', '1');
+      b.setAttribute('aria-label', 'Digit ' + (i + 1));
+      if(i === 0) b.setAttribute('autocomplete', 'one-time-code');
+      wrap.appendChild(b);
+    }
+    boxes = $$('.otp input');
+    wireBoxes();
+    /* Ten boxes on a narrow phone need to be smaller than six. */
+    wrap.style.gap = n > 6 ? '6px' : '9px';
+  }
+
+  function otpValue(){ return boxes.map(function(b){ return b.value; }).join(''); }
+  function otpClear(){
+    boxes.forEach(function(b){ b.value = ''; b.classList.remove('filled'); });
+    $('#otpWrap').classList.remove('bad');
+  }
+  function spread(text, from){
+    var digits = String(text || '').replace(/\D/g, '').split('');
+    if(!digits.length) return;
+    /* A code longer than the row means this project issues longer codes
+       than we assumed. Grow to fit rather than dropping the tail. */
+    if(from === 0 && digits.length > OTP_LEN && digits.length <= 10){
+      buildOtp(digits.length);
+    }
+    for(var i = from; i < boxes.length && digits.length; i++){
+      boxes[i].value = digits.shift();
+      boxes[i].classList.add('filled');
+    }
+    var next = Math.min(from + String(text).replace(/\D/g,'').length, boxes.length - 1);
+    boxes[next].focus();
+    maybeSubmit();
+  }
+  function maybeSubmit(){
+    if(otpValue().length === OTP_LEN){
+      /* A full row means they are done typing. Waiting for a button
+         press here is just an extra thing to do. */
+      setTimeout(function(){ if(otpValue().length === OTP_LEN) $('#formCode').requestSubmit(); }, 120);
+    }
+  }
+  function wireBoxes(){
+  boxes.forEach(function(box, i){
+    box.addEventListener('input', function(e){
+      $('#otpWrap').classList.remove('bad');
+      var v = box.value.replace(/\D/g, '');
+      if(v.length > 1){ box.value = ''; spread(v, i); return; }
+      box.value = v;
+      box.classList.toggle('filled', !!v);
+      if(v && i < boxes.length - 1) boxes[i + 1].focus();
+      if(v) maybeSubmit();
+    });
+    box.addEventListener('keydown', function(e){
+      if(e.key === 'Backspace' && !box.value && i > 0){
+        boxes[i - 1].focus(); boxes[i - 1].value = '';
+        boxes[i - 1].classList.remove('filled');
+        e.preventDefault();
+      }
+      if(e.key === 'ArrowLeft'  && i > 0){ boxes[i - 1].focus(); e.preventDefault(); }
+      if(e.key === 'ArrowRight' && i < boxes.length - 1){ boxes[i + 1].focus(); e.preventDefault(); }
+    });
+    box.addEventListener('paste', function(e){
+      e.preventDefault();
+      spread((e.clipboardData || window.clipboardData).getData('text'), i);
+    });
+    box.addEventListener('focus', function(){ box.select(); });
+  });
+  }
+  buildOtp(6);
+
+  /* Supabase refuses a second code inside sixty seconds. Showing the
+     countdown is kinder than letting them press it and get an error. */
+  function startResendClock(){
+    resendAt = Date.now() + 60000;
+    if(tick) clearInterval(tick);
+    var paint = function(){
+      var left = Math.ceil((resendAt - Date.now()) / 1000);
+      var btn = $('#resendBtn'), when = $('#resendWhen');
+      if(left > 0){
+        btn.disabled = true;
+        when.textContent = 'You can ask for another code in ' + left + 's';
+        btn.textContent = 'Send another';
+      } else {
+        btn.disabled = false;
+        when.textContent = "Didn't get it?";
+        clearInterval(tick); tick = null;
+      }
+    };
+    paint();
+    tick = setInterval(paint, 1000);
+  }
+
+  /* ============================================================
+     Referral attribution
+     ============================================================
+     The code rode in on the URL from the bridge page or the landing
+     page. Creating a login is a detour through the inbox, so the code
+     is parked in this browser and put back on the URL when we hand
+     the creator over to the questions. Without this, every referral
+     that goes through email verification is credited to nobody.
+     ============================================================ */
+  var REF_SHAPE = /^[A-Z0-9][A-Z0-9._-]{2,23}$/;
+
+  function refCode(){
+    var code = '';
+    try{
+      var q = new URLSearchParams(location.search);
+      code = (q.get('ref') || q.get('c') || '').trim().toUpperCase();
+    }catch(e){}
+    if(!REF_SHAPE.test(code)){
+      try{
+        var m = document.cookie.match(/(?:^|;\s*)clipathon_ref=([^;]+)/);
+        code = m ? decodeURIComponent(m[1]).trim().toUpperCase() : '';
+      }catch(e){ code = ''; }
+    }
+    if(!REF_SHAPE.test(code)){
+      try{
+        var o = JSON.parse(localStorage.getItem('clipathon-ref') || 'null');
+        code = (o && o.code && (Date.now() - (o.at || 0)) <= 30 * 864e5)
+          ? String(o.code).trim().toUpperCase() : '';
+      }catch(e){ code = ''; }
+    }
+    return REF_SHAPE.test(code) ? code : '';
+  }
+
+  (function parkRef(){
+    var code = refCode();
+    if(!code) return;
+    try{ localStorage.setItem('clipathon-ref', JSON.stringify({code:code, at:Date.now()})); }catch(e){}
+    try{ document.cookie = 'clipathon_ref=' + encodeURIComponent(code) +
+      ';path=/;max-age=' + (60*60*24*30) + ';samesite=lax'; }catch(e){}
+  })();
+
+  function withRef(url){
+    var code = refCode();
+    if(!code) return url;
+    if(/[?&]ref=/.test(url)) return url;
+    return url + (url.indexOf('?') >= 0 ? '&' : '?') + 'ref=' + encodeURIComponent(code);
+  }
+
+  /* ============================================================
+     Where a signed in person actually belongs
+     ============================================================ */
+  function route(where){
+    var c = client();
+    return c.rpc('me', { p_user_agent: navigator.userAgent }).then(function(res){
+      if(res.error){
+        msg(where, 'Signed in, but we could not load your Clipathon entry. Try again in a moment.', 'bad');
+        return false;
+      }
+      var m = res.data || {};
+
+      if(!m.ok && m.error === 'already_linked'){
+        c.auth.signOut();
+        msg(where, m.message || 'That entry is linked to a different login.', 'bad');
+        return false;
+      }
+      if(!m.ok && m.error === 'blocked'){
+        c.auth.signOut();
+        msg(where, m.message || 'This account cannot access the dashboard.', 'bad');
+        return false;
+      }
+      if(!m.ok){
+        msg(where, 'Something went wrong loading your entry.', 'bad');
+        return false;
+      }
+
+      /* Signed in, email proven, has not answered the questions yet.
+         This is the normal state for somebody who made their login two
+         minutes ago, so it is a next step and not an error. */
+      if(m.needs_registration){
+        $('#doneTitle').textContent = 'Email confirmed.';
+        $('#doneBody').textContent  = 'Now a few questions about you and your account. Two minutes.';
+        show('done');
+        setTimeout(function(){ location.href = withRef(CFG.REGISTER_URL); }, 900);
+        return true;
+      }
+
+      var reg = m.registration || {};
+
+      if(reg.status === 'approved'){
+        $('#doneTitle').textContent = "You're in.";
+        $('#doneBody').textContent  = 'Opening your dashboard.';
+        show('done');
+        setTimeout(function(){ location.href = CFG.DASHBOARD_URL; }, 700);
+        return true;
+      }
+
+      /* Everything else is a real state with its own answer. Say it
+         here rather than bouncing them into a dashboard that would
+         only tell them the same thing. */
+      if(reg.status === 'pending'){
+        note('&#9673;', 'Your registration is still in review',
+          'Every entry is checked by hand. You will hear the moment you are approved, and the dashboard opens then.');
+      } else if(reg.status === 'needs_info'){
+        note('&#9888;', 'We need one thing fixed',
+          (reg.needs_info_reason || 'Your profile link could not be checked.') +
+          ' Reply to our email and we will re-review it.');
+      } else if(reg.status === 'rejected'){
+        note('&#9888;', 'This entry was not approved',
+          (reg.rejected_reason || 'Contact support if you think this is wrong.'));
+      }
+      show('in');
+      return false;
+    });
+  }
+
+  /* ============================================================
+     Sign in
+     ============================================================ */
+  $('#formIn').addEventListener('submit', function(e){
+    e.preventDefault();
+    var email = ($('#inEmail').value || '').trim().toLowerCase();
+    var pass  = $('#inPass').value || '';
+
+    if(!validEmail(email)) return msg('#msgIn', 'Enter the email you registered with.', 'bad');
+    if(!pass)              return msg('#msgIn', 'Enter your password.', 'bad');
+
+    var c = client();
+    if(!c) return msg('#msgIn', 'We could not reach the server. Check your connection.', 'bad');
+
+    note('', '', '');
+    busy('#btnIn', true, 'Signing in…');
+    msg('#msgIn', '');
+
+    c.auth.signInWithPassword({ email: email, password: pass }).then(function(res){
+      if(res.error){
+        busy('#btnIn', false);
+        return msg('#msgIn', friendly(res.error), 'bad');
+      }
+      return route('#msgIn').then(function(went){ if(!went) busy('#btnIn', false); });
+    }).catch(function(err){
+      busy('#btnIn', false);
+      msg('#msgIn', friendly(err), 'bad');
+    });
+  });
+
+  $('#forgotLink').addEventListener('click', goReset);
+  $('#forgotLink').addEventListener('keydown', function(e){
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goReset(); }
+  });
+  function goReset(){
+    intent = 'reset';
+    paintIntent();
+    $('#upEmail').value = ($('#inEmail').value || '').trim();
+    show('email');
+  }
+
+  /* ============================================================
+     Step 1, send the code
+     ============================================================ */
+  function sendCode(email, btn, box){
+    var c = client();
+    if(!c){ msg(box, 'We could not reach the server. Check your connection.', 'bad'); return Promise.resolve(false); }
+
+    busy(btn, true, 'Sending…');
+    msg(box, '');
+
+    /* On the reset path we must NOT create an account for an address
+       that has never registered, or a typo silently makes a ghost
+       login. On the signup path creating is the entire point. */
+    return c.auth.signInWithOtp({
+      email: email,
+      options: { shouldCreateUser: (intent === 'signup') }
+    }).then(function(res){
+      busy(btn, false);
+      if(res.error){
+        var m = String(res.error.message || '');
+        if(intent === 'reset' && /Signups not allowed|not found|User not found/i.test(m)){
+          msg(box, 'We have no login for that address. Use Sign In instead.', 'bad');
+          return false;
+        }
+        msg(box, friendly(res.error), 'bad');
+        return false;
+      }
+      addr = email;
+      $('#codeEmail').textContent = email;
+      otpClear();
+      show('code');
+      startResendClock();
+      return true;
+    }).catch(function(err){
+      busy(btn, false);
+      msg(box, friendly(err), 'bad');
+      return false;
+    });
+  }
+
+  $('#formEmail').addEventListener('submit', function(e){
+    e.preventDefault();
+    var email = ($('#upEmail').value || '').trim().toLowerCase();
+    if(!validEmail(email)) return msg('#msgEmail', 'Enter a valid email address.', 'bad');
+
+    /* The password is chosen here and committed after the code checks
+       out, so nothing is saved against an address nobody has proven. */
+    var a = ($('#upPw1') && $('#upPw1').value) || '',
+        b = ($('#upPw2') && $('#upPw2').value) || '',
+        bad = pwProblem(a, b);
+    if(bad) return msg('#msgEmail', bad, 'bad');
+
+    upPass = a;
+    note('', '', '');
+    sendCode(email, '#btnEmail', '#msgEmail');
+  });
+
+  $('#resendBtn').addEventListener('click', function(){
+    if(Date.now() < resendAt) return;
+    sendCode(addr, '#resendBtn', '#msgCode').then(function(sent){
+      if(sent) msg('#msgCode', 'A new code is on its way. The older one no longer works.', 'ok');
+    });
+  });
+
+  $('#changeEmail').addEventListener('click', function(){
+    $('#upEmail').value = addr;
+    show('email');
+  });
+
+  /* ============================================================
+     Step 2, prove the inbox
+     ============================================================ */
+  $('#formCode').addEventListener('submit', function(e){
+    e.preventDefault();
+    var token = otpValue();
+    if(token.length !== OTP_LEN){
+      $('#otpWrap').classList.add('bad');
+      return msg('#msgCode', 'Enter all ' + OTP_LEN + ' digits.', 'bad');
+    }
+
+    var c = client();
+    if(!c) return msg('#msgCode', 'We could not reach the server.', 'bad');
+
+    busy('#btnCode', true, 'Checking…');
+    msg('#msgCode', '');
+
+    /* type 'email' covers both the signup confirmation and the code we
+       send on the reset path, because both are email OTPs as far as
+       GoTrue is concerned. */
+    c.auth.verifyOtp({ email: addr, token: token, type: 'email' }).then(function(res){
+      busy('#btnCode', false);
+      if(res.error){
+        $('#otpWrap').classList.add('bad');
+        otpClear();
+        boxes[0].focus();
+        return msg('#msgCode', friendly(res.error), 'bad');
+      }
+      if(!(res.data && res.data.session)){
+        return msg('#msgCode', 'That code was accepted but no session came back. Try signing in.', 'bad');
+      }
+      checkRules();
+
+      /* Normal path. They typed the password on step 1 and the code has
+         now proved the inbox, so this is the moment it becomes real.
+         updateUser rather than signUp because verifyOtp already handed
+         over a session: the account exists, it just has no password yet. */
+      if(upPass){
+        var pw = upPass;
+        busy('#btnCode', true, 'Setting up your login\u2026');
+        return c.auth.updateUser({ password: pw }).then(function(r2){
+          busy('#btnCode', false);
+          if(r2.error){
+            /* The inbox is proven and they hold a session, so the only
+               thing still missing is the password. That is what the
+               fallback panel is for. */
+            upPass = '';
+            $('#pw1').value = ''; $('#pw2').value = '';
+            checkRules();
+            show('pass');
+            return msg('#msgPass', friendly(r2.error), 'bad');
+          }
+          upPass = '';
+          return route('#msgCode').then(function(went){ if(!went) busy('#btnCode', false); });
+        }).catch(function(e2){
+          busy('#btnCode', false);
+          upPass = '';
+          show('pass');
+          msg('#msgPass', friendly(e2), 'bad');
+        });
+      }
+
+      /* No password in hand: a magic link, a resumed tab, or the code
+         panel reached some other way. Ask about their own account. If a
+         password already exists they are signed in and done; sending them
+         to "Set your password" would refuse the only password they know
+         and strand them there. has_password() reads nothing but the
+         caller's own row, so nothing leaks about anybody else. */
+      c.rpc('has_password').then(function(hp){
+        if(!hp.error && hp.data === true){
+          busy('#btnCode', true, 'Signing you in\u2026');
+          return route('#msgCode').then(function(went){
+            if(!went){ busy('#btnCode', false); show('pass'); }
+          });
+        }
+        show('pass');
+      }).catch(function(){ show('pass'); });
+    }).catch(function(err){
+      busy('#btnCode', false);
+      $('#otpWrap').classList.add('bad');
+      msg('#msgCode', friendly(err), 'bad');
+    });
+  });
+
+  /* ============================================================
+     Step 3, the password
+     ============================================================
+     By the time this runs the creator already holds a session, handed
+     over by verifyOtp. So this is updateUser rather than signUp: the
+     account exists, it just has no password on it yet. That is the
+     whole reason the email can be confirmed before a password is
+     ever chosen. */
+  $('#formPass').addEventListener('submit', function(e){
+    e.preventDefault();
+    var a = $('#pw1').value || '', b = $('#pw2').value || '';
+
+    if(a.length < 8) return msg('#msgPass', 'Use at least 8 characters.', 'bad');
+    if(!/[A-Za-z]/.test(a) || !/[0-9]/.test(a))
+      return msg('#msgPass', 'Mix at least one letter and one number.', 'bad');
+    if(a !== b) return msg('#msgPass', 'Those two do not match.', 'bad');
+
+    var c = client();
+    if(!c) return msg('#msgPass', 'We could not reach the server.', 'bad');
+
+    busy('#btnPass', true, 'Saving…');
+    msg('#msgPass', '');
+
+    c.auth.updateUser({ password: a }).then(function(res){
+      if(res.error){
+        busy('#btnPass', false);
+        return msg('#msgPass', friendly(res.error), 'bad');
+      }
+      return route('#msgPass').then(function(went){ if(!went) busy('#btnPass', false); });
+    }).catch(function(err){
+      busy('#btnPass', false);
+      msg('#msgPass', friendly(err), 'bad');
+    });
+  });
+
+  /* ============================================================
+     Arriving with a session already
+     ============================================================
+     Somebody who is still signed in should not be shown a login form.
+     Work out where they belong and send them, but only if they landed
+     here without being told to stay. */
+  (function resume(){
+    var c = client();
+    if(!c) return;
+    if(/[?&]stay=1/.test(location.search)) return;
+    if(/[?&]code=/.test(location.search)) return;   /* the link handler owns this load */
+    c.auth.getSession().then(function(r){
+      var s = r && r.data && r.data.session;
+      if(!s) return;
+      route('#msgIn');
+    }).catch(function(){});
+  })();
+
+  /* ============================================================
+     Arriving from a link in the code email
+     ============================================================
+     The email carries ?email=&code= so the creator can tap once
+     instead of typing it out. Fill both, verify, and strip the
+     code out of the address bar straight away so it does not sit in
+     history or get handed to anything as a referrer. */
+  function fromLink(){
+    var q = new URLSearchParams(location.search);
+    var code = (q.get('code') || '').replace(/\D/g, '');
+    var mail = (q.get('email') || '').trim().toLowerCase();
+    if(code.length < 4 || code.length > 10 || !validEmail(mail)) return false;
+    buildOtp(code.length);
+
+    addr = mail;
+    $('#codeEmail').textContent = mail;
+    intent = 'signup';
+    paintIntent();
+    show('code');
+    for(var i = 0; i < code.length && i < boxes.length; i++){
+      boxes[i].value = code[i];
+      boxes[i].classList.add('filled');
+    }
+
+    /* Out of the URL before anything else happens. */
+    try{
+      q.delete('code'); q.delete('email');
+      var rest = q.toString();
+      history.replaceState(null, '', location.pathname + (rest ? '?' + rest : ''));
+    }catch(e){}
+
+    msg('#msgCode', 'Checking your code…');
+    setTimeout(function(){ $('#formCode').requestSubmit(); }, 260);
+    return true;
+  }
+
+  /* The landing page sends people here with ?new=1 when they clicked
+     Register rather than Sign in, so they open on the right face
+     instead of having to find the tab. */
+  (function opening(){
+    if(fromLink()) return;
+    if(/[?&]new=1/.test(location.search) || location.hash === '#new'){
+      intent = 'signup';
+      paintIntent();
+      show('email');
+    }
+  })();
+
+  paintIntent();
+})();
+</script>
+</body>
+</html>

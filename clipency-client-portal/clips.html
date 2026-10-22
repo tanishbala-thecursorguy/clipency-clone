@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipency — Clips Feed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){try{
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('clipency-theme') || 'light');
+  /* Gate: the portal used to be opened with a 6-digit PIN kept in
+     sessionStorage. It is now a real login, so the gate checks for a
+     Supabase session instead. This is the synchronous, no-dependency
+     version so it can run before anything paints; js/live.js does the
+     authoritative check (getUser) and redirects if the token is stale. */
+  /* Demo mode: ?demo=1 opens the real portal on the sample data in
+     data.js, with no account. The flag is kept in sessionStorage so the
+     other pages stay in demo as you click through the nav, and it dies
+     with the tab so nobody is left stuck in a fake dashboard. */
+  var __d = /[?&]demo=1/.test(location.search);
+  try{
+    if(__d) sessionStorage.setItem('clipency-demo','1');
+    if(/[?&]demo=0/.test(location.search)) sessionStorage.removeItem('clipency-demo');
+    __d = sessionStorage.getItem('clipency-demo') === '1';
+  }catch(e){}
+  if(!__d && !localStorage.getItem('sb-spwtkdgpgeutrhwcjrpy-auth-token')) location.replace('./client-signin.html');
+}catch(e){ document.documentElement.setAttribute('data-theme','light'); }})();
+</script>
+<link rel="stylesheet" href="./dashboard.css">
+<style>
+/* ---------- top three podium ---------- */
+.top3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px;}
+.top-card{
+  position:relative;display:flex;gap:16px;align-items:stretch;
+  background:var(--surface);border:1px solid var(--hair);border-radius:14px;
+  padding:16px;cursor:pointer;text-decoration:none;color:inherit;overflow:hidden;
+  transition:transform .5s var(--ease), border-color .4s ease, box-shadow .5s var(--ease);
+}
+.top-card:hover{transform:translateY(-4px);border-color:var(--hair-warm);box-shadow:0 22px 48px -24px rgba(11,11,11,.35);}
+.top-card .rank{
+  position:absolute;top:12px;right:14px;
+  font-family:var(--serif);font-style:italic;font-size:26px;color:var(--ink-25);line-height:1;
+}
+.top-card img{width:86px;height:140px;object-fit:cover;border-radius:9px;background:var(--surface-2);border:1px solid var(--hair);flex:none;}
+.top-card .info{display:flex;flex-direction:column;min-width:0;padding-top:2px;}
+.top-card .t{font-weight:500;color:var(--ink-90);font-size:14px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;padding-right:26px;}
+.top-card .c{font-size:12px;color:var(--ink-40);margin-top:4px;}
+.top-card .metrics{margin-top:auto;display:flex;flex-direction:column;gap:2px;font-size:12.5px;color:var(--ink-55);}
+.top-card .metrics b{font-family:var(--serif);font-size:22px;color:var(--ink-2);font-weight:500;}
+.top-card .open{font-size:11.5px;color:var(--bronze);margin-top:8px;}
+@media (max-width:960px){ .top3{grid-template-columns:1fr;} }
+
+/* ---------- filters ---------- */
+.filter-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:36px 0 18px;}
+.count-note{font-size:12px;color:var(--ink-40);letter-spacing:.06em;white-space:nowrap;}
+
+/* ---------- cover grid ---------- */
+.clip-grid{
+  display:grid;grid-template-columns:repeat(auto-fill, minmax(148px, 1fr));gap:14px;
+}
+.clip-card{
+  position:relative;display:block;border-radius:12px;overflow:hidden;
+  border:1px solid var(--hair);background:var(--surface-2);
+  aspect-ratio:9/16;cursor:pointer;text-decoration:none;
+  transition:transform .45s var(--ease), border-color .4s ease, box-shadow .5s var(--ease), opacity .4s ease;
+}
+.clip-card:hover{transform:translateY(-4px) scale(1.015);border-color:var(--hair-warm);box-shadow:0 18px 40px -18px rgba(11,11,11,.4);z-index:2;}
+.clip-card img{width:100%;height:100%;object-fit:cover;display:block;}
+.clip-card .shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.72) 100%);}
+.clip-card .st{position:absolute;top:8px;left:8px;}
+.clip-card .ov{
+  position:absolute;left:0;right:0;bottom:0;padding:10px 11px;color:#F2EDE3;
+}
+.clip-card .ov .t{font-size:11.5px;font-weight:500;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.clip-card .ov .m{display:flex;justify-content:space-between;font-size:10.5px;opacity:.85;margin-top:5px;font-variant-numeric:tabular-nums;}
+.clip-card .go{
+  position:absolute;top:8px;right:40px;width:26px;height:26px;border-radius:50%;
+  background:rgba(20,18,16,.55);display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .35s ease;pointer-events:none;
+}
+.clip-card:hover .go{opacity:1;}
+.clip-card .go svg{width:11px;height:11px;stroke:#F2EDE3;}
+.clip-card.hide{display:none;}
+
+/* ---------- 3-dot menu ---------- */
+.clip-menu-btn{
+  position:absolute;top:8px;right:8px;z-index:4;
+  width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(20,18,16,.55);color:#F2EDE3;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .3s ease, background .25s ease;
+  font-size:15px;line-height:1;
+}
+.clip-card:hover .clip-menu-btn,.clip-menu-btn.open{opacity:1;}
+.clip-menu-btn:hover{background:rgba(20,18,16,.8);}
+.clip-menu{
+  position:absolute;top:38px;right:8px;z-index:6;min-width:150px;
+  background:var(--surface);border:1px solid var(--hair);border-radius:10px;
+  box-shadow:0 16px 40px -14px rgba(11,11,11,.5);padding:5px;
+  opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;
+  transition:opacity .22s var(--ease), transform .22s var(--ease);
+}
+.clip-menu.open{opacity:1;transform:none;pointer-events:auto;}
+.clip-menu button{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  background:none;border:none;cursor:pointer;font-family:var(--sans);
+  font-size:13px;color:var(--ink-70);padding:9px 10px;border-radius:6px;
+  transition:background .2s ease, color .2s ease;
+}
+.clip-menu button:hover{background:var(--gold-08);color:var(--ink);}
+.clip-menu button.flag:hover{color:var(--bad);}
+.clip-menu button svg{width:14px;height:14px;stroke:currentColor;flex:none;}
+.clip-menu hr{border:none;border-top:1px solid var(--hair);margin:4px 2px;}
+
+/* flagged state */
+.clip-card.flagged{box-shadow:0 0 0 2px var(--bad);}
+.flag-badge{
+  position:absolute;top:8px;left:8px;z-index:3;display:none;align-items:center;gap:5px;
+  background:rgba(180,84,60,.92);color:#fff;border-radius:5px;padding:3px 8px;
+  font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+}
+.clip-card.flagged .flag-badge{display:inline-flex;}
+.flag-badge svg{width:9px;height:9px;stroke:#fff;}
+
+/* ---------- flag modal ---------- */
+.modal-scrim{
+  position:fixed;inset:0;z-index:100;background:rgba(11,11,11,.5);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  display:flex;align-items:center;justify-content:center;padding:26px;
+  opacity:0;pointer-events:none;transition:opacity .3s ease;
+}
+.modal-scrim.open{opacity:1;pointer-events:auto;}
+.modal{
+  width:100%;max-width:460px;background:var(--surface);
+  border:1px solid var(--hair);border-radius:16px;padding:30px;
+  box-shadow:0 30px 70px -30px rgba(11,11,11,.6);
+  transform:translateY(14px) scale(.98);transition:transform .3s var(--ease);
+}
+.modal-scrim.open .modal{transform:none;}
+.modal .m-eyebrow{font-size:10.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:var(--bad);margin-bottom:10px;}
+.modal h3{font-family:var(--serif);font-weight:500;font-size:24px;color:var(--ink-2);line-height:1.2;}
+.modal .m-clip{
+  display:flex;align-items:center;gap:11px;margin:16px 0 22px;padding:10px;
+  background:var(--surface-2);border:1px solid var(--hair);border-radius:10px;
+}
+.modal .m-clip img{width:34px;height:52px;border-radius:6px;object-fit:cover;flex:none;background:var(--card);}
+.modal .m-clip .t{font-size:13px;font-weight:500;color:var(--ink-90);line-height:1.35;}
+.modal .m-clip .c{font-size:12px;color:var(--ink-40);}
+.modal label{display:block;font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-55);margin-bottom:9px;}
+.reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
+.reason-grid button{
+  font-family:var(--sans);font-size:12.5px;color:var(--ink-70);text-align:left;
+  border:1px solid var(--hair);border-radius:8px;padding:10px 12px;background:var(--field);
+  cursor:pointer;transition:all .2s ease;line-height:1.3;
+}
+.reason-grid button:hover{border-color:var(--hair-warm);}
+.reason-grid button.sel{border-color:var(--bad);background:rgba(180,84,60,.08);color:var(--ink-2);}
+.modal textarea{
+  width:100%;min-height:88px;resize:vertical;font-family:var(--sans);font-size:13.5px;
+  color:var(--ink-90);background:var(--field);border:1px solid var(--hair);border-radius:9px;
+  padding:12px 13px;outline:none;transition:border-color .3s ease, background .3s ease;line-height:1.6;
+}
+.modal textarea:focus{border-color:var(--bronze);background:var(--field-focus);}
+.modal .m-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}
+.modal .btn-danger{background:var(--bad);color:#fff;}
+.modal .btn-danger:hover{filter:brightness(1.06);}
+.modal .btn-danger:disabled{opacity:.4;cursor:default;filter:none;}
+
+/* toast */
+.toast{
+  position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);z-index:120;
+  background:var(--btn-bg);color:var(--btn-fg);font-size:13.5px;
+  border-radius:10px;padding:13px 20px;display:flex;align-items:center;gap:10px;
+  box-shadow:0 18px 44px -16px rgba(11,11,11,.6);opacity:0;pointer-events:none;
+  transition:opacity .3s ease, transform .3s var(--ease);
+}
+.toast.show{opacity:1;transform:translateX(-50%);}
+.toast svg{width:15px;height:15px;stroke:var(--gold);}
+.mi-locked{display:block;padding:9px 12px;font-size:12.5px;color:var(--ink-40,#8a8378);cursor:default;}
+</style>
+</head>
+<body>
+<div class="paper-field" aria-hidden="true"></div>
+<div class="shell">
+  <div id="side"></div>
+  <div class="main">
+    <div id="topbar"></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Clips Feed</span>
+          <h1>Every clip, live.</h1>
+          <p>Everything the network has posted for your campaign. Click any clip to open the original post. New submissions wait in Review until you approve or reject them.</p>
+        </div>
+      </div>
+
+      <!-- top three -->
+      <section aria-label="Top clips">
+        <div class="panel-h" style="margin:34px 0 0;"><h2 style="font-family:var(--serif);font-weight:500;font-size:21px;color:var(--ink-2);">Top performers</h2><span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);">By views &amp; engagement</span></div>
+        <div class="top3" id="top3"></div>
+      </section>
+
+      <!-- filters + grid -->
+      <div class="filter-row">
+        <div class="chips" id="platChips">
+          <button class="chip on" data-plat="all">All platforms</button>
+          <button class="chip" data-plat="instagram">Instagram</button>
+          <button class="chip" data-plat="youtube">YouTube</button>
+        </div>
+        <div class="chips" id="sortChips">
+          <button class="chip on" data-sort="views">Top views</button>
+          <button class="chip" data-sort="likes">Most liked</button>
+          <button class="chip" data-sort="newest">Newest</button>
+        </div>
+        <span class="count-note" id="countNote"></span>
+      </div>
+
+      <section class="clip-grid" id="clipGrid" aria-label="All clips"></section>
+
+      <p class="foot-note" id="footNote"></p>
+    </main>
+  </div>
+</div>
+
+<!-- ============ Flag modal ============ -->
+<div class="modal-scrim" id="flagScrim" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="flagTitle">
+    <div class="m-eyebrow">Flag for review</div>
+    <h3 id="flagTitle">Report this clip to your manager.</h3>
+    <div class="m-clip" id="flagClip">
+      <img id="flagCover" src="" alt="">
+      <div><div class="t" id="flagName"></div><div class="c" id="flagMeta"></div></div>
+    </div>
+    <label>Reason</label>
+    <div class="reason-grid" id="reasonGrid"></div>
+    <label for="flagDesc">Description <span style="text-transform:none;letter-spacing:0;color:var(--ink-40);">(optional)</span></label>
+    <textarea id="flagDesc" placeholder="Add any detail that will help the team review this clip…"></textarea>
+    <div class="m-actions">
+      <button class="btn btn-line" id="flagCancel" type="button">Cancel</button>
+      <button class="btn btn-danger" id="flagSubmit" type="button" disabled>Send flag</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Toast ============ -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="./data.js"></script>
+<script src="./db.js"></script>
+<script src="./export.js"></script>
+<script src="./shell.js"></script>
+<script src="./tour.js"></script>
+<!-- live data (read-only production Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script src="./js/live.js"></script>
+
+<script type="module">
+/* wait for live production data before painting; resolves to 'live' or 'mock' */
+if (window.CLIPENCY_LIVE) {
+  try { await window.CLIPENCY_LIVE.ready; }
+  catch (e) { console.error('[clipency] live load threw, painting anyway', e); }
+}
+
+CLIPSHELL.init('clips');
+(function(){
+  if(CLIPSHELL.emptyState()) return;
+  var C = CLIPENCY;
+  document.getElementById('footNote').textContent = 'CLIPENCY — ' + C.campaign.label;
+
+  /* ---------- top three ---------- */
+  var medals = ['Ⅰ','Ⅱ','Ⅲ']; /* I II III */
+  document.getElementById('top3').innerHTML = C.top(3).map(function(r,i){
+    return '<a class="top-card" href="'+r.url+'" target="_blank" rel="noopener" aria-label="Open top clip '+(i+1)+'">' +
+      '<span class="rank">'+medals[i]+'</span>' +
+      '<img loading="lazy" src="'+r.cover+'" alt="">' +
+      '<div class="info">' +
+        '<div class="t">'+r.title+'</div>' +
+        '<div class="c">'+r.creator+' · <span class="plat '+r.platform+'" style="display:inline">'+r.platform+'</span></div>' +
+        '<div class="metrics"><b>'+C.fmt(r.views)+' views</b><span>'+C.fmt(r.likes)+' likes · '+C.fmt(r.comments)+' comments</span></div>' +
+        '<span class="open">Open post &#8599;</span>' +
+      '</div></a>';
+  }).join('');
+
+  /* ============================================================
+     FLAG SYSTEM
+     Flags are stored locally now and are ADMIN-READY: each one is a
+     structured record. To send to your admin/Supabase backend, replace
+     the body of saveFlag() with e.g.
+        supabase.from('flags').upsert(record)
+     Record schema: { clipId, title, creator, platform, url, reason,
+                      description, client, flaggedAt }
+     ============================================================ */
+  var FLAG_KEY = 'clipency-flags-' + C.campaign.code;
+  function loadFlags(){ try{ return JSON.parse(localStorage.getItem(FLAG_KEY) || '{}'); }catch(e){ return {}; } }
+  function saveFlags(f){ try{ localStorage.setItem(FLAG_KEY, JSON.stringify(f)); }catch(e){} }
+  var flags = loadFlags();
+
+  var REASONS = [
+    "Doesn't fit our brand",
+    "Misleading or inaccurate",
+    "Wrong product or link",
+    "Low quality / poor edit",
+    "Inappropriate content",
+    "Other"
+  ];
+
+  /* ---------- grid — live clips only, filter + sort ---------- */
+  var all = C.approved().slice();
+  var byId = {}; all.forEach(function(r){ byId[r.id] = r; });
+
+  /* The server is the record of what has been flagged.
+     This page kept flags in localStorage only, so a flag disappeared on
+     another device or after cleared site data, and a flag a colleague raised
+     on a shared campaign never showed here at all - even though
+     client_dashboard_data() has been sending flagged_at and a flag object
+     per clip the whole time. Local state stays on as the optimistic overlay
+     for the moment between sending a flag and the payload catching up. */
+  /* A clip the client once flagged stays live and counts as approved. The
+     feed shows it like any other live clip: no badge, no outline. Only the
+     demo tour keeps a local flag map for its walkthrough. */
+  (function dropServerFlags(){
+    Object.keys(flags).forEach(function(id){ if(flags[id] && flags[id].fromServer) delete flags[id]; });
+    saveFlags(flags);
+  })();
+  var grid = document.getElementById('clipGrid');
+  var plat = 'all', sortKey = 'views';
+  var sorters = {
+    views:  function(a,b){ return b.views - a.views; },
+    likes:  function(a,b){ return b.likes - a.likes; },
+    newest: function(a,b){ return b.submitted.localeCompare(a.submitted); }
+  };
+  /* A resolved flag is not the same thing as an open one, and a flag raised
+     by someone else on a shared campaign is not this client's to chase. */
+  function flagLabel(r){
+    var f = flags[r.id] || {};
+    if(f.resolution === 'upheld') return 'Removed';
+    return 'Flagged';
+  }
+  function flagTip(r){
+    var f = flags[r.id] || {};
+    var who = f.fromServer ? (f.byMe ? 'You' : (f.by || 'A client')) : 'You';
+    var head = who + ' flagged this' + (f.reason ? ': ' + f.reason : '');
+    if(f.resolution === 'upheld') return head + ' — upheld, the clip was pulled' + (f.note ? ' (' + f.note + ')' : '');
+    if(f.resolution === 'dismissed') return head + ' — reviewed and kept live' + (f.note ? ' (' + f.note + ')' : '');
+    return head + ' — stays live while your Clipency manager reviews it';
+  }
+
+  function render(){
+    var list = all.filter(function(r){ return plat==='all' || r.platform===plat; }).sort(sorters[sortKey]);
+    grid.innerHTML = list.map(function(r){
+      var isFlagged = !!flags[r.id];
+      return '<div class="clip-card'+(isFlagged?' flagged':'')+'" role="link" tabindex="0" data-id="'+r.id+'" data-url="'+r.url+'" aria-label="'+r.title.replace(/"/g,'&quot;')+'">' +
+        '<img loading="lazy" src="'+r.cover+'" alt="'+r.title.replace(/"/g,'&quot;')+'">' +
+        '<span class="shade"></span>' +
+        '<span class="flag-badge" title="'+flagTip(r).replace(/"/g,'&quot;')+'"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 21V4h11l-1.5 3.5L15 11H4"/></svg>'+flagLabel(r)+'</span>' +
+        '<span class="go"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>' +
+        '<button class="clip-menu-btn" data-id="'+r.id+'" aria-label="Clip options" aria-haspopup="true">&#8942;</button>' +
+        '<div class="clip-menu" data-id="'+r.id+'">' +
+          '<button class="mi-open"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg>Open post</button>' +
+          /* Clients approve or reject in Review; there is no flagging from the
+             feed. A clip that was flagged in the past keeps its badge only. */
+        '</div>' +
+        '<span class="ov"><span class="t">'+r.title+'</span>' +
+          '<span class="m"><span>'+C.fmt(r.views)+' views</span><span>'+C.fmt(r.likes)+' likes</span></span></span>' +
+      '</div>';
+    }).join('');
+    var flaggedCount = list.filter(function(r){ return flags[r.id]; }).length;
+    document.getElementById('countNote').textContent =
+      list.length + ' of ' + all.length + ' clips' + (flaggedCount ? ' · ' + flaggedCount + ' flagged' : '');
+  }
+  document.querySelectorAll('#platChips .chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      document.querySelectorAll('#platChips .chip').forEach(function(x){ x.classList.remove('on'); });
+      ch.classList.add('on'); plat = ch.dataset.plat; render();
+    });
+  });
+  document.querySelectorAll('#sortChips .chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      document.querySelectorAll('#sortChips .chip').forEach(function(x){ x.classList.remove('on'); });
+      ch.classList.add('on'); sortKey = ch.dataset.sort; render();
+    });
+  });
+  render();
+
+  /* ---------- interactions (delegated) ---------- */
+  function closeMenus(){
+    document.querySelectorAll('.clip-menu.open').forEach(function(m){ m.classList.remove('open'); });
+    document.querySelectorAll('.clip-menu-btn.open').forEach(function(b){ b.classList.remove('open'); });
+  }
+  grid.addEventListener('click', function(e){
+    var menuBtn = e.target.closest('.clip-menu-btn');
+    var menu = e.target.closest('.clip-menu');
+    var card = e.target.closest('.clip-card');
+
+    if(menuBtn){
+      e.stopPropagation();
+      var m = card.querySelector('.clip-menu');
+      var wasOpen = m.classList.contains('open');
+      closeMenus();
+      if(!wasOpen){ m.classList.add('open'); menuBtn.classList.add('open'); }
+      return;
+    }
+    if(menu){
+      e.stopPropagation();
+      /* Was +menu.dataset.id. A live clip id is a uuid, and the unary plus
+         turned it into NaN, so byId[id] came back undefined: "Flag this clip"
+         threw inside openFlag before it could show the dialog, and "Open post"
+         in the same menu threw on byId[id].url. The mock rows in data.js use
+         integer ids, which is why both worked in the demo and were dead on
+         real data. Ids stay strings; byId is keyed by string anyway. */
+      var id = String(menu.dataset.id || '');
+      if(e.target.closest('.mi-open')){ window.open(byId[id].url, '_blank'); closeMenus(); }
+      else if(e.target.closest('.mi-flag')){ closeMenus(); openFlag(id); }
+      else if(e.target.closest('.mi-unflag')){ removeFlag(id); closeMenus(); }
+      return;
+    }
+    /* plain card click → open the post */
+    if(card){ window.open(card.dataset.url, '_blank'); }
+  });
+  grid.addEventListener('keydown', function(e){
+    var card = e.target.closest('.clip-card');
+    if(card && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); window.open(card.dataset.url, '_blank'); }
+  });
+  document.addEventListener('click', function(e){ if(!e.target.closest('.clip-menu, .clip-menu-btn')) closeMenus(); });
+
+  /* ---------- flag modal ---------- */
+  var scrim = document.getElementById('flagScrim');
+  var reasonGrid = document.getElementById('reasonGrid');
+  var descEl = document.getElementById('flagDesc');
+  var submitBtn = document.getElementById('flagSubmit');
+  var current = null, chosenReason = null;
+
+  reasonGrid.innerHTML = REASONS.map(function(r,i){ return '<button type="button" data-r="'+i+'">'+r+'</button>'; }).join('');
+  reasonGrid.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    reasonGrid.querySelectorAll('button').forEach(function(x){ x.classList.remove('sel'); });
+    b.classList.add('sel'); chosenReason = REASONS[+b.dataset.r];
+    submitBtn.disabled = false;
+  });
+
+  function openFlag(id){
+    current = byId[id];
+    /* Never leave a half-open dialog behind: if the row cannot be found, say
+       so instead of throwing on the way to showing it. */
+    if(!current){ toast('Could not open that clip. Try refreshing.'); return; }
+    if(current.status === 'approved'){ toast('This clip is approved, so it can no longer be flagged.'); return; }
+    chosenReason = null;
+    reasonGrid.querySelectorAll('button').forEach(function(x){ x.classList.remove('sel'); });
+    descEl.value = ''; submitBtn.disabled = true;
+    document.getElementById('flagCover').src = current.cover;
+    document.getElementById('flagName').textContent = current.title;
+    document.getElementById('flagMeta').textContent = current.creator + ' · ' + current.platform;
+    scrim.classList.add('open'); scrim.setAttribute('aria-hidden','false');
+  }
+  function closeFlag(){ scrim.classList.remove('open'); scrim.setAttribute('aria-hidden','true'); current = null; }
+
+  document.getElementById('flagCancel').addEventListener('click', closeFlag);
+  scrim.addEventListener('click', function(e){ if(e.target === scrim) closeFlag(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && scrim.classList.contains('open')) closeFlag(); });
+
+  submitBtn.addEventListener('click', async function(){
+    if(!current || !chosenReason) return;
+    var reason = chosenReason + (descEl.value.trim() ? ' — ' + descEl.value.trim() : '');
+
+    /* Demo mode has no account and must not touch the database. Keep the old
+       local behaviour there so the tour still demonstrates the feature. */
+    if(isDemo()){
+      flags[current.id] = { clipId: current.id, reason: reason, flaggedAt: new Date().toISOString() };
+      saveFlags(flags); closeFlag(); render();
+      toast('Flag sent to your Clipency manager.');
+      return;
+    }
+
+    submitBtn.disabled = true; submitBtn.textContent = 'Sending…';
+    try{
+      var sb = supabaseClient();
+      if(!sb) throw new Error('Not connected. Reload the page and try again.');
+      var r = await sb.rpc('client_flag_clip', { p_submission_id: current.id, p_reason: reason });
+      if(r.error) throw new Error(r.error.message);
+
+      /* A flagged clip stays live with a Flagged badge and still counts as
+         approved; the flag is a note for your Clipency manager. */
+      current.status = 'flagged';
+      (C.submissions || []).forEach(function(x){ if(String(x.id) === String(current.id)) x.status = 'flagged'; });
+      flags[current.id] = { clipId: current.id, reason: reason, flaggedAt: new Date().toISOString(),
+                            byMe: true, resolution: 'open', fromServer: true };
+      saveFlags(flags);
+      closeFlag(); render();
+      toast('Flagged. It stays live in your feed while your Clipency manager reviews it.');
+    }catch(e){
+      toast(e.message || 'Could not flag this clip.');
+    }finally{
+      submitBtn.disabled = false; submitBtn.textContent = 'Send flag';
+    }
+  });
+
+  function isDemo(){
+    try{ return sessionStorage.getItem('clipency-demo') === '1'; }catch(e){ return false; }
+  }
+  /* live.js has already built an authenticated client; reuse it rather than
+     making a second one, so the session and the read-only guard are shared. */
+  function supabaseClient(){
+    return window.clipencySupabase || window.supabaseClient || window.sbClient || null;
+  }
+
+  /* Unflagging is deliberately gone once a flag is live: the decision now sits
+     with Clipency, and letting a client silently withdraw a flag would leave
+     the clip down with nothing recording why. Only the local demo copy clears. */
+  function removeFlag(id){
+    if(!isDemo()){ toast('Your Clipency manager is reviewing this flag.'); return; }
+    delete flags[id]; saveFlags(flags);
+    render(); toast('Flag removed.');
+  }
+
+  /* ---------- toast ---------- */
+  var toastEl = document.getElementById('toast'), toastMsg = document.getElementById('toastMsg'), toastT;
+  function toast(msg){
+    toastMsg.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('show'); }, 2800);
+  }
+})();
+</script>
+</body>
+</html>

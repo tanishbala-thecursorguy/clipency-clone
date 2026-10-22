@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipency | Client Sign In</title>
+<meta name="robots" content="noindex, nofollow">
+<script>
+/* Self-contained on purpose: the deployed portal may not have
+   site-config.js, so this page carries its own copy of what it needs.
+
+   THIS BLOCK IS WHAT SENT CLIENTS TO THE WRONG DASHBOARD. It defined
+   CLIPPER_DASHBOARD_URL as "/client-dashboard" and the redirect below
+   read that key, so every client who signed in landed on the old
+   single-page summary instead of their portal. Because it is inline it
+   also won whenever site-config.js did load, which made the wrong
+   destination look like it was coming from somewhere else.
+
+   Client and clipper destinations are now separate keys. */
+window.CLIPENCY_SITE = {
+  CLIPPER_LOGIN_URL:     "/client/clipper-signin",
+  CLIPPER_DASHBOARD_URL: "/client/clipper",     // clippers, not clients
+  CLIENT_DASHBOARD_URL:  "/client/home",        // the client portal home
+  CLIENT_PORTAL_URL:     "/",
+  SUPABASE_URL:      "https://spwtkdgpgeutrhwcjrpy.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_IInNrDBLK3dINHSyWaUDzg_UWF63j0B"
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js" defer></script>
+<meta name="description" content="Sign in or create your Clipency account. The platform where brands discover clippers and clippers land real projects.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){try{
+  /* Theme follows the visitor's one site-wide choice (clipency-theme): light by
+     default, dark once they switch, on every page until they switch back. */
+  var __t; try{ __t = localStorage.getItem('clipency-theme'); }catch(e){}
+  document.documentElement.setAttribute('data-theme', __t === 'dark' ? 'dark' : 'light');
+}catch(e){
+  document.documentElement.setAttribute('data-theme','light');
+}})();
+</script>
+<style>
+/* ============================================================
+   CLIPENCY — tokens (matched to portal landing)
+   ============================================================ */
+:root{
+  --ink:#0B0B0B; --ink-2:#111111; --paper:#F5F2ED;
+  --gold:#D8AA74; --bronze:#8C6A45;
+  --ink-90:rgba(11,11,11,.9); --ink-70:rgba(11,11,11,.7);
+  --ink-55:rgba(11,11,11,.55); --ink-40:rgba(11,11,11,.42); --ink-25:rgba(11,11,11,.25);
+  --hair:rgba(11,11,11,.12); --hair-warm:rgba(140,106,69,.28);
+  --gold-08:rgba(216,170,116,.08);
+  --serif:'Cormorant Garamond', Georgia, serif;
+  --sans:'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --card:#F5F2ED;
+  --field:rgba(255,255,255,.55); --field-focus:rgba(255,255,255,.9);
+  --btn-bg:#0B0B0B; --btn-fg:#EDE8DF; --btn-line-border:rgba(11,11,11,.22);
+
+  /* glass */
+  --glass:rgba(253,251,248,.72);
+  --glass-line:rgba(255,255,255,.75);
+  --glass-shadow:0 2px 4px rgba(80,55,25,.08), 0 60px 140px -48px rgba(90,60,20,.55);
+  --grid-line:rgba(140,106,69,.09);
+
+  /* brand pane — the INVERSE of the page: ink panel on paper page */
+  --pane:rgba(14,12,11,.93);
+  --pane-fg:#EDE8DF; --pane-fg-70:rgba(237,232,223,.72); --pane-fg-45:rgba(237,232,223,.48);
+  --pane-hair:rgba(237,232,223,.14); --pane-hair-warm:rgba(216,170,116,.32);
+  --pane-chip:rgba(255,255,255,.06); --pane-chip-line:rgba(255,255,255,.12);
+  --pane-accent:#D8AA74;
+  --sheen:rgba(255,255,255,.05);
+  --chip-shadow:0 14px 34px -18px rgba(0,0,0,.55);
+}
+[data-theme="dark"]{
+  /* exact landing dark tokens */
+  --ink:#E9E4DA; --ink-2:#F2EDE3; --paper:#141210;
+  --ink-90:rgba(233,228,218,.92); --ink-70:rgba(233,228,218,.72);
+  --ink-55:rgba(233,228,218,.56); --ink-40:rgba(233,228,218,.42); --ink-25:rgba(233,228,218,.26);
+  --hair:rgba(233,228,218,.13); --hair-warm:rgba(216,170,116,.3);
+  --gold:#DDB07C; --bronze:#BE9A67; --gold-08:rgba(221,176,124,.1);
+  --card:#181512;
+  --field:rgba(255,255,255,.05); --field-focus:rgba(255,255,255,.1);
+  --btn-bg:#E9E4DA; --btn-fg:#161310; --btn-line-border:rgba(233,228,218,.26);
+
+  --glass:rgba(24,21,18,.58);
+  --glass-line:rgba(255,255,255,.09);
+  --glass-shadow:0 2px 4px rgba(0,0,0,.3), 0 50px 120px -40px rgba(0,0,0,.8);
+  --grid-line:rgba(233,228,218,.045);
+
+  /* INVERTED: paper panel on ink page */
+  --pane:rgba(243,240,234,.95);
+  --pane-fg:#0B0B0B; --pane-fg-70:rgba(11,11,11,.72); --pane-fg-45:rgba(11,11,11,.5);
+  --pane-hair:rgba(11,11,11,.12); --pane-hair-warm:rgba(140,106,69,.3);
+  --pane-chip:rgba(11,11,11,.045); --pane-chip-line:rgba(11,11,11,.1);
+  --pane-accent:#8C6A45;
+  --sheen:rgba(11,11,11,.04);
+  --chip-shadow:0 14px 34px -20px rgba(11,11,11,.35);
+  color-scheme:dark;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+@keyframes pageIn{from{opacity:0}}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh; overflow-x:hidden;
+  animation:pageIn .7s ease-out both;
+}
+::selection{background:rgba(216,170,116,.3);}
+
+/* ============================================================
+   Living background — grid, drifting orbs, cursor glow, grain
+   ============================================================ */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+
+/* faint grid, fading out radially */
+.bg-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size:56px 56px;
+  -webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 45%, #000 30%, transparent 78%);
+          mask-image:radial-gradient(ellipse 90% 80% at 50% 45%, #000 30%, transparent 78%);
+}
+
+/* drifting orbs — parallax via --mx/--my set from JS */
+.orb{
+  position:absolute;border-radius:50%;filter:blur(80px);
+  will-change:transform;
+  transform:translate3d(calc(var(--mx,0)*var(--p,20px)), calc(var(--my,0)*var(--p,20px)), 0);
+}
+.orb i{
+  position:absolute;inset:0;border-radius:50%;
+  animation:drift var(--t,26s) ease-in-out infinite alternate;
+}
+.orb-1{top:-16%;right:-8%;width:52vw;height:52vw;--p:26px;}
+.orb-1 i{background:radial-gradient(closest-side, rgba(216,170,116,.42), transparent 70%);}
+.orb-2{bottom:-24%;left:-12%;width:58vw;height:58vw;--p:-34px;--t:32s;}
+.orb-2 i{background:radial-gradient(closest-side, rgba(140,106,69,.3), transparent 70%);animation-delay:-8s;}
+.orb-3{top:30%;left:34%;width:34vw;height:34vw;--p:44px;--t:22s;filter:blur(95px);}
+.orb-3 i{background:radial-gradient(closest-side, rgba(224,164,92,.26), transparent 70%);animation-delay:-15s;}
+.orb-4{top:4%;left:-10%;width:38vw;height:38vw;--p:18px;--t:28s;filter:blur(85px);}
+.orb-4 i{background:radial-gradient(closest-side, rgba(180,120,60,.2), transparent 70%);animation-delay:-20s;}
+[data-theme="dark"] .orb-4 i{background:radial-gradient(closest-side, rgba(224,181,131,.07), transparent 70%);}
+[data-theme="dark"] .orb-1 i{background:radial-gradient(closest-side, rgba(224,181,131,.14), transparent 70%);}
+[data-theme="dark"] .orb-2 i{background:radial-gradient(closest-side, rgba(199,162,110,.1), transparent 70%);}
+[data-theme="dark"] .orb-3 i{background:radial-gradient(closest-side, rgba(224,181,131,.08), transparent 70%);}
+@keyframes drift{
+  0%{transform:translate(0,0) scale(1);}
+  50%{transform:translate(4%,-5%) scale(1.07);}
+  100%{transform:translate(-4%,4%) scale(.96);}
+}
+
+/* warm sunbeam from the top — light mode's hero moment */
+.bg-sun{
+  position:absolute;top:-30%;left:50%;width:120vw;height:80vh;
+  transform:translateX(-50%);
+  background:radial-gradient(ellipse 55% 100% at 50% 0%, rgba(232,186,130,.32), rgba(216,170,116,.1) 55%, transparent 75%);
+  animation:sunPulse 11s ease-in-out infinite;
+}
+[data-theme="dark"] .bg-sun{opacity:.22;}
+@keyframes sunPulse{0%,100%{opacity:.85;}50%{opacity:1;}}
+
+/* soft glow that trails the cursor */
+.bg-glow{
+  position:absolute;top:0;left:0;width:520px;height:520px;border-radius:50%;
+  background:radial-gradient(closest-side, rgba(216,170,116,.2), transparent 70%);
+  transform:translate(-50%,-50%);will-change:left,top;opacity:0;
+  transition:opacity .8s ease;
+}
+[data-theme="dark"] .bg-glow{background:radial-gradient(closest-side, rgba(224,181,131,.09), transparent 70%);}
+
+/* paper grain on top of everything in the bg */
+.bg-grain{position:absolute;inset:0;}
+.bg-grain::before{
+  content:"";position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity:.05;mix-blend-mode:multiply;
+}
+[data-theme="dark"] .bg-grain::before{opacity:.07;mix-blend-mode:overlay;}
+
+/* theme cross-fade */
+html.theming, html.theming *, html.theming *::before, html.theming *::after{
+  transition:background-color .55s ease, border-color .55s ease, color .55s ease,
+             fill .55s ease, stroke .55s ease, filter .55s ease, box-shadow .55s ease,
+             opacity .55s ease !important;
+}
+
+/* ============================================================
+   Stage + glass box (3D tilt)
+   ============================================================ */
+.stage{
+  position:relative;z-index:1;min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:96px 30px 60px;
+  perspective:1600px;
+}
+.box{
+  position:relative;width:100%;max-width:1020px;
+  display:grid;grid-template-columns:45% 55%;
+  border-radius:24px;overflow:hidden;
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(26px) saturate(1.5);
+          backdrop-filter:blur(26px) saturate(1.5);
+  border:1px solid var(--glass-line);
+  box-shadow:var(--glass-shadow);
+  animation:boxIn .9s var(--ease) both;
+  transform-style:preserve-3d;
+  will-change:transform;
+  transition:box-shadow .5s ease;
+}
+@keyframes boxIn{from{opacity:0;transform:translateY(22px) scale(.98);}to{opacity:1;transform:none;}}
+/* shimmering gold hairline across the top edge */
+.box::before{
+  content:"";position:absolute;top:0;left:60px;right:60px;height:1px;z-index:3;
+  background:linear-gradient(90deg,transparent 0%,var(--gold) 35%,#F2D5AE 50%,var(--gold) 65%,transparent 100%);
+  background-size:220% 100%;
+  animation:hairline 7s ease-in-out infinite;
+  opacity:.95;
+}
+@keyframes hairline{
+  0%,100%{background-position:0% 0;}
+  50%{background-position:100% 0;}
+}
+
+/* ---- left · brand pane (dark glass) ---- */
+.pane-brand{
+  position:relative;display:flex;flex-direction:column;
+  padding:46px 46px 38px;overflow:hidden;
+  background:var(--pane);
+  -webkit-backdrop-filter:blur(30px) saturate(1.3);
+          backdrop-filter:blur(30px) saturate(1.3);
+  color:var(--pane-fg);
+  border-right:1px solid var(--glass-line);
+}
+/* moving sheen across the dark glass */
+.pane-brand::before{
+  content:"";position:absolute;top:-60%;left:-80%;width:60%;height:220%;
+  background:linear-gradient(100deg, transparent, var(--sheen) 45%, rgba(216,170,116,.07) 50%, transparent 58%);
+  transform:rotate(8deg);
+  animation:sheen 9s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes sheen{
+  0%, 55%{left:-80%;}
+  100%{left:160%;}
+}
+.pane-brand::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(560px 400px at -10% 115%, rgba(216,170,116,.12), transparent 65%);
+}
+
+.brand{display:inline-flex;align-items:center;gap:11px;color:var(--pane-fg);text-decoration:none;width:max-content;position:relative;z-index:2;}
+.brand svg{width:21px;height:21px;}
+.brand-name{font-family:var(--sans);font-weight:600;font-size:14px;letter-spacing:.22em;}
+.brand-sub{
+  font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--pane-accent);
+  border-left:1px solid var(--pane-hair-warm);padding-left:11px;margin-left:2px;white-space:nowrap;
+}
+
+.pitch{position:relative;z-index:2;margin-top:auto;padding-top:36px;}
+.pitch h1{
+  font-family:var(--serif);font-weight:500;color:var(--pane-fg);
+  font-size:clamp(38px,3.9vw,54px);line-height:1.08;letter-spacing:-.01em;
+}
+.pitch h1 em{font-style:italic;color:var(--pane-accent);}
+.pitch p{color:var(--pane-fg-70);font-size:14.5px;margin-top:16px;max-width:330px;}
+
+/* single hairline word-row instead of chips */
+.creed{
+  display:flex;align-items:center;gap:12px;margin-top:26px;
+  font-size:10px;font-weight:500;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--pane-fg-45);white-space:nowrap;
+}
+.creed i{width:3px;height:3px;border-radius:50%;background:var(--pane-accent);flex:none;}
+
+/* ---- floating glass chips (the "alive" bit) ---- */
+.float-zone{position:relative;z-index:2;margin-top:34px;min-height:150px;}
+.fchip{
+  position:absolute;display:flex;align-items:center;gap:12px;
+  padding:12px 16px;border-radius:14px;
+  background:var(--pane-chip);
+  border:1px solid var(--pane-chip-line);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:var(--chip-shadow), inset 0 1px 0 rgba(255,255,255,.08);
+  animation:hover1 7s ease-in-out infinite;
+  transition:transform .5s var(--ease), border-color .4s ease;
+}
+.fchip:hover{transform:translateY(-4px) scale(1.03);border-color:var(--pane-hair-warm);}
+.fchip .ic{
+  width:34px;height:34px;border-radius:10px;flex:none;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(216,170,116,.16);color:var(--pane-accent);
+}
+.fchip .ic svg{width:16px;height:16px;}
+.fchip .t1{font-size:12.5px;font-weight:500;color:var(--pane-fg);line-height:1.35;}
+.fchip .t2{font-size:10.5px;letter-spacing:.08em;color:var(--pane-fg-45);line-height:1.4;}
+.fchip .amt{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--pane-accent);}
+.fchip-1{top:0;left:0;animation-delay:0s;}
+.fchip-2{top:74px;right:0;animation:hover2 8s ease-in-out infinite;animation-delay:-3s;}
+@keyframes hover1{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+@keyframes hover2{0%,100%{transform:translateY(-6px);}50%{transform:translateY(4px);}}
+/* keep hover lift working alongside float */
+.fchip:hover{animation-play-state:paused;}
+
+.foot{font-size:11px;letter-spacing:.05em;color:var(--pane-fg-45);position:relative;z-index:2;margin-top:34px;}
+
+/* faint oversized serif mark */
+.ghost{
+  position:absolute;right:-46px;bottom:-84px;z-index:1;
+  font-family:var(--serif);font-style:italic;font-size:300px;line-height:1;
+  color:var(--pane-fg);opacity:.04;pointer-events:none;user-select:none;
+}
+
+/* ---- right · auth pane ---- */
+.pane-auth{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  padding:44px 52px;
+}
+.gate{width:100%;max-width:384px;}
+
+/* tabs */
+.tabs{
+  display:grid;grid-template-columns:1fr 1fr;position:relative;
+  border:1px solid var(--hair);border-radius:10px;
+  background:var(--field);
+  padding:4px;margin-bottom:26px;
+}
+.tabs .pill{
+  position:absolute;top:4px;bottom:4px;left:4px;width:calc(50% - 4px);
+  border-radius:7px;background:var(--btn-bg);
+  transition:transform .5s var(--ease);
+}
+.tabs.right .pill{transform:translateX(100%);}
+.tabs button{
+  position:relative;z-index:1;appearance:none;background:none;border:none;cursor:pointer;
+  font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:.04em;
+  padding:10px 0;color:var(--ink-55);transition:color .35s ease;
+}
+.tabs button[aria-selected="true"]{color:var(--btn-fg);}
+.tabs button:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;border-radius:6px;}
+
+.gate h2{
+  font-family:var(--serif);font-weight:500;color:var(--ink-2);
+  font-size:28px;line-height:1.15;
+}
+.gate .sub{color:var(--ink-55);font-size:13.5px;margin-top:6px;}
+
+/* forms */
+form{margin-top:22px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fld{margin-bottom:13px;text-align:left;}
+.fld label{
+  display:block;font-size:10.5px;font-weight:500;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink-40);margin-bottom:7px;
+}
+.fld .wrap{position:relative;}
+.fld input{
+  width:100%;font-family:var(--sans);font-size:14.5px;color:var(--ink-2);
+  background:var(--field);border:1px solid var(--hair);border-radius:10px;
+  padding:12px 15px;outline:none;caret-color:var(--bronze);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  transition:border-color .3s ease, background .3s ease, box-shadow .3s ease;
+}
+.fld input::placeholder{color:var(--ink-25);}
+.fld input:focus{
+  border-color:var(--bronze);background:var(--field-focus);
+  box-shadow:0 0 0 3px var(--gold-08);
+}
+.fld .peek{
+  position:absolute;right:11px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;padding:4px;display:flex;
+  color:var(--ink-40);transition:color .3s ease;
+}
+.fld .peek:hover{color:var(--bronze);}
+.fld .peek svg{width:16px;height:16px;}
+.fld-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;}
+.fld-meta label{margin-bottom:0;}
+.forgot{font-size:11.5px;color:var(--bronze);text-decoration:none;letter-spacing:.04em;}
+.forgot:hover{text-decoration:underline;}
+
+/* terms */
+.terms{display:flex;align-items:flex-start;gap:10px;margin:2px 0 4px;font-size:12.5px;color:var(--ink-55);line-height:1.55;text-align:left;}
+.terms input{
+  appearance:none;flex:none;width:16px;height:16px;margin-top:2px;cursor:pointer;
+  border:1px solid var(--hair-warm);border-radius:4px;background:var(--field);
+  display:inline-flex;align-items:center;justify-content:center;
+  transition:background .3s ease, border-color .3s ease;
+}
+.terms input:checked{background:var(--bronze);border-color:var(--bronze);}
+.terms input:checked::after{
+  content:"";width:8px;height:4.5px;margin-top:-2px;
+  border-left:1.8px solid var(--paper);border-bottom:1.8px solid var(--paper);
+  transform:rotate(-45deg);
+}
+.terms a{color:var(--bronze);text-decoration:none;}
+.terms a:hover{text-decoration:underline;}
+
+/* buttons */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  font-family:var(--sans);font-size:14px;font-weight:500;letter-spacing:.01em;
+  cursor:pointer;border:none;margin-top:12px;
+  padding:14px 30px;border-radius:10px;
+  background:var(--btn-bg);color:var(--btn-fg);
+  box-shadow:0 1px 2px rgba(11,11,11,.18), 0 12px 34px -14px rgba(11,11,11,.4);
+  transition:transform .45s var(--ease), box-shadow .45s var(--ease), opacity .3s ease;
+}
+.btn .arr{color:var(--gold);transition:transform .45s var(--ease);display:inline-flex;}
+.btn:hover{transform:translateY(-1px);}
+.btn:hover .arr{transform:translateX(4px);}
+.btn:disabled{opacity:.45;cursor:default;transform:none;}
+.btn:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;}
+
+.or{
+  display:flex;align-items:center;gap:14px;margin:18px 0 6px;
+  font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-25);
+}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--hair);}
+
+.btn-google{
+  display:inline-flex;align-items:center;justify-content:center;gap:11px;width:100%;
+  font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;
+  margin-top:10px;padding:12px 30px;border-radius:10px;
+  background:var(--field);color:var(--ink-90);border:1px solid var(--btn-line-border);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  transition:transform .45s var(--ease), border-color .35s ease, background .35s ease;
+}
+.btn-google:hover{border-color:var(--bronze);transform:translateY(-1px);background:var(--gold-08);}
+.btn-google svg{width:17px;height:17px;flex:none;}
+.btn-google:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;}
+
+.msg{min-height:20px;margin-top:12px;font-size:12.5px;letter-spacing:.04em;text-align:center;}
+.msg.err{color:#B4543C;}
+.msg.ok{color:var(--bronze);}
+@keyframes shake{
+  10%,90%{transform:translateX(-1px);} 20%,80%{transform:translateX(2px);}
+  30%,50%,70%{transform:translateX(-4px);} 40%,60%{transform:translateX(4px);}
+}
+.gate.shake{animation:shake .5s ease;}
+
+.swap{margin-top:16px;font-size:12.5px;color:var(--ink-40);letter-spacing:.04em;text-align:center;}
+.swap a{color:var(--bronze);text-decoration:none;cursor:pointer;}
+.swap a:hover{text-decoration:underline;}
+
+/* panel switch */
+.panel{display:none;}
+.panel.on{display:block;animation:panelIn .45s var(--ease) both;}
+@keyframes panelIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+
+/* ============================================================
+   Back button — glass pill, arrow slides
+   ============================================================ */
+.back{
+  position:fixed;top:24px;left:28px;z-index:5;
+  display:inline-flex;align-items:center;gap:9px;
+  font-family:var(--sans);font-size:12.5px;font-weight:500;letter-spacing:.06em;
+  color:var(--ink-70);text-decoration:none;
+  padding:10px 18px 10px 14px;border-radius:999px;
+  border:1px solid var(--glass-line);background:var(--glass);
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  box-shadow:0 1px 2px rgba(11,11,11,.06), 0 10px 26px -16px rgba(11,11,11,.3);
+  transition:color .35s ease, border-color .35s ease, background .35s ease,
+             transform .45s var(--ease), box-shadow .45s var(--ease);
+}
+.back .b-arr{display:inline-flex;color:var(--bronze);transition:transform .45s var(--ease);}
+.back .b-arr svg{width:15px;height:15px;}
+.back:hover{
+  color:var(--ink);border-color:var(--bronze);
+  transform:translateY(-1px);
+  box-shadow:0 2px 3px rgba(11,11,11,.08), 0 14px 30px -16px rgba(11,11,11,.35);
+}
+.back:hover .b-arr{transform:translateX(-4px);}
+.back:active{transform:translateY(0) scale(.97);}
+.back:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;}
+
+/* theme switch (corner) */
+.theme-switch{position:fixed;top:24px;right:30px;z-index:5;display:flex;align-items:center;gap:11px;background:none;border:none;cursor:pointer;padding:0;}
+.ts-label{font-family:var(--sans);font-size:10.5px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-55);transition:color .35s ease;white-space:nowrap;}
+.theme-switch:hover .ts-label{color:var(--bronze);}
+.ts-track{position:relative;width:54px;height:29px;flex:none;border-radius:15px;border:1px solid var(--hair-warm);background:var(--glass);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);transition:border-color .5s ease, background .5s ease;}
+.theme-switch:hover .ts-track{border-color:var(--bronze);}
+.ts-knob{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:var(--gold);color:#141210;display:flex;align-items:center;justify-content:center;transition:transform .55s var(--ease), background .5s ease, color .5s ease;}
+[data-theme="dark"] .ts-knob{transform:translateX(25px);}
+.ts-knob svg{position:absolute;width:13px;height:13px;transition:opacity .4s ease, transform .55s var(--ease);}
+.ts-sun{opacity:1;} .ts-moon{opacity:0;transform:rotate(-100deg) scale(.4);}
+[data-theme="dark"] .ts-sun{opacity:0;transform:rotate(100deg) scale(.4);}
+[data-theme="dark"] .ts-moon{opacity:1;transform:none;}
+
+/* reset modal */
+.modal-veil{
+  position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;
+  background:rgba(11,11,11,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:26px;
+}
+[data-theme="dark"] .modal-veil{background:rgba(0,0,0,.55);}
+.modal-veil.on{display:flex;animation:pageIn .35s ease both;}
+.modal{
+  position:relative;width:100%;max-width:400px;text-align:center;
+  background:var(--glass);border:1px solid var(--glass-line);border-radius:18px;
+  -webkit-backdrop-filter:blur(26px) saturate(1.5);backdrop-filter:blur(26px) saturate(1.5);
+  padding:40px 38px 34px;
+  box-shadow:0 30px 80px -20px rgba(11,11,11,.5);
+}
+.modal::before{
+  content:"";position:absolute;top:0;left:50px;right:50px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.modal h3{font-family:var(--serif);font-weight:500;font-size:25px;color:var(--ink-2);}
+.modal p{font-size:13.5px;color:var(--ink-55);margin-top:10px;}
+.modal .fld{margin-top:20px;}
+.modal-x{
+  position:absolute;top:14px;right:18px;background:none;border:none;cursor:pointer;
+  font-size:22px;line-height:1;color:var(--ink-40);transition:color .3s ease, transform .3s ease;
+}
+.modal-x:hover{color:var(--bronze);transform:rotate(90deg);}
+
+body.leaving{opacity:0;transition:opacity .5s ease;}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width:980px){
+  .stage{padding:84px 18px 46px;perspective:none;}
+  .box{grid-template-columns:1fr;max-width:520px;}
+  .pane-brand{padding:38px 30px 30px;border-right:none;border-bottom:1px solid var(--glass-line);}
+  .pitch{margin-top:0;padding-top:26px;}
+  .pitch h1{font-size:clamp(32px,8vw,42px);}
+  .pitch p{max-width:none;}
+  .float-zone{min-height:132px;margin-top:26px;}
+  .ghost{font-size:190px;right:-30px;bottom:-60px;}
+  .foot{margin-top:26px;}
+  .pane-auth{padding:34px 26px 38px;}
+  .back{top:16px;left:16px;padding:9px 15px 9px 12px;}
+  .back .b-txt{display:none;}
+  .ts-label{display:none;}
+  .theme-switch{top:20px;right:20px;}
+}
+@media (prefers-reduced-motion: reduce){
+  body,.box,.panel.on,.modal-veil.on{animation:none !important;}
+  .orb i,.pane-brand::before,.fchip,.bg-sun,.box::before{animation:none !important;}
+  .bg-glow{display:none;}
+}
+
+/* demo entry strip above the sign-in form */
+.demo-strip{display:flex;align-items:center;gap:12px;justify-content:space-between;
+  text-decoration:none;padding:13px 16px;margin-bottom:22px;border-radius:12px;
+  border:1px solid var(--gold-line,rgba(196,149,106,.28));background:var(--gold-08,rgba(196,149,106,.07));
+  transition:border-color .2s,background .2s,transform .2s;}
+.demo-strip:hover{border-color:var(--bronze,#C4956A);background:rgba(196,149,106,.12);transform:translateY(-1px);}
+.demo-txt{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.demo-txt b{font-size:.9rem;color:var(--bronze,#C4956A);font-weight:600;}
+.demo-txt span{font-size:.74rem;opacity:.7;}
+.demo-arr{color:var(--bronze,#C4956A);font-size:1.05rem;flex:none;}
+
+/* Logo is white ink on transparent: brightness(0) paints it black for light
+   mode while keeping the alpha edges clean. This page sits on an ink pane, so
+   the mark also gets an override inside .pane-brand where the ground is dark. */
+.cx-logo{height:26px;width:auto;display:block;filter:brightness(0);transition:filter .3s ease}
+[data-theme="dark"] .cx-logo{filter:none}
+.pane-brand .cx-logo{filter:none}
+[data-theme="dark"] .pane-brand .cx-logo{filter:brightness(0)}
+</style>
+</head>
+<body>
+
+<!-- living background -->
+<div class="bg" aria-hidden="true">
+  <div class="bg-sun"></div>
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"><i></i></div>
+  <div class="orb orb-2"><i></i></div>
+  <div class="orb orb-3"><i></i></div>
+  <div class="orb orb-4"><i></i></div>
+  <div class="bg-glow" id="bgGlow"></div>
+  <div class="bg-grain"></div>
+</div>
+
+<a class="back" href="/" aria-label="Back to Clipency">
+  <span class="b-arr">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 12H5M11 18l-6-6 6-6"/>
+    </svg>
+  </span>
+  <span class="b-txt">Back to site</span>
+</a>
+
+<button class="theme-switch" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Switch theme">
+  <span class="ts-label" id="tsLabel">Dark Mode</span>
+  <span class="ts-track" aria-hidden="true">
+    <span class="ts-knob">
+      <svg class="ts-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="3.4" fill="currentColor" stroke="none"/>
+        <path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M18.7 5.3L17 7M7 17l-1.7 1.7"/>
+      </svg>
+      <svg class="ts-moon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+      </svg>
+    </span>
+  </span>
+</button>
+
+<div class="stage">
+  <div class="box" id="box">
+
+    <!-- ================= left · brand ================= -->
+    <aside class="pane-brand">
+      <a class="brand" href="/" aria-label="Clipency home"><img class="cx-logo" src="./Clipencylogo.png" alt="Clipency"></a>
+
+      <div class="pitch">
+        <h1>Your campaign,<br>in <em>real time.</em></h1>
+        <p>Every clip your campaign earns, every view it delivers, tracked live.</p>
+        <div class="creed">
+          <span>Live view counts</span><i></i><span>Pay per delivered view</span><i></i><span>Full transparency</span>
+        </div>
+      </div>
+
+      <div class="float-zone" aria-hidden="true">
+        <div class="fchip fchip-1">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 6 9 17l-5-5"/>
+            </svg>
+          </span>
+          <span>
+            <span class="t1">Campaign live</span><br>
+            <span class="t2">just now · <span class="amt">$248.60</span></span>
+          </span>
+        </div>
+        <div class="fchip fchip-2">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>
+            </svg>
+          </span>
+          <span>
+            <span class="t1">Views delivered</span><br>
+            <span class="t2"><span class="amt" id="viewsTicker">1,204,516</span> views</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="ghost" aria-hidden="true">C</div>
+      <p class="foot">© 2026 Clipency, Inc.</p>
+    </aside>
+
+    <!-- ================= right · auth ================= -->
+    <main class="pane-auth">
+      <div class="gate" id="gate">
+
+        
+
+
+        <!-- Demo entry point: prospects who have no account yet -->
+        <a class="demo-strip" href="/client/home?demo=1">
+          <span class="demo-txt"><b>View the demo dashboard</b><span>Explore the full dashboard with sample data, no account needed</span></span>
+          <span class="demo-arr">&#8594;</span>
+        </a>
+
+        <!-- ---- sign in ---- -->
+        <section class="panel on" id="panelIn" >
+          <h2>Welcome back.</h2>
+          <p class="sub">Sign in to open your campaign dashboard.</p>
+
+          <form novalidate>
+            <div class="fld">
+              <label for="inEmail">Email address</label>
+              <div class="wrap"><input id="inEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>
+            </div>
+            <div class="fld">
+              <div class="fld-meta">
+                <label for="inPass">Password</label>
+                <a class="forgot" id="forgotLink" href="#">Forgot password?</a>
+              </div>
+              <div class="wrap">
+                <input id="inPass" type="password" autocomplete="current-password" placeholder="••••••••">
+                <button class="peek" type="button" data-peek="inPass" aria-label="Show password">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+                    <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.7"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <button class="btn" type="submit">Sign in <span class="arr">&#8594;</span></button>
+
+            <p class="msg" id="msgIn" role="status"></p>
+            <p class="swap">Need access? <a data-goto="lead" id="openLead">Sign up on this form</a></p>
+          </form>
+        </section>
+
+        <!-- ---- request access (lead form -> public.leads -> Admin console) ---- -->
+        <section class="panel" id="panelLead">
+          <h2>Request access.</h2>
+          <p class="sub">Tell us about your campaign and we will set your dashboard up.</p>
+
+          <form novalidate id="leadForm">
+            <div class="fld">
+              <label for="lfName">Your name</label>
+              <div class="wrap"><input id="lfName" type="text" autocomplete="name" placeholder="Jane Doe"></div>
+            </div>
+            <div class="fld">
+              <label for="lfEmail">Email address</label>
+              <div class="wrap"><input id="lfEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>
+            </div>
+            <div class="fld">
+              <label for="lfBrand">Brand or show name</label>
+              <div class="wrap"><input id="lfBrand" type="text" placeholder="Your podcast, artist or product"></div>
+            </div>
+            <div class="fld">
+              <label for="lfPhone">Phone</label>
+              <div style="display:flex;gap:8px;align-items:stretch">
+                <div class="wrap" style="flex:0 0 132px">
+                  <select id="lfCC" aria-label="Country code"></select>
+                </div>
+                <div class="wrap" style="flex:1 1 auto">
+                  <input id="lfPhone" type="tel" autocomplete="tel" inputmode="tel" placeholder="98765 43210">
+                </div>
+              </div>
+            </div>
+            <div class="fld">
+              <label for="lfType">What are you clipping?</label>
+              <div class="wrap">
+                <select id="lfType">
+                  <option value="">Select one</option>
+                  <option>Podcast</option><option>Music</option><option>Streaming</option>
+                  <option>Course / Coaching</option><option>Product / UGC</option><option>Other</option>
+                </select>
+              </div>
+            </div>
+            <div class="fld">
+              <label for="lfBudget">Monthly budget</label>
+              <div class="wrap">
+                <select id="lfBudget">
+                  <option value="">Select one</option>
+                  <option>Under $500</option><option>$500 - $2,000</option>
+                  <option>$2,000 - $10,000</option><option>$10,000+</option>
+                </select>
+              </div>
+            </div>
+            <div class="fld">
+              <label for="lfMsg">Anything else? <span style="opacity:.5">(optional)</span></label>
+              <div class="wrap"><input id="lfMsg" type="text" placeholder="Goals, timeline, questions"></div>
+            </div>
+
+            <button class="btn" type="submit" id="lfSend">Request access <span class="arr">&#8594;</span></button>
+
+            <p class="msg" id="msgLead" role="status"></p>
+            <p class="swap">Already have an account? <a data-goto="in">Sign in</a></p>
+          </form>
+        </section>
+
+        <!-- ---- create account ---- -->
+        
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ---- reset modal ---- -->
+<div class="modal-veil" id="resetVeil">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+    <button class="modal-x" id="resetX" aria-label="Close">&times;</button>
+    <h3 id="resetTitle">Reset your password.</h3>
+    <p>Enter your email and we'll send you a link to reset your password.</p>
+    <form novalidate>
+      <div class="fld">
+        <label for="resetEmail">Email address</label>
+        <div class="wrap"><input id="resetEmail" type="email" autocomplete="email" placeholder="you@example.com"></div>
+      </div>
+      <button class="btn" type="submit">Send reset link <span class="arr">&#8594;</span></button>
+      <p class="msg" id="msgReset" role="status"></p>
+    </form>
+  </div>
+</div>
+
+<script>
+var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ============================================================
+   Theme toggle — identical behaviour to the portal pages
+   ============================================================ */
+(function(){
+  var html = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  var lbl = document.getElementById('tsLabel');
+  function sync(){
+    var dark = html.getAttribute('data-theme') === 'dark';
+    btn.setAttribute('aria-checked', dark);
+    lbl.textContent = dark ? 'Light Mode' : 'Dark Mode';
+  }
+  btn.addEventListener('click', function(){
+    var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.classList.add('theming');
+    html.setAttribute('data-theme', next);
+    try{ localStorage.setItem('clipency-theme', next); }catch(e){}
+    sync();
+    clearTimeout(window.__thmT);
+    window.__thmT = setTimeout(function(){ html.classList.remove('theming'); }, 620);
+  });
+  sync();
+})();
+
+/* ============================================================
+   Living background — orb parallax + cursor glow (lerped)
+   ============================================================ */
+(function(){
+  if(REDUCED) return;
+  var glow = document.getElementById('bgGlow');
+  var root = document.documentElement;
+  var tx=0, ty=0, gx=innerWidth/2, gy=innerHeight/2, cx=gx, cy=gy, seen=false;
+
+  addEventListener('mousemove', function(e){
+    tx = (e.clientX / innerWidth  - .5) * 2;   /* -1 … 1 */
+    ty = (e.clientY / innerHeight - .5) * 2;
+    gx = e.clientX; gy = e.clientY;
+    if(!seen){ seen = true; glow.style.opacity = 1; }
+  }, {passive:true});
+
+  (function loop(){
+    cx += (gx - cx) * .07;  cy += (gy - cy) * .07;
+    glow.style.left = cx + 'px'; glow.style.top = cy + 'px';
+    root.style.setProperty('--mx', tx.toFixed(3));
+    root.style.setProperty('--my', ty.toFixed(3));
+    requestAnimationFrame(loop);
+  })();
+})();
+
+/* ============================================================
+   Card tilt — very subtle 3D toward the cursor
+   ============================================================ */
+(function(){
+  if(REDUCED || matchMedia('(max-width: 980px)').matches) return;
+  var box = document.getElementById('box');
+  var rx=0, ry=0, trx=0, try_=0, raf=null;
+
+  function loop(){
+    rx += (trx - rx) * .08;  ry += (try_ - ry) * .08;
+    box.style.transform = 'rotateX(' + rx.toFixed(3) + 'deg) rotateY(' + ry.toFixed(3) + 'deg)';
+    if(Math.abs(trx-rx) > .002 || Math.abs(try_-ry) > .002){ raf = requestAnimationFrame(loop); }
+    else raf = null;
+  }
+  function kick(){ if(!raf) raf = requestAnimationFrame(loop); }
+
+  box.addEventListener('mousemove', function(e){
+    var r = box.getBoundingClientRect();
+    try_ =  ((e.clientX - r.left) / r.width  - .5) * 2.4;
+    trx  = -((e.clientY - r.top)  / r.height - .5) * 2.0;
+    kick();
+  });
+  box.addEventListener('mouseleave', function(){ trx = 0; try_ = 0; kick(); });
+})();
+
+/* ============================================================
+   Views ticker — the trending chip slowly climbs
+   ============================================================ */
+(function(){
+  var el = document.getElementById('viewsTicker');
+  if(!el || REDUCED) return;
+  var n = 1204516;
+  setInterval(function(){
+    n += Math.floor(Math.random()*23) + 4;
+    el.textContent = n.toLocaleString('en-US');
+  }, 1400);
+})();
+
+/* ============================================================
+   Back button — fade the page out, then leave
+   ============================================================ */
+(function(){
+  var back = document.querySelector('.back');
+  /* Back returns to the page the visitor came from: ?from= (set by the marketing
+     site), else the referring page, else the site home. Only our own hosts, and
+     never another sign-in page, so tab switching can't loop. */
+  function backTarget(){
+    function ok(u){
+      if(!u) return '';
+      try{
+        var x = new URL(u, location.href);
+        if(!/^(localhost|127\.0\.0\.1|([a-z0-9-]+\.)*clipency\.in)$/i.test(x.hostname)) return '';
+        if(/(signin|login|signup)/i.test(x.pathname)) return '';
+        return x.href;
+      }catch(e){ return ''; }
+    }
+    var from = '', kept = '';
+    try{ from = new URLSearchParams(location.search).get('from') || ''; kept = sessionStorage.getItem('cx-back-from') || ''; }catch(e){}
+    /* the page they actually came from wins; the remembered one only covers hops between sign-in pages */
+    return ok(from) || ok(document.referrer) || ok(kept) || back.href;
+  }
+  /* remember ?from= so it survives switching between Sign in / Create account */
+  try{
+    var f0 = new URLSearchParams(location.search).get('from');
+    if(f0) sessionStorage.setItem('cx-back-from', f0);
+    else if(document.referrer && !/(signin|login|signup)/i.test(new URL(document.referrer).pathname)) sessionStorage.removeItem('cx-back-from');
+  }catch(e){}
+  back.addEventListener('click', function(e){
+    e.preventDefault();
+    document.body.classList.add('leaving');
+    setTimeout(function(){ location.href = backTarget(); }, 420);
+  });
+})();
+
+/* ============================================================
+   Tabs
+   ============================================================ */
+(function(){
+  /* The signup panel and its go() helper were removed when clients stopped
+     self-registering, but the [data-goto] handler below still called go() —
+     so clicking "Need access?" threw a ReferenceError and did nothing.
+     There are two panels again (sign in / request access), so switching is
+     implemented here rather than left dangling. */
+  var PANELS = { in: 'panelIn', lead: 'panelLead' };
+
+  function go(which){
+    var id = PANELS[which];
+    if(!id) return;
+    Object.keys(PANELS).forEach(function(k){
+      var el = document.getElementById(PANELS[k]);
+      if(el) el.classList.toggle('on', PANELS[k] === id);
+    });
+    var first = document.querySelector('#' + id + ' input');
+    if(first) setTimeout(function(){ try{ first.focus(); }catch(e){} }, 60);
+  }
+  window.__gotoPanel = go;
+
+  document.querySelectorAll('[data-goto]').forEach(function(a){
+    a.addEventListener('click', function(e){ e.preventDefault(); go(a.dataset.goto); });
+  });
+
+  /* The demo bar links here with #lead, so the form is already open when a
+     prospect arrives from the demo instead of landing on a login they
+     cannot use. */
+  if(location.hash === '#lead') go('lead');
+  window.addEventListener('hashchange', function(){
+    if(location.hash === '#lead') go('lead');
+  });
+})();
+
+/* ============================================================
+   Request access -> public.submit_landing_lead -> public.leads
+   The Admin console Leads page reads exactly these columns, so a
+   submission here shows up there with status 'new'.
+   ============================================================ */
+(function(){
+  var form = document.getElementById('leadForm');
+  if(!form) return;
+  var out = document.getElementById('msgLead');
+  var btn = document.getElementById('lfSend');
+
+  /* URL_/KEY belong to a different IIFE further down this file, so they are
+     not visible here. Read the global config instead — deriving them locally
+     is the difference between this form working and throwing a
+     ReferenceError the moment somebody presses the button. */
+  var SITE   = window.CLIPENCY_SITE || {};
+  var SB_URL = SITE.SUPABASE_URL     || 'https://spwtkdgpgeutrhwcjrpy.supabase.co';
+  var SB_KEY = SITE.SUPABASE_ANON_KEY|| 'sb_publishable_IInNrDBLK3dINHSyWaUDzg_UWF63j0B';
+
+  function val(id){ var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+
+  /* ---- country dial codes -------------------------------------------
+     Only ISO2:dial is stored. Country names come from Intl.DisplayNames
+     and the flag is derived from the ISO code itself — two regional
+     indicator letters — so there is no table of 243 names or emoji to
+     keep in sync, and the names appear in the visitor's own language. */
+  var DIAL = 'AD:376,AE:971,AF:93,AG:1268,AI:1264,AL:355,AM:374,AO:244,AR:54,AS:1684,AT:43,AU:61,AW:297,AX:358,AZ:994,BA:387,BB:1246,BD:880,BE:32,BF:226,BG:359,BH:973,BI:257,BJ:229,BL:590,BM:1441,BN:673,BO:591,BQ:599,BR:55,BS:1242,BT:975,BW:267,BY:375,BZ:501,CA:1,CC:61,CD:243,CF:236,CG:242,CH:41,CI:225,CK:682,CL:56,CM:237,CN:86,CO:57,CR:506,CU:53,CV:238,CW:599,CX:61,CY:357,CZ:420,DE:49,DJ:253,DK:45,DM:1767,DO:1809,DZ:213,EC:593,EE:372,EG:20,EH:212,ER:291,ES:34,ET:251,FI:358,FJ:679,FK:500,FM:691,FO:298,FR:33,GA:241,GB:44,GD:1473,GE:995,GF:594,GG:44,GH:233,GI:350,GL:299,GM:220,GN:224,GP:590,GQ:240,GR:30,GT:502,GU:1671,GW:245,GY:592,HK:852,HN:504,HR:385,HT:509,HU:36,ID:62,IE:353,IL:972,IM:44,IN:91,IO:246,IQ:964,IR:98,IS:354,IT:39,JE:44,JM:1876,JO:962,JP:81,KE:254,KG:996,KH:855,KI:686,KM:269,KN:1869,KP:850,KR:82,KW:965,KY:1345,KZ:7,LA:856,LB:961,LC:1758,LI:423,LK:94,LR:231,LS:266,LT:370,LU:352,LV:371,LY:218,MA:212,MC:377,MD:373,ME:382,MF:590,MG:261,MH:692,MK:389,ML:223,MM:95,MN:976,MO:853,MP:1670,MQ:596,MR:222,MS:1664,MT:356,MU:230,MV:960,MW:265,MX:52,MY:60,MZ:258,NA:264,NC:687,NE:227,NF:672,NG:234,NI:505,NL:31,NO:47,NP:977,NR:674,NU:683,NZ:64,OM:968,PA:507,PE:51,PF:689,PG:675,PH:63,PK:92,PL:48,PM:508,PR:1787,PS:970,PT:351,PW:680,PY:595,QA:974,RE:262,RO:40,RS:381,RU:7,RW:250,SA:966,SB:677,SC:248,SD:249,SE:46,SG:65,SH:290,SI:386,SJ:47,SK:421,SL:232,SM:378,SN:221,SO:252,SR:597,SS:211,ST:239,SV:503,SX:1721,SY:963,SZ:268,TC:1649,TD:235,TG:228,TH:66,TJ:992,TK:690,TL:670,TM:993,TN:216,TO:676,TR:90,TT:1868,TV:688,TW:886,TZ:255,UA:380,UG:256,US:1,UY:598,UZ:998,VA:39,VC:1784,VE:58,VG:1284,VI:1340,VN:84,VU:678,WF:681,WS:685,XK:383,YE:967,YT:262,ZA:27,ZM:260,ZW:263';
+
+  function flagOf(iso){
+    try{
+      return String.fromCodePoint.apply(String, iso.split('').map(function(c){
+        return 0x1F1E6 + c.charCodeAt(0) - 65;
+      }));
+    }catch(e){ return ''; }
+  }
+
+  (function fillCountries(){
+    var sel = document.getElementById('lfCC');
+    if(!sel) return;
+    var names = null;
+    try{ names = new Intl.DisplayNames(undefined, {type:'region'}); }catch(e){}
+
+    var list = DIAL.split(',').map(function(p){
+      var b = p.split(':'), iso = b[0], d = b[1], name = iso;
+      if(names){ try{ name = names.of(iso) || iso; }catch(e){} }
+      return { iso: iso, dial: d, name: name };
+    }).sort(function(a,b){ return a.name.localeCompare(b.name); });
+
+    sel.innerHTML = list.map(function(c){
+      /* The option shows flag + dial only, so the 132px control stays
+         readable; the full country name lives in the title/label. */
+      return '<option value="+' + c.dial + '" data-iso="' + c.iso + '" label="' +
+             flagOf(c.iso) + ' +' + c.dial + '">' +
+             flagOf(c.iso) + '  ' + c.name + '  +' + c.dial + '</option>';
+    }).join('');
+
+    /* Preselect from the browser's own region rather than defaulting to
+       one country — a prospect in Berlin should not have to scroll past
+       India to find Germany. */
+    var region = '';
+    try{
+      var loc = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+      var m = String(loc).match(/[-_]([A-Za-z]{2})$/);
+      if(m) region = m[1].toUpperCase();
+      if(!region && Intl.Locale){
+        var lo = new Intl.Locale(loc);
+        region = (lo.region || '').toUpperCase();
+      }
+    }catch(e){}
+    var hit = region && list.filter(function(c){ return c.iso === region; })[0];
+    sel.value = hit ? ('+' + hit.dial) : '+1';
+  })();
+
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    var email = val('lfEmail');
+    if(!email || email.indexOf('@') < 0){
+      out.className = 'msg err';
+      out.textContent = 'Please enter an email we can reach you on.';
+      return;
+    }
+
+    /* Phone is required now. Validate the digits only — formatting varies
+       far too much by country to pattern-match a whole number. */
+    var rawPhone = val('lfPhone');
+    var digits = rawPhone.replace(/\D/g, '');
+    if(digits.length < 6){
+      out.className = 'msg err';
+      out.textContent = 'Please enter a phone number we can reach you on.';
+      var pe = document.getElementById('lfPhone'); if(pe) pe.focus();
+      return;
+    }
+    var phone = val('lfCC') + ' ' + rawPhone;
+
+    btn.disabled = true;
+    out.className = 'msg';
+    out.textContent = 'Sending…';
+
+    var payload = {
+      full_name:     val('lfName'),
+      email:         email,
+      phone:         phone,
+      company:       val('lfBrand'),
+      brand_name:    val('lfBrand'),
+      campaign_type: val('lfType'),
+      budget:        val('lfBudget'),
+      message:       val('lfMsg'),
+      source_page:   'client-signin'
+    };
+
+    try{
+      /* Called over REST rather than through the supabase client: this form
+         must work even if the CDN script has not finished loading, which is
+         exactly when a prospect is most likely to bounce. */
+      var res = await fetch(SB_URL + '/rest/v1/rpc/submit_landing_lead', {
+        method: 'POST',
+        headers: {
+          'apikey': SB_KEY,
+          'Authorization': 'Bearer ' + SB_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ payload: payload })
+      });
+      if(!res.ok){
+        var t = await res.text();
+        throw new Error(t || ('Request failed (' + res.status + ')'));
+      }
+      out.className = 'msg ok';
+      out.textContent = 'Thank you. We have your details and will be in touch shortly.';
+      form.querySelectorAll('input,select').forEach(function(el){ el.value = ''; });
+    }catch(ex){
+      out.className = 'msg err';
+      out.textContent = 'Could not send that. Email us at ayush@clipency.in and we will sort it out.';
+      try{ console.error('[clipency:lead]', ex); }catch(e){}
+    }finally{
+      btn.disabled = false;
+    }
+  });
+})();
+
+/* ============================================================
+   Password peek
+   ============================================================ */
+document.querySelectorAll('.peek').forEach(function(b){
+  b.addEventListener('click', function(){
+    var input = document.getElementById(b.dataset.peek);
+    var show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    b.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    input.focus();
+  });
+});
+
+/* ============================================================
+   CLIPENCY — clipper auth, wired to Supabase
+   ------------------------------------------------------------
+   Works two ways on purpose:
+     - if supabase-js loaded from the CDN, we use it, so the stored
+       session is byte-compatible with what the clipper dashboard
+       expects (key: sb-<ref>-auth-token).
+     - if the CDN is blocked (it is inside the dev sandbox), we fall
+       back to the GoTrue REST endpoints with plain fetch and write
+       the same storage key ourselves.
+   Either way the credentials are checked against production.
+
+   IMPORTANT — cross-origin session:
+   localStorage does not cross origins. Served from the portal host,
+   a successful sign-in CANNOT hand the session to clipency.in; it can
+   only prove the credentials are valid. Deploy this file into the
+   clipency.in codebase for the session to actually carry into the
+   dashboard.
+   ============================================================ */
+(function(){
+  var gate  = document.getElementById('gate');
+  var CFG   = window.CLIPENCY_SITE || {};
+  /* Hardcoded fallbacks. CFG comes from the inline block in <head>; if that is
+     ever stripped, cached, or the file is served without it, the login would
+     dead-end on "Login is not configured". These values are public by design -
+     the publishable key is already on every page of the site. */
+  var URL_  = CFG.SUPABASE_URL     || 'https://spwtkdgpgeutrhwcjrpy.supabase.co';
+  var KEY   = CFG.SUPABASE_ANON_KEY|| 'sb_publishable_IInNrDBLK3dINHSyWaUDzg_UWF63j0B';
+  var REF   = (URL_ || '').replace('https://','').split('.')[0];
+  var SKEY  = 'sb-' + REF + '-auth-token';
+  /* Where a signed-in CLIENT lands.
+
+     This read CLIPPER_DASHBOARD_URL — the clipper dashboard — on the
+     client sign-in page, with '/client-dashboard' (the single-page
+     summary) as its fallback. Either way a client never reached their
+     own portal. The portal home is home.html; cleanUrls serves it at
+     /home. */
+  var AFTER = CFG.CLIENT_DASHBOARD_URL || '/home';
+
+  function shake(){ gate.classList.add('shake'); setTimeout(function(){ gate.classList.remove('shake'); }, 550); }
+  function say(m, cls, text){ m.className = 'msg ' + cls; m.textContent = text; }
+  function busy(m, text){ say(m, '', text || 'Checking…'); }
+  function err(m, text){ say(m, 'err', text); shake(); }
+  function ok(m, text){ say(m, 'ok', text); }
+
+  function configured(m){
+    if(!URL_ || !KEY){ err(m, 'Login is not configured. Contact support.'); return false; }
+    return true;
+  }
+  var sb = null;
+  function client(){
+    if(sb) return sb;
+    if(window.supabase && window.supabase.createClient){
+      sb = window.supabase.createClient(URL_, KEY);
+    }
+    return sb;
+  }
+
+  /* ---- REST fallback ---- */
+  async function rest(path, body){
+    var res = await fetch(URL_ + '/auth/v1/' + path, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'apikey': KEY, 'Authorization':'Bearer ' + KEY },
+      body: JSON.stringify(body)
+    });
+    var data = null;
+    try{ data = await res.json(); }catch(e){}
+    if(!res.ok){
+      var msg = (data && (data.error_description || data.msg || data.message || data.error)) || ('HTTP ' + res.status);
+      throw new Error(msg);
+    }
+    return data;
+  }
+  function persist(session){
+    if(!session || !session.access_token) return;
+    /* supabase-js v2 stores the session object DIRECTLY under this key. The old
+       code wrote the v1 shape ({currentSession, expiresAt}), which v2 cannot
+       read - so the dashboard saw no session, bounced back here, and looked
+       like it was signing you straight out again. When supabase-js does the
+       sign-in it has already stored this correctly; writing the v1 shape on top
+       was actively breaking it. */
+    try{
+      if(!session.expires_at && session.expires_in){
+        session.expires_at = Math.floor(Date.now()/1000) + session.expires_in;
+      }
+      localStorage.setItem(SKEY, JSON.stringify(session));
+    }catch(e){}
+  }
+
+  /* Most clippers signed up with Google and have no password set.
+     Give them a useful message instead of "invalid credentials". */
+  function friendly(message){
+    var m = (message || '').toLowerCase();
+    if(m.indexOf('invalid login') > -1 || m.indexOf('invalid_grant') > -1 || m.indexOf('invalid credentials') > -1){
+      /* No Google button on this page, so do not point at one. Client
+         passwords are issued from the console — that is the only way in. */
+      return 'Email or password is incorrect. Client access is set up by Clipency, so check the password we sent you, or use "Forgot password?" below.';
+    }
+    if(m.indexOf('email not confirmed') > -1) return 'Please confirm your email first — check your inbox for the link.';
+    if(m.indexOf('already registered') > -1)  return 'That email already has an account. Try signing in instead.';
+    if(m.indexOf('rate limit') > -1 || m.indexOf('too many') > -1) return 'Too many attempts. Please wait a minute and try again.';
+    if(m.indexOf('failed to fetch') > -1) return 'Cannot reach the login service. Check your connection and try again.';
+    return message || 'Something went wrong. Please try again.';
+  }
+
+  /* ---- role gate ----------------------------------------------------
+     A Supabase session is authentication, not authorisation. Clippers sign
+     themselves up freely, and this page used to accept any valid login and
+     forward it to the portal. The dashboard rpc always refused them, so no
+     client's data was ever exposed, but a clipper could still land inside
+     the portal shell and see a broken dashboard.
+
+     cx_is_client() reads profiles.role, which is now locked server-side by
+     the profiles_lock_role trigger so it cannot be self-assigned. Checked
+     over REST rather than through supabase-js so it works on the fallback
+     path too, where the library never loaded. */
+  async function isClient(session){
+    var tok = session && session.access_token;
+    if(!tok) return false;
+    try{
+      var res = await fetch(URL_ + '/rest/v1/rpc/cx_is_client', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', 'apikey': KEY, 'Authorization':'Bearer ' + tok },
+        body: '{}'
+      });
+      if(!res.ok) return false;
+      return (await res.json()) === true;
+    }catch(e){ return false; }
+  }
+
+  /* Leave nothing behind. If the token survived in localStorage the portal's
+     own gate would see a session and let them straight back in. */
+  async function dropSession(session){
+    try{ localStorage.removeItem(SKEY); }catch(e){}
+    try{ sessionStorage.removeItem('clipency-live-v2'); }catch(e){}
+    try{ if(sb) await sb.auth.signOut(); }catch(e){}
+    var tok = session && session.access_token;
+    if(tok){
+      try{
+        await fetch(URL_ + '/auth/v1/logout', {
+          method: 'POST',
+          headers: { 'apikey': KEY, 'Authorization':'Bearer ' + tok }
+        });
+      }catch(e){}
+    }
+  }
+
+  async function done(m, session, msg){
+    if(!(await isClient(session))){
+      await dropSession(session);
+      return err(m, 'That account does not have client access. Clipper accounts sign in on the clipper dashboard. If you have requested access as a client, we will email you once your dashboard is set up.');
+    }
+    persist(session);
+    ok(m, msg);
+    setTimeout(function(){ location.href = AFTER; }, 700);
+  }
+
+  /* ---- sign in ---- */
+  document.querySelector('#panelIn form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var em = document.getElementById('inEmail').value.trim();
+    var pw = document.getElementById('inPass').value;
+    var m  = document.getElementById('msgIn');
+    if(!em || !pw){ return err(m, 'Enter your email and password.'); }
+    if(!configured(m)) return;
+    busy(m, 'Signing you in…');
+    try{
+      var c = client(), session;
+      if(c){
+        var r = await c.auth.signInWithPassword({ email: em, password: pw });
+        if(r.error) throw r.error;
+        session = r.data.session;
+      } else {
+        session = await rest('token?grant_type=password', { email: em, password: pw });
+      }
+      await done(m, session, 'Signed in. Taking you to your dashboard…');
+    }catch(ex){ err(m, friendly(ex && ex.message)); }
+  });
+
+  /* ---- create account ---- */
+
+  /* Supabase needs an ABSOLUTE redirect URL. CLIENT_DASHBOARD_URL is a
+     relative path ("/client/home") so it works on preview deploys and on a custom
+     domain alike — resolve it against the current origin before handing it to
+     the auth calls, or Supabase ignores it and falls back to the project's
+     Site URL.
+
+     This also used CLIPPER_DASHBOARD_URL, so a client following a password
+     reset link was returned to the clipper dashboard. */
+  function afterAuthURL(){
+    var p = CFG.CLIENT_DASHBOARD_URL || '/home';
+    if(!p) return location.origin + location.pathname;
+    if(/^https?:\/\//i.test(p)) return p;
+    return location.origin + (p.charAt(0) === '/' ? p : '/' + p);
+  }
+
+  /* ---- Google OAuth ----
+     Deliberately absent. Client access is granted from the console, never
+     self-served, and clients sign in with the email and password we set for
+     them. What actually enforces that is cx_is_client(); the missing button
+     is just the front door matching the lock. */
+
+  /* ---- reset modal ---- */
+  var veil = document.getElementById('resetVeil');
+  document.getElementById('forgotLink').addEventListener('click', function(e){
+    e.preventDefault(); veil.classList.add('on'); document.getElementById('resetEmail').focus();
+  });
+  document.getElementById('resetX').addEventListener('click', function(){ veil.classList.remove('on'); });
+  veil.addEventListener('click', function(e){ if(e.target === veil) veil.classList.remove('on'); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') veil.classList.remove('on'); });
+
+  veil.querySelector('form').addEventListener('submit', async function(e){
+    e.preventDefault();
+    var em = document.getElementById('resetEmail').value.trim();
+    var m  = document.getElementById('msgReset');
+    if(!em){ return err(m, 'Enter your email address.'); }
+    if(!configured(m)) return;
+    busy(m, 'Sending reset link…');
+    try{
+      var c = client();
+      var back = afterAuthURL();
+      if(c){
+        var r = await c.auth.resetPasswordForEmail(em, { redirectTo: back });
+        if(r.error) throw r.error;
+      } else {
+        await rest('recover', { email: em });
+      }
+      /* Deliberately not confirming whether the address exists. */
+      ok(m, 'If that email has an account, a reset link is on its way.');
+    }catch(ex){ err(m, friendly(ex && ex.message)); }
+  });
+
+  /* Bounced back here by the portal because the session was valid but not a
+     client account. Say so, otherwise the sign-in page just reappears with no
+     explanation and it looks like the login silently failed. */
+  if(/[?&]notclient=1/.test(location.search)){
+    err(document.getElementById('msgIn'),
+        'You were signed in, but that account does not have client access. Clipper accounts use the clipper dashboard.');
+    try{ history.replaceState(null, '', location.pathname); }catch(e){}
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+/* =========================================================
+   CLIPENCY UNIVERSAL CURSOR EXPERIENCE
+   Same premium cursor across landing, auth, dashboard, admin,
+   review, workspace and finance launcher.
+   ========================================================= */
+
+.cx-universal-cursor-dot,
+.cx-universal-cursor-ring,
+.cx-universal-cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 2147483647;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+.cx-universal-cursor-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow:
+    0 0 14px rgba(255,255,255,0.82),
+    0 0 26px rgba(167,139,250,0.78);
+}
+
+.cx-universal-cursor-ring {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(167,139,250,0.58);
+  background: rgba(167,139,250,0.055);
+  backdrop-filter: blur(3px);
+  transition:
+    width 160ms ease,
+    height 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    opacity 160ms ease;
+}
+
+.cx-universal-cursor-glow {
+  width: 420px;
+  height: 420px;
+  border-radius: 999px;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(167,139,250,0.115), transparent 68%);
+  filter: blur(4px);
+  mix-blend-mode: screen;
+}
+
+body.cx-cursor-enabled,
+body.cx-cursor-enabled a,
+body.cx-cursor-enabled button,
+body.cx-cursor-enabled input,
+body.cx-cursor-enabled select,
+body.cx-cursor-enabled textarea,
+body.cx-cursor-enabled [role="button"] {
+  cursor: none !important;
+}
+
+body.cx-cursor-ready .cx-universal-cursor-dot,
+body.cx-cursor-ready .cx-universal-cursor-ring,
+body.cx-cursor-ready .cx-universal-cursor-glow {
+  opacity: 1;
+}
+
+body.cx-cursor-hover .cx-universal-cursor-ring {
+  width: 60px;
+  height: 60px;
+  border-color: rgba(20,184,166,0.72);
+  background: rgba(167,139,250,0.12);
+}
+
+body.cx-cursor-pressing .cx-universal-cursor-ring {
+  width: 30px;
+  height: 30px;
+  background: rgba(20,184,166,0.16);
+}
+
+body.cx-cursor-text .cx-universal-cursor-ring {
+  width: 26px;
+  height: 46px;
+  border-radius: 999px;
+  border-color: rgba(255,255,255,0.46);
+  background: rgba(255,255,255,0.045);
+}
+
+@media (max-width: 760px), (pointer: coarse) {
+  body.cx-cursor-enabled,
+  body.cx-cursor-enabled a,
+  body.cx-cursor-enabled button,
+  body.cx-cursor-enabled input,
+  body.cx-cursor-enabled select,
+  body.cx-cursor-enabled textarea,
+  body.cx-cursor-enabled [role="button"] {
+    cursor: auto !important;
+  }
+
+  .cx-universal-cursor-dot,
+  .cx-universal-cursor-ring,
+  .cx-universal-cursor-glow {
+    display: none !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-universal-cursor-dot,
+  .cx-universal-cursor-ring,
+  .cx-universal-cursor-glow {
+    display: none !important;
+  }
+
+  body.cx-cursor-enabled,
+  body.cx-cursor-enabled a,
+  body.cx-cursor-enabled button,
+  body.cx-cursor-enabled input,
+  body.cx-cursor-enabled select,
+  body.cx-cursor-enabled textarea,
+  body.cx-cursor-enabled [role="button"] {
+    cursor: auto !important;
+  }
+}

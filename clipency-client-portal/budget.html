@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipency — Budget</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){try{
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('clipency-theme') || 'light');
+  /* Gate: the portal used to be opened with a 6-digit PIN kept in
+     sessionStorage. It is now a real login, so the gate checks for a
+     Supabase session instead. This is the synchronous, no-dependency
+     version so it can run before anything paints; js/live.js does the
+     authoritative check (getUser) and redirects if the token is stale. */
+  /* Demo mode: ?demo=1 opens the real portal on the sample data in
+     data.js, with no account. The flag is kept in sessionStorage so the
+     other pages stay in demo as you click through the nav, and it dies
+     with the tab so nobody is left stuck in a fake dashboard. */
+  var __d = /[?&]demo=1/.test(location.search);
+  try{
+    if(__d) sessionStorage.setItem('clipency-demo','1');
+    if(/[?&]demo=0/.test(location.search)) sessionStorage.removeItem('clipency-demo');
+    __d = sessionStorage.getItem('clipency-demo') === '1';
+  }catch(e){}
+  if(!__d && !localStorage.getItem('sb-spwtkdgpgeutrhwcjrpy-auth-token')) location.replace('./client-signin.html');
+}catch(e){ document.documentElement.setAttribute('data-theme','light'); }})();
+</script>
+<link rel="stylesheet" href="./dashboard.css">
+<style>
+.b-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-top:16px;align-items:start;}
+@media (max-width:1080px){ .b-grid{grid-template-columns:1fr;} }
+
+.w-bal{font-family:var(--serif);font-size:44px;color:var(--ink-2);line-height:1.1;font-variant-numeric:tabular-nums;}
+.w-sub{font-size:12.5px;color:var(--ink-40);margin-top:4px;}
+.w-actions{display:flex;gap:10px;margin-top:20px;}
+
+.tx{display:flex;flex-direction:column;}
+.tx-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--hair);}
+.tx-row:last-child{border-bottom:none;}
+.tx-ic{
+  width:30px;height:30px;border-radius:50%;flex:none;border:1px solid var(--hair);
+  display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--ink-55);background:var(--card);
+}
+.tx-ic.in{color:var(--ok);border-color:rgba(90,122,82,.3);}
+.tx-main{min-width:0;flex:1;}
+.tx-note{font-size:13px;color:var(--ink-90);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tx-date{font-size:11px;color:var(--ink-40);}
+.tx-amt{font-size:13.5px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink-70);}
+.tx-amt.in{color:var(--ok);}
+
+.alloc-row{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-bottom:1px solid var(--hair);}
+.alloc-row:last-child{border-bottom:none;}
+.alloc-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
+.alloc-name{font-size:14px;font-weight:500;color:var(--ink-90);}
+.alloc-name .st{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;margin-left:8px;}
+.alloc-name .st.live{color:var(--ok);}
+.alloc-name .st.review{color:var(--wait);}
+.alloc-name .st.ended{color:var(--ink-40);}
+.alloc-nums{font-size:12.5px;color:var(--ink-55);font-variant-numeric:tabular-nums;}
+.alloc-nums b{color:var(--ink-90);font-weight:500;}
+.alloc-track{height:5px;border-radius:4px;background:var(--hair);overflow:hidden;}
+.alloc-fill{height:100%;border-radius:4px;background:var(--ink-2);width:0;transition:width 1.2s var(--ease);}
+.alloc-fill.warn{background:#C4553C;}
+
+.wk-row{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--hair);}
+.wk-row:last-child{border-bottom:none;}
+.wk-badge{
+  width:42px;height:42px;border-radius:11px;flex:none;background:var(--card);border:1px solid var(--hair);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1;
+}
+.wk-badge b{font-family:var(--serif);font-size:16px;color:var(--ink-2);font-weight:500;}
+.wk-badge span{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-40);}
+.wk-main{flex:1;min-width:0;}
+.wk-title{font-size:13.5px;color:var(--ink-90);font-weight:500;}
+.wk-sub{font-size:11.5px;color:var(--ink-40);margin-top:1px;}
+.wk-amt{text-align:right;}
+.wk-amt b{display:block;font-family:var(--serif);font-size:17px;color:var(--ink-2);font-weight:500;font-variant-numeric:tabular-nums;}
+.wk-amt span{font-size:10.5px;color:var(--ink-40);}
+.amt-presets{display:flex;gap:9px;margin-top:10px;}
+.amt-presets .chip{padding:6px 14px;}
+</style>
+</head>
+<body>
+<div class="paper-field" aria-hidden="true"></div>
+<div class="shell">
+  <div id="side"></div>
+  <div class="main">
+    <div id="topbar"></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Budget</span>
+          <h1>Your budget.</h1>
+          <p id="bSummary"></p>
+        </div>
+        <button class="btn" id="addFundsBtn" type="button" disabled
+                aria-disabled="true"
+                title="Self-serve top-up isn't live yet — your Clipency manager credits your wallet">
+          ＋ &nbsp;Add Funds <span class="soon-pill">Soon</span>
+        </button>
+      </div>
+
+      <section class="stats" aria-label="Budget stats">
+        <div class="stat" id="statBalance"><span class="lbl">Wallet Balance</span><div class="num" id="sBal">$0</div><div class="foot">available for new campaigns</div></div>
+        <div class="stat"><span class="lbl">Reserved</span><div class="num" id="sRes">$0</div><div class="foot">across active campaigns</div></div>
+        <div class="stat"><span class="lbl">Spent to Date</span><div class="num" id="sSpent">$0</div><div class="foot">billed on delivered views</div></div>
+        <div class="stat"><span class="lbl">Lifetime Deposits</span><div class="num" id="sDep">$0</div><div class="foot" id="sDepFoot"></div></div>
+      </section>
+
+      <div class="b-grid">
+        <section style="display:flex;flex-direction:column;gap:16px;">
+          <div class="panel" id="allocPanel">
+            <div class="panel-h"><h2>Budget by campaign</h2><span>Reserved · spent · remaining</span></div>
+            <div id="allocList"></div>
+          </div>
+          <div class="panel" id="weeklyPanel">
+            <div class="panel-h"><h2>Weekly spend digest</h2><span>Budget exhausted per 7 days</span></div>
+            <div id="wkList"></div>
+          </div>
+        </section>
+
+        <aside style="display:flex;flex-direction:column;gap:16px;">
+          <div class="panel">
+            <div class="panel-h"><h2>Wallet</h2><span>Budget source</span></div>
+            <div class="w-bal" id="wBal">$0.00</div>
+            <div class="w-sub" id="wSub"></div>
+            <div class="w-actions">
+              <button class="btn" id="addFundsBtn2" type="button" disabled
+                      aria-disabled="true">
+                Add Funds <span class="soon-pill">Soon</span>
+              </button>
+              <a class="btn btn-line" href="./home.html">New Campaign</a>
+            </div>
+            <p class="w-note">
+              Top-up from the dashboard is coming soon. In the meantime your
+              Clipency manager credits your wallet directly — message us and it's
+              applied the same day.
+              <a href="#" data-action="contact-inline">Contact your manager →</a>
+            </p>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h2>Budget history</h2><span>Deposits &amp; allocations</span></div>
+            <div class="tx" id="txList"></div>
+          </div>
+        </aside>
+      </div>
+
+      <p class="foot-note">CLIPENCY — budgets are only ever billed against delivered views · unspent budget returns to your wallet</p>
+    </main>
+  </div>
+</div>
+
+<!-- The "add funds" modal was removed deliberately.
+     It collected an amount and called CLIPDB.addFunds(), which only ever wrote
+     to localStorage — a client could inflate their own displayed balance with no
+     money changing hands. There is no payment provider wired up yet, so the
+     honest state is a disabled control, not a form that pretends to work.
+     When Razorpay is connected, the balance should be credited server-side and
+     read back from the database, never set from the browser. -->
+
+<script src="./data.js"></script>
+<script src="./db.js"></script>
+<script src="./export.js"></script>
+<script src="./shell.js"></script>
+<script src="./tour.js"></script>
+<!-- live data (read-only production Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script src="./js/live.js"></script>
+
+<script type="module">
+/* wait for live production data before painting; resolves to 'live' or 'mock' */
+if (window.CLIPENCY_LIVE) {
+  try { await window.CLIPENCY_LIVE.ready; }
+  catch (e) { console.error('[clipency] live load threw, painting anyway', e); }
+}
+
+CLIPSHELL.init('budget');
+(function(){
+  var money = CLIPDB.money;
+  function fmtDate(iso){
+    if(!iso) return '—';
+    var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var p = iso.split('-'); return m[+p[1]-1] + ' ' + (+p[2]);
+  }
+
+  function render(){
+    var W = CLIPDB.wallet();
+    var camps = CLIPDB.campaigns();
+    var reserved = 0, spent = 0;
+    camps.forEach(function(c){
+      var s = CLIPDB.stats(c);
+      /* each campaign in its own display currency; totals in one */
+      if(c.status !== 'ended') reserved += CLIPDB.toAgg(c, c.budget);
+      spent += CLIPDB.toAgg(c, s.spend);
+    });
+    var deposits = W.transactions.filter(function(t){ return t.type === 'deposit'; });
+    var depTotal = deposits.reduce(function(a,t){ return a + t.amount; }, 0);
+
+    document.getElementById('bSummary').textContent =
+      money(W.balance) + ' available · ' + money(reserved) + ' reserved · ' + money(spent) + ' spent so far.';
+    CLIPSHELL.count(document.getElementById('sBal'), W.balance, function(v){ return money(v); });
+    CLIPSHELL.count(document.getElementById('sRes'), reserved, function(v){ return money(v); });
+    CLIPSHELL.count(document.getElementById('sSpent'), spent, function(v){ return money(v); });
+    CLIPSHELL.count(document.getElementById('sDep'), depTotal, function(v){ return money(v); });
+    document.getElementById('sDepFoot').textContent = deposits.length + ' deposit' + (deposits.length===1?'':'s') + ' total';
+
+    document.getElementById('wBal').textContent = money(W.balance);
+    document.getElementById('wSub').textContent = money(reserved) + ' reserved across active campaigns';
+
+    /* budget by campaign */
+    var order = {live:0, review:1, ended:2};
+    document.getElementById('allocList').innerHTML = camps.slice().sort(function(a,b){
+      return order[a.status] - order[b.status];
+    }).map(function(c){
+      var s = CLIPDB.stats(c);
+      /* One half of a split campaign reads the shared budget campaign-wide;
+         a half without a budget of its own just reports what it spent. */
+      var forBudget = s.budgetSpend != null ? s.budgetSpend : s.spend;
+      var used = c.budget ? Math.min(100, forBudget / c.budget * 100) : 0;
+      var stl = c.status === 'live' ? 'Live' : c.status === 'review' ? 'In Review' : 'Ended';
+      return '<div class="alloc-row">' +
+        '<div class="alloc-top">' +
+          '<span class="alloc-name">' + c.name + '<span class="st ' + c.status + '">' + stl + '</span></span>' +
+          (c.noBudget
+            ? '<span class="alloc-nums"><b>' + CLIPDB.moneyC(c, s.spend) + '</b> spent · no separate budget · billed with ' + c.budgetWith + '</span>'
+            : '<span class="alloc-nums"><b>' + CLIPDB.moneyC(c, forBudget) + '</b> of ' + CLIPDB.moneyC(c, c.budget) + ' · ' + used.toFixed(1) + '% used</span>') +
+        '</div>' +
+        (c.noBudget ? '' : '<div class="alloc-track"><div class="alloc-fill' + (used>=85?' warn':'') + '" data-w="' + used + '"></div></div>') +
+      '</div>';
+    }).join('');
+    setTimeout(function(){
+      document.querySelectorAll('.alloc-fill').forEach(function(f){ f.style.width = f.dataset.w + '%'; });
+    }, 150);
+
+    /* weekly digest */
+    var weeks = CLIPDB.weeklySpend();
+    document.getElementById('wkList').innerHTML = weeks.length ? weeks.map(function(w){
+      /* A week with no priced figure says so. money(null) is "$0.00", which
+         read as "this week cost you nothing" on weeks that had simply not
+         been priced yet. */
+      var has = w.spend != null && isFinite(w.spend);
+      var amt = has ? money(w.spend, w.ccy) : '—';
+      var pct = (has && w.budget) ? (w.spend / w.budget * 100).toFixed(1) + '% of total budget'
+                                  : 'not yet priced';
+      return '<div class="wk-row">' +
+        '<div class="wk-badge"><b>W' + w.week + '</b><span>' + w.code + '</span></div>' +
+        '<div class="wk-main">' +
+          '<div class="wk-title">' + (has ? amt + ' exhausted from ' + w.campaign
+                                          : w.campaign + ' · ' + CLIPENCY.fmtFull(w.views) + ' views delivered') + '</div>' +
+          '<div class="wk-sub">' + fmtDate(w.from) + ' – ' + fmtDate(w.to) + ' · ' + CLIPENCY.fmtFull(w.views) + ' views · ' + pct + '</div>' +
+        '</div>' +
+        '<div class="wk-amt"><b>' + amt + '</b><span>this week</span></div>' +
+      '</div>';
+    }).join('') : '<p class="f-hint" style="padding:8px 0;">No spend yet — the digest fills in as your campaigns deliver.</p>';
+
+    /* history */
+    document.getElementById('txList').innerHTML = W.transactions.map(function(t){
+      var pos = t.amount > 0;
+      return '<div class="tx-row">' +
+        '<span class="tx-ic' + (pos?' in':'') + '">' + (pos ? '↓' : '↑') + '</span>' +
+        '<div class="tx-main"><div class="tx-note">' + t.note + '</div><div class="tx-date">' + fmtDate(t.date) + '</div></div>' +
+        '<span class="tx-amt' + (pos?' in':'') + '">' + (pos?'+':'−') + money(Math.abs(t.amount)) + '</span>' +
+      '</div>';
+    }).join('') || '<p class="f-hint">No activity yet.</p>';
+  }
+
+  /* add funds modal */
+  function show(id){ document.getElementById(id).classList.add('show'); }
+  function hide(id){ document.getElementById(id).classList.remove('show'); }
+  document.querySelectorAll('[data-close]').forEach(function(b){
+    b.addEventListener('click', function(){ hide(b.dataset.close); });
+  });
+  document.querySelectorAll('.modal-veil').forEach(function(v){
+    v.addEventListener('click', function(e){ if(e.target === v) v.classList.remove('show'); });
+  });
+  /* Funding is intentionally not wired. The two Add Funds buttons are
+     disabled in the markup, so there is nothing to bind here. The inline
+     link opens the same Contact Admin dialog the sidebar uses. */
+  var inline = document.querySelector('[data-action="contact-inline"]');
+  if(inline) inline.addEventListener('click', function(e){
+    e.preventDefault();
+    if(CLIPSHELL.openContact) CLIPSHELL.openContact();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

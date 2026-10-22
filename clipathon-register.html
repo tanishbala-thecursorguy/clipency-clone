@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register for Clipathon</title>
+<meta name="description" content="Register for Clipathon, Clipency's creator competition. Nine quick questions, then a manual review by our team.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#F5F2ED" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0B0B" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<script>
+(function(){try{
+  var t = localStorage.getItem('clipency-theme');
+  document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+}catch(e){ document.documentElement.setAttribute('data-theme','light'); }})();
+</script>
+
+<style>
+/* ============================================================
+   CLIPENCY tokens, same set as the Clipathon landing
+   ============================================================ */
+:root{
+  --ink:#0B0B0B; --ink-2:#111111; --paper:#F5F2ED;
+  --gold:#D8AA74; --bronze:#8C6A45;
+  --ink-90:rgba(11,11,11,.9); --ink-70:rgba(11,11,11,.7); --ink-55:rgba(11,11,11,.55);
+  --ink-40:rgba(11,11,11,.42); --ink-25:rgba(11,11,11,.25);
+  --hair:rgba(11,11,11,.12); --hair-warm:rgba(140,106,69,.28); --gold-08:rgba(216,170,116,.08);
+  --serif:'Cormorant Garamond', Georgia, serif;
+  --sans:'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --max:1280px; --ease:cubic-bezier(.16,1,.3,1);
+  --card:#F5F2ED; --surface:#FAF8F5; --surface-2:#F8F5F1;
+  --field:#FDFCFA; --field-focus:#FFFFFF;
+  --btn-bg:#0B0B0B; --btn-fg:#EDE8DF; --btn-line-border:rgba(11,11,11,.22);
+  --nav-bg:rgba(245,242,237,.85); --card-inset:rgba(255,255,255,.5);
+  --gridline:rgba(11,11,11,.022);
+  --inv:invert(0) hue-rotate(0deg); --live:#C0503F;
+}
+[data-theme="dark"]{
+  --ink:#E9E4DA; --ink-2:#F2EDE3; --paper:#141210;
+  --ink-90:rgba(233,228,218,.92); --ink-70:rgba(233,228,218,.72); --ink-55:rgba(233,228,218,.56);
+  --ink-40:rgba(233,228,218,.42); --ink-25:rgba(233,228,218,.26);
+  --hair:rgba(233,228,218,.13); --hair-warm:rgba(216,170,116,.3);
+  --gold:#DDB07C; --bronze:#BE9A67; --gold-08:rgba(221,176,124,.1);
+  --card:#181512; --surface:#1C1916; --surface-2:#211D19;
+  --field:#211E1A; --field-focus:#282420;
+  --btn-bg:#E9E4DA; --btn-fg:#161310; --btn-line-border:rgba(233,228,218,.26);
+  --nav-bg:rgba(18,16,14,.78); --card-inset:rgba(255,255,255,.04);
+  --gridline:rgba(233,228,218,.03);
+  --inv:invert(1) hue-rotate(180deg); --live:#E0806B;
+  color-scheme:dark;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} }
+body{
+  background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased;
+  min-height:100vh;min-height:100svh;display:flex;flex-direction:column;overflow-x:hidden;
+}
+
+/* paper grain, grid and washes */
+.paper-field{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.paper-field::before{
+  content:"";position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity:.045;mix-blend-mode:multiply;
+}
+[data-theme="dark"] .paper-field::before{opacity:.06;}
+.paper-field::after{
+  content:"";position:absolute;inset:0;
+  background-image:
+    linear-gradient(to right, var(--gridline) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--gridline) 1px, transparent 1px);
+  background-size:140px 140px;
+  -webkit-mask-image:radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 100%);
+  mask-image:radial-gradient(ellipse 90% 80% at 50% 40%, black 30%, transparent 100%);
+}
+.wash{position:fixed;pointer-events:none;z-index:0;border-radius:50%;filter:blur(90px);}
+.wash-tr{top:-180px;right:-160px;width:640px;height:520px;background:radial-gradient(closest-side, rgba(216,170,116,.10), transparent 70%);}
+.wash-bl{bottom:-220px;left:-200px;width:700px;height:560px;background:radial-gradient(closest-side, rgba(30,28,26,.07), transparent 70%);}
+[data-theme="dark"] .wash-bl{background:radial-gradient(closest-side, rgba(216,170,116,.05), transparent 70%);}
+
+/* One frame, one theme. A cross-fade cannot work here: gradients and
+   masked surfaces cannot animate background-image, so they snap to the new
+   theme while everything else is still half way, and the page spends half a
+   second belonging to neither. Freezing every transition for the two frames
+   the new tokens take to land makes the swap atomic. The switch keeps its
+   motion, because that is the part the eye is actually on. */
+html.theme-snap, html.theme-snap *, html.theme-snap *::before, html.theme-snap *::after{
+  transition:none !important;
+}
+html.theme-snap .ts-knob{transition:transform .6s var(--ease),width .3s var(--ease) !important;}
+html.theme-snap .ts-sun, html.theme-snap .ts-moon{transition:opacity .35s ease, transform .6s var(--ease) !important;}
+.theme-switch:active .ts-knob{transform:scale(.88);}
+[data-theme="dark"] .theme-switch:active .ts-knob{transform:translateX(25px) scale(.88);}
+@media (prefers-reduced-motion: reduce){
+  html.theme-snap .ts-knob, html.theme-snap .ts-sun, html.theme-snap .ts-moon{transition:none !important;}
+}
+
+h1,h2,h3{font-family:var(--serif);font-weight:500;color:var(--ink-2);}
+.eyebrow{display:block;font-family:var(--sans);font-size:11px;font-weight:500;
+  letter-spacing:.38em;text-transform:uppercase;color:var(--bronze);}
+::selection{background:rgba(216,170,116,.3);}
+
+.btn{
+  display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--sans);font-size:14px;font-weight:500;letter-spacing:.01em;
+  text-decoration:none;cursor:pointer;border:none;white-space:nowrap;
+  padding:15px 30px;border-radius:6px;
+  transition:transform .45s var(--ease), box-shadow .45s var(--ease), background .35s ease, color .35s ease, border-color .35s ease, opacity .3s ease;
+}
+.btn .arr{transition:transform .45s var(--ease);display:inline-flex;}
+.btn:hover .arr{transform:translateX(4px);}
+.btn .arr-back{transform:rotate(180deg);}
+.btn:hover .arr-back{transform:rotate(180deg) translateX(4px);}
+.btn-ink{background:var(--btn-bg);color:var(--btn-fg);box-shadow:0 1px 2px rgba(11,11,11,.18), 0 12px 34px -14px rgba(11,11,11,.4);}
+.btn-ink:hover{transform:translateY(-1px);box-shadow:0 2px 3px rgba(11,11,11,.18), 0 18px 44px -14px rgba(11,11,11,.45);}
+.btn-ink .arr{color:var(--gold);}
+.btn-line{background:transparent;color:var(--ink-90);border:1px solid var(--btn-line-border);}
+.btn-line:hover{border-color:var(--bronze);color:var(--ink);transform:translateY(-1px);background:rgba(216,170,116,.05);}
+.btn-sm{padding:11px 22px;font-size:13.5px;border-radius:5px;}
+.btn:active{transform:translateY(0) scale(.99);}
+.btn[disabled]{opacity:.45;pointer-events:none;}
+.btn:focus-visible,a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;}
+
+/* ============================================================
+   Nav
+   ============================================================ */
+.nav{position:relative;z-index:20;border-bottom:1px solid var(--hair);background:var(--nav-bg);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}
+.nav-inner{max-width:var(--max);margin:0 auto;padding:0 48px;height:74px;
+  display:flex;align-items:center;gap:20px;}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:var(--ink);flex:none;}
+.brand-sub{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--bronze);
+  border-left:1px solid var(--hair-warm);padding-left:11px;white-space:nowrap;}
+.cx-logo{height:24px;width:auto;display:block;filter:brightness(0);transition:filter .3s ease;}
+[data-theme="dark"] .cx-logo{filter:none;}
+.nav-cta{display:flex;align-items:center;gap:16px;margin-left:auto;}
+.theme-switch{display:flex;align-items:center;gap:11px;background:none;border:none;cursor:pointer;padding:0;}
+.ts-label{font-size:10px;font-weight:500;line-height:1;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--ink-55);transition:color .35s ease;white-space:nowrap;}
+.theme-switch:hover .ts-label{color:var(--bronze);}
+.ts-track{position:relative;width:54px;height:29px;flex:none;border-radius:15px;
+  border:1px solid var(--hair-warm);background:var(--card);
+  transition:border-color .5s ease, background .5s ease, box-shadow .6s ease;}
+.theme-switch:hover .ts-track{border-color:var(--bronze);}
+.ts-knob{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;
+  background:var(--btn-bg);color:var(--gold);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 1px 3px rgba(11,11,11,.25);
+  transition:transform .6s var(--ease), background .5s ease, color .5s ease;}
+.ts-knob svg{position:absolute;width:13px;height:13px;transition:opacity .35s ease, transform .55s var(--ease);}
+.ts-moon{opacity:0;transform:rotate(-100deg) scale(.4);}
+[data-theme="dark"] .ts-knob{transform:translateX(25px);color:#141210;}
+[data-theme="dark"] .ts-sun{opacity:0;transform:rotate(100deg) scale(.4);}
+[data-theme="dark"] .ts-moon{opacity:1;transform:none;}
+[data-theme="dark"] .ts-track{background:#1C1916;border-color:rgba(216,170,124,.4);box-shadow:0 0 14px rgba(221,176,124,.14);}
+@media (max-width:820px){
+  .nav-inner{padding:0 22px;height:66px;}
+  .brand-sub,.ts-label{display:none;}
+  .nav-exit .btn-label{display:none;}
+}
+
+/* ============================================================
+   Progress
+   ============================================================ */
+.progress{position:relative;z-index:10;max-width:760px;margin:0 auto;padding:36px 32px 0;width:100%;}
+.progress-top{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:12px;}
+.progress-step{font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--bronze);}
+.progress-pct{font-family:var(--serif);font-size:15px;color:var(--ink-40);font-variant-numeric:tabular-nums;}
+.progress-track{height:3px;border-radius:999px;background:var(--hair);overflow:hidden;}
+.progress-fill{display:block;height:100%;width:0;border-radius:999px;
+  background:linear-gradient(90deg,var(--bronze),var(--gold));
+  transition:width .6s var(--ease);}
+.progress-dots{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;}
+.pdot{height:3px;flex:1 1 0;min-width:8px;border-radius:999px;background:var(--hair);
+  transition:background .5s var(--ease);}
+.pdot.done{background:var(--hair-warm);}
+.pdot.now{background:var(--gold);}
+@media (max-width:600px){ .progress{padding:24px 22px 0;} }
+
+/* ============================================================
+   Steps
+   ============================================================ */
+.stage{position:relative;z-index:10;flex:1;display:flex;align-items:flex-start;justify-content:center;
+  padding:44px 32px 56px;width:100%;}
+.stage-inner{width:100%;max-width:700px;}
+.step{display:none;}
+.step.on{display:block;animation:stepIn .5s var(--ease) both;}
+@keyframes stepIn{from{opacity:0;transform:translateY(14px)}}
+@media (prefers-reduced-motion: reduce){ .step.on{animation:none;} }
+.step-no{display:block;font-family:var(--serif);font-size:15px;font-style:italic;color:var(--bronze);
+  letter-spacing:.06em;margin-bottom:10px;}
+.step h2{font-size:clamp(28px,4.2vw,44px);line-height:1.15;letter-spacing:-.01em;}
+.step h2 em{font-style:italic;color:var(--bronze);}
+.step .help{font-size:14.5px;color:var(--ink-55);line-height:1.8;margin-top:14px;max-width:520px;}
+.step .fields{margin-top:34px;}
+
+.f-field{margin-bottom:20px;}
+.f-field:last-child{margin-bottom:0;}
+.f-label{display:block;font-size:10.5px;font-weight:500;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--ink-55);margin-bottom:10px;}
+.f-label .opt{color:var(--ink-25);letter-spacing:.12em;}
+.f-input,.f-select{
+  width:100%;font-family:var(--sans);font-size:16px;color:var(--ink);background:var(--field);
+  border:1px solid var(--hair);border-radius:6px;padding:16px 18px;
+  transition:border-color .35s ease, box-shadow .35s ease, background .35s ease;}
+.f-input::placeholder{color:var(--ink-25);}
+.f-input:focus,.f-select:focus{outline:none;border-color:var(--bronze);background:var(--field-focus);
+  box-shadow:0 0 0 3px rgba(216,170,116,.14);}
+.f-input.bad,.f-select.bad{border-color:rgba(192,80,63,.55);box-shadow:0 0 0 3px rgba(192,80,63,.1);}
+.f-select{appearance:none;-webkit-appearance:none;cursor:pointer;color:var(--ink-70);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%238C6A45' stroke-width='1.2'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 18px center;padding-right:40px;}
+.f-phone{display:flex;gap:10px;}
+.f-phone .f-select{width:110px;flex:none;}
+.f-hint{margin-top:9px;font-size:12.5px;color:var(--ink-40);line-height:1.6;}
+
+/* A code that arrived on the link is shown as a fact, not as an empty
+   field waiting to be typed into. Read only until they ask otherwise. */
+.f-input.locked{background:var(--gold-08,rgba(216,170,116,.08));border-style:solid;
+  border-color:var(--hair-warm,rgba(140,106,69,.28));font-weight:600;letter-spacing:.06em;}
+.f-note{margin-top:10px;font-size:12.5px;color:var(--ink-55);line-height:1.6;}
+.f-note button{background:none;border:none;padding:0;font:inherit;color:var(--bronze);
+  text-decoration:underline;text-underline-offset:2px;cursor:pointer;}
+.f-msg{margin-top:10px;font-size:13px;color:var(--live);display:none;}
+.f-msg.show{display:block;}
+
+/* option cards, used for the follower band */
+.opts{display:grid;gap:10px;}
+.opt-card{display:flex;align-items:center;gap:14px;width:100%;text-align:left;cursor:pointer;
+  border:1px solid var(--hair);border-radius:11px;background:var(--card);padding:17px 20px;
+  font-family:var(--sans);font-size:15px;color:var(--ink-70);
+  transition:border-color .4s var(--ease), background .4s var(--ease), transform .4s var(--ease), color .4s var(--ease);}
+.opt-card:hover{border-color:var(--bronze);color:var(--ink);transform:translateY(-2px);}
+.opt-card .tick{width:18px;height:18px;flex:none;border-radius:50%;border:1px solid var(--hair-warm);
+  display:flex;align-items:center;justify-content:center;transition:background .35s ease, border-color .35s ease;}
+.opt-card .tick::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--gold);
+  opacity:0;transform:scale(.4);transition:opacity .3s ease, transform .35s var(--ease);}
+.opt-card.on{border-color:var(--hair-warm);background:var(--surface-2);color:var(--ink-2);}
+.opt-card.on .tick{border-color:var(--gold);}
+.opt-card.on .tick::after{opacity:1;transform:none;}
+
+/* multi-select chips */
+.chips{display:flex;flex-wrap:wrap;gap:9px;}
+.chip{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;
+  padding:12px 17px;border-radius:999px;cursor:pointer;white-space:nowrap;
+  border:1px solid var(--hair);background:transparent;color:var(--ink-55);
+  transition:background .4s var(--ease), color .4s var(--ease), border-color .4s var(--ease), transform .4s var(--ease);}
+.chip:hover{border-color:var(--bronze);color:var(--ink);transform:translateY(-2px);}
+.chip.on{background:var(--btn-bg);color:var(--btn-fg);border-color:transparent;}
+
+/* terms */
+.chk{display:flex;align-items:flex-start;gap:13px;cursor:pointer;}
+.chk input{position:absolute;opacity:0;width:0;height:0;}
+.chk .box{width:20px;height:20px;flex:none;margin-top:2px;border:1px solid var(--hair);border-radius:5px;
+  background:var(--field);display:flex;align-items:center;justify-content:center;
+  transition:border-color .3s ease, background .3s ease;}
+.chk .box svg{width:12px;height:12px;stroke:var(--btn-fg);fill:none;stroke-width:2.4;stroke-linecap:round;
+  stroke-linejoin:round;opacity:0;transform:scale(.5);transition:opacity .25s ease, transform .3s var(--ease);}
+.chk input:checked + .box{background:var(--btn-bg);border-color:transparent;}
+.chk input:checked + .box svg{opacity:1;transform:none;}
+.chk input:focus-visible + .box{outline:2px solid var(--bronze);outline-offset:3px;}
+.chk.bad .box{border-color:rgba(192,80,63,.55);}
+.chk .txt{font-size:14px;color:var(--ink-55);line-height:1.75;}
+.chk .txt a{color:var(--bronze);text-decoration:none;border-bottom:1px solid var(--hair-warm);}
+
+/* review list on the last step */
+.review{border:1px solid var(--hair);border-radius:12px;background:var(--surface);overflow:hidden;margin-bottom:24px;}
+.review-row{display:grid;grid-template-columns:150px 1fr;gap:16px;padding:13px 18px;border-top:1px solid var(--hair);
+  font-size:13.5px;}
+.review-row:first-child{border-top:none;}
+.review-row b{font-weight:500;font-size:10px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ink-40);align-self:center;}
+.review-row span{color:var(--ink-70);word-break:break-word;}
+@media (max-width:600px){ .review-row{grid-template-columns:1fr;gap:4px;} }
+
+/* ============================================================
+   Footer bar
+   ============================================================ */
+.bar{position:sticky;bottom:0;z-index:15;border-top:1px solid var(--hair);background:var(--nav-bg);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);}
+.bar-inner{max-width:700px;margin:0 auto;padding:18px 32px;display:flex;align-items:center;gap:14px;}
+.bar .spacer{flex:1;}
+.bar-hint{font-size:11.5px;color:var(--ink-40);letter-spacing:.04em;}
+@media (max-width:600px){
+  .bar-inner{padding:14px 22px;gap:10px;}
+  .bar-hint{display:none;}
+  .bar .btn{padding:14px 20px;font-size:13.5px;}
+}
+
+/* ============================================================
+   Done screen
+   ============================================================ */
+.done{display:none;text-align:center;}
+.done.on{display:block;animation:stepIn .6s var(--ease) both;}
+.done-mark{width:62px;height:62px;border-radius:50%;border:1px solid var(--hair-warm);
+  display:flex;align-items:center;justify-content:center;margin:0 auto 26px;background:var(--card);}
+.done-mark svg{width:24px;height:24px;stroke:var(--bronze);fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;}
+.done h2{font-size:clamp(32px,4.6vw,48px);line-height:1.12;}
+.done h2 em{font-style:italic;color:var(--bronze);}
+.done > p{font-size:15px;color:var(--ink-55);line-height:1.9;max-width:480px;margin:16px auto 0;}
+.done-divider{display:flex;align-items:center;justify-content:center;gap:14px;margin:34px auto 32px;max-width:220px;}
+.done-divider::before,.done-divider::after{content:"";height:1px;width:64px;background:var(--hair-warm);}
+.done-divider .dmk{width:9px;height:9px;border:1px solid var(--gold);transform:rotate(45deg);position:relative;flex:none;}
+.done-divider .dmk::after{content:"";position:absolute;inset:2px;border:1px solid rgba(216,170,116,.5);}
+
+.follow{border:1px solid var(--hair-warm);border-radius:16px;background:var(--surface);
+  padding:34px 32px;position:relative;overflow:hidden;max-width:520px;margin:0 auto;}
+.follow::before{content:"";position:absolute;top:0;left:32px;right:32px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.follow .eyebrow{margin-bottom:14px;}
+.follow h3{font-size:25px;line-height:1.25;}
+.follow p{font-size:14px;color:var(--ink-55);line-height:1.75;margin-top:11px;}
+.ig{display:inline-flex;align-items:center;gap:12px;margin-top:22px;text-decoration:none;
+  border:1px solid var(--btn-line-border);border-radius:999px;padding:12px 22px 12px 16px;
+  color:var(--ink-90);font-size:14.5px;font-weight:500;
+  transition:border-color .35s ease, background .35s ease, transform .45s var(--ease), color .35s ease;}
+.ig:hover{border-color:var(--bronze);background:rgba(216,170,116,.06);color:var(--ink);transform:translateY(-2px);}
+.ig svg{width:19px;height:19px;flex:none;fill:none;stroke:var(--bronze);stroke-width:1.6;}
+.ig b{font-weight:500;}
+.done-ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:34px;}
+@media (max-width:600px){
+  .stage{padding:32px 22px 44px;}
+  .follow{padding:28px 22px;}
+  .follow::before{left:22px;right:22px;}
+}
+
+/* The signed in address, shown above the questions. Quiet, because it
+   is a reassurance rather than a thing to act on. */
+.whoami{display:flex;align-items:center;gap:11px;flex-wrap:wrap;
+  padding:11px 15px;margin:0 0 26px;border-radius:12px;
+  background:rgba(0,0,0,.035);border:1px solid var(--hair,rgba(0,0,0,.10));}
+.whoami .wi-k{font-family:var(--mono,ui-monospace,monospace);font-size:9.5px;
+  letter-spacing:.2em;text-transform:uppercase;opacity:.5;}
+.whoami .wi-v{font-weight:600;word-break:break-all;}
+.whoami button{margin-left:auto;background:none;border:none;padding:0;cursor:pointer;
+  font-family:inherit;font-size:13px;color:var(--bronze,#8A6224);
+  text-decoration:underline;text-underline-offset:3px;}
+[data-theme="dark"] .whoami{background:rgba(255,255,255,.045);}
+
+/* Held blank until we know who is signed in, so no flash of a form
+   somebody is not entitled to fill in. */
+body.gating .stage,body.gating .progress,body.gating .bar{visibility:hidden;}
+.gate-wait{position:fixed;inset:0;display:grid;place-items:center;z-index:60;
+  background:var(--bg,#FAF9F6);font-size:14px;opacity:.65;}
+</style>
+
+<noscript><style>
+  .step{display:block !important;margin-bottom:44px;}
+  .bar,.progress{display:none;}
+
+/* ---- creator ID + referral code on the done screen ---------------------
+   Shown only when the server actually returned them, so an offline or
+   failed submit can never display a fabricated code. */
+.done-codes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:26px auto 0;max-width:520px;}
+.done-codes .dc{border:1px solid var(--hair);border-radius:13px;padding:15px 17px;background:var(--surface,rgba(0,0,0,.02));text-align:left;}
+.done-codes .dc-l{display:block;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-40);}
+.done-codes .dc b{display:block;font-family:var(--mono,ui-monospace,monospace);font-size:19px;letter-spacing:.1em;color:var(--ink-2);margin-top:6px;}
+.done-codes .dc-n{display:block;font-size:11.5px;color:var(--ink-40);margin-top:7px;line-height:1.5;}
+@media (max-width:620px){ .done-codes{grid-template-columns:1fr;} }
+</style></noscript>
+</head>
+
+<body>
+
+<div class="paper-field" aria-hidden="true"></div>
+<div class="wash wash-tr" aria-hidden="true"></div>
+<div class="wash wash-bl" aria-hidden="true"></div>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/clipathon" aria-label="Back to Clipathon">
+      <img class="cx-logo" src="Clipencylogo.png" alt="Clipency">
+      <span class="brand-sub">Clipathon</span>
+    </a>
+    <div class="nav-cta">
+      <button class="theme-switch" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Switch to dark mode">
+        <span class="ts-label" id="tsLabel">Dark Mode</span>
+        <span class="ts-track" aria-hidden="true">
+          <span class="ts-knob">
+            <svg class="ts-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="3.4" fill="currentColor" stroke="none"/>
+              <path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M18.7 5.3L17 7M7 17l-1.7 1.7"/>
+            </svg>
+            <svg class="ts-moon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+            </svg>
+          </span>
+        </span>
+      </button>
+      <a class="btn btn-line btn-sm nav-exit" href="/clipathon">
+        <span class="arr arr-back">&#8594;</span> <span class="btn-label">Back to Clipathon</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     Progress
+     ============================================================ -->
+<div class="progress" id="progress">
+  <div class="progress-top">
+    <span class="progress-step" id="progStep">Question 1 of 9</span>
+    <span class="progress-pct" id="progPct">0%</span>
+  </div>
+  <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progBar">
+    <span class="progress-fill" id="progFill"></span>
+  </div>
+  <div class="progress-dots" id="progDots" aria-hidden="true"></div>
+</div>
+
+<!-- ============================================================
+     Questions
+     ============================================================ -->
+<main class="stage">
+  <div class="stage-inner">
+
+    <!-- Whose account this is. They proved this address with a code a
+         moment ago, so it is shown rather than asked for. -->
+    <div class="whoami" id="whoami" hidden>
+      <span class="wi-k">Signing up as</span>
+      <span class="wi-v" id="whoEmail">…</span>
+      <button type="button" id="whoOut">Not you?</button>
+    </div>
+
+    <form id="quiz" novalidate>
+
+      <section class="step on" data-step data-required="rName">
+        <span class="step-no">Question 01</span>
+        <h2>First up, what's your <em>name</em>?</h2>
+        <p class="help">Exactly as you want it printed on your certificate and prize records.</p>
+        <div class="fields">
+          <div class="f-field">
+            <label class="f-label" for="rName">Full name</label>
+            <input class="f-input" id="rName" name="full_name" type="text" autocomplete="name" placeholder="Your full name">
+            <div class="f-msg" data-for="rName"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="step" data-step data-required="rPhone">
+        <span class="step-no">Question 02</span>
+        <h2>Where can we <em>reach</em> you?</h2>
+        <p class="help">We send an OTP to confirm it's really you, then run all the event updates over WhatsApp on this number.</p>
+        <div class="fields">
+          <div class="f-field">
+            <label class="f-label" for="rPhone">Phone number</label>
+            <div class="f-phone">
+              <select class="f-select" id="rCode" name="country_code" aria-label="Country code">
+                <option value="+91" selected>+91</option>
+                <option value="+1">+1</option>
+                <option value="+44">+44</option>
+                <option value="+61">+61</option>
+                <option value="+971">+971</option>
+              </select>
+              <input class="f-input" id="rPhone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="10 digit number">
+            </div>
+            <div class="f-msg" data-for="rPhone"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="step" data-step data-required="rProfile">
+        <span class="step-no">Question 03</span>
+        <h2>Show us where you <em>post</em>.</h2>
+        <p class="help">This is what our team reviews, so it needs to be public when we get to it. A real posting history matters more than follower count.</p>
+        <div class="fields">
+          <div class="f-field">
+            <label class="f-label" for="rProfile">Your main profile</label>
+            <input class="f-input" id="rProfile" name="profile_url" type="url" inputmode="url" placeholder="instagram.com/yourhandle">
+            <div class="f-hint">Paste a link or just your handle. Instagram is the one we check first.</div>
+            <div class="f-msg" data-for="rProfile"></div>
+          </div>
+          <div class="f-field">
+            <label class="f-label" for="rProfile2">Second profile <span class="opt">(optional)</span></label>
+            <input class="f-input" id="rProfile2" name="profile_url_2" type="url" inputmode="url" placeholder="TikTok or YouTube link">
+          </div>
+        </div>
+      </section>
+
+      <section class="step" data-step data-required="band">
+        <span class="step-no">Question 04</span>
+        <h2>How big is your <em>audience</em>?</h2>
+        <p class="help">Self declared, and we cross check it at verification. Smaller accounts are not at a disadvantage: engagement rate is worth 25% of your score.</p>
+        <div class="fields">
+          <div class="opts" id="rBand" role="radiogroup" aria-label="Follower count band">
+            <button class="opt-card" type="button" data-val="under-1k" role="radio" aria-checked="false"><span class="tick" aria-hidden="true"></span>Under 1,000 followers</button>
+            <button class="opt-card" type="button" data-val="1k-5k" role="radio" aria-checked="false"><span class="tick" aria-hidden="true"></span>1,000 to 5,000</button>
+            <button class="opt-card" type="button" data-val="5k-25k" role="radio" aria-checked="false"><span class="tick" aria-hidden="true"></span>5,000 to 25,000</button>
+            <button class="opt-card" type="button" data-val="25k-100k" role="radio" aria-checked="false"><span class="tick" aria-hidden="true"></span>25,000 to 100,000</button>
+            <button class="opt-card" type="button" data-val="100k-plus" role="radio" aria-checked="false"><span class="tick" aria-hidden="true"></span>100,000 and above</button>
+          </div>
+          <div class="f-msg" data-for="band" style="margin-top:14px"></div>
+        </div>
+      </section>
+
+      <section class="step" data-step data-required="cats">
+        <span class="step-no">Question 05</span>
+        <h2>What do you actually <em>make</em>?</h2>
+        <p class="help">Pick everything that fits. This is how we point you at the brand topics whose briefs suit your style.</p>
+        <div class="fields">
+          <div class="chips" id="rCats" role="group" aria-label="Content categories">
+            <button class="chip" type="button" data-val="lifestyle">Lifestyle</button>
+            <button class="chip" type="button" data-val="tech">Tech</button>
+            <button class="chip" type="button" data-val="fashion">Fashion &amp; Beauty</button>
+            <button class="chip" type="button" data-val="food">Food</button>
+            <button class="chip" type="button" data-val="fitness">Fitness</button>
+            <button class="chip" type="button" data-val="comedy">Comedy</button>
+            <button class="chip" type="button" data-val="education">Education</button>
+            <button class="chip" type="button" data-val="gaming">Gaming</button>
+            <button class="chip" type="button" data-val="finance">Finance</button>
+            <button class="chip" type="button" data-val="travel">Travel</button>
+          </div>
+          <div class="f-msg" data-for="cats" style="margin-top:14px"></div>
+        </div>
+      </section>
+
+      <section class="step" data-step data-required="rTerms">
+        <span class="step-no">Question 06</span>
+        <h2>Last thing. <em>Check it over.</em></h2>
+        <p class="help">Make sure this all looks right, then accept the terms and you're in the queue.</p>
+        <div class="fields">
+          <div class="review" id="review"></div>
+
+          <!-- Registration used to ask "anyone send you here?" as a step of
+               its own. Almost nobody needs it: a creator who arrived on a
+               link already has the code applied from the URL, the cookie or
+               the store, and it is shown back to them in the review above.
+               The handful who were told a code out loud still need somewhere
+               to put it, so it lives here behind one tap instead of costing
+               every single person a screen. -->
+          <p class="f-note" id="rRefOpen"><button type="button" id="rRefToggle">Have a referral code?</button></p>
+          <div class="f-field" id="rRefWrap" hidden>
+            <label class="f-label" for="rRef">Referral code <span class="opt">(optional)</span></label>
+            <input class="f-input" id="rRef" name="referral_code" type="text" autocapitalize="none" placeholder="e.g. aarav07">
+            <p class="f-note" id="rRefNote" hidden></p>
+          </div>
+
+          <label class="chk" id="rTermsWrap" for="rTerms">
+            <input type="checkbox" id="rTerms" name="terms">
+            <span class="box" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <span class="txt">I accept the <a href="/clipathon#faq">Clipathon rules</a> and the content rights terms: the brand
+            behind the topic I create on receives a one year usage licence over the clip I produce for that topic.</span>
+          </label>
+          <div class="f-msg" data-for="rTerms" style="margin-top:12px"></div>
+        </div>
+      </section>
+
+    </form>
+
+    <!-- ============================================================
+         Done
+         ============================================================ -->
+    <div class="done" id="done" role="status" aria-live="polite">
+      <div class="done-mark"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <h2 id="doneTitle">You're in the <em>queue</em>.</h2>
+      <p id="doneBody">Every registration is reviewed by a human, so give us a few hours. You'll get
+      dashboard access on the email you registered with, the moment you're approved.</p>
+
+      <div class="done-codes" id="doneCodes" style="display:none">
+        <div class="dc">
+          <span class="dc-l">Your creator ID</span>
+          <b id="doneCid">-</b>
+        </div>
+        <div class="dc">
+          <span class="dc-l">Your referral code</span>
+          <b id="doneRef">-</b>
+          <span class="dc-n">Share this. You earn only when someone you bring in gets a clip approved.</span>
+        </div>
+      </div>
+
+      <div class="done-divider"><span class="dmk"></span></div>
+
+      <div class="follow">
+        <span class="eyebrow">For More Updates</span>
+        <h3>Follow us for everything that happens next.</h3>
+        <p>Topic reveals, session times, slot selection countdowns and finale night. It all goes out here first.</p>
+        <a class="ig" id="igLink" href="https://www.instagram.com/clipency.in" target="_blank" rel="noopener noreferrer">
+          <svg viewBox="0 0 24 24">
+            <rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/>
+            <circle cx="12" cy="12" r="4.2"/>
+            <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/>
+          </svg>
+          Follow <b>@clipency.in</b>
+        </a>
+      </div>
+
+      <div class="done-ctas">
+        <a class="btn btn-ink" id="dashLink" href="./clipathon-dashboard.html">Continue to dashboard <span class="arr">&#8594;</span></a>
+        <a class="btn btn-line" href="/clipathon"><span class="arr arr-back">&#8594;</span> Back to Clipathon</a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ============================================================
+     Navigation bar
+     ============================================================ -->
+<div class="bar" id="bar">
+  <div class="bar-inner">
+    <button class="btn btn-line" type="button" id="btnBack" disabled>
+      <span class="arr arr-back">&#8594;</span> Back
+    </button>
+    <span class="spacer"></span>
+    <span class="bar-hint" id="barHint">Press Enter to continue</span>
+    <button class="btn btn-ink" type="button" id="btnNext">Continue <span class="arr">&#8594;</span></button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+/* ============================================================
+   CLIPATHON registration, page configuration
+   ============================================================ */
+var CLIPATHON = {
+  cycle: 'Cycle 01',
+
+  /* Live. The form calls clipathon.register_creator through Supabase,
+     which validates everything again server side and writes the creator
+     and the registration in one transaction. The publishable key is
+     meant to be public: anon can execute that one function and reach
+     nothing else in the schema. */
+  supabaseUrl : 'https://kszlfvsplkkmsgxqnakj.supabase.co',
+  supabaseKey : 'sb_publishable_NvoWhIjNxWubRKKPo34JDw_13iNZkPd',
+
+  dashboardUrl: './clipathon-dashboard.html',
+  signinUrl   : './clipathon-signin.html',
+
+  /* The Instagram account the done screen links to. */
+  instagram: 'https://www.instagram.com/clipency.in'
+};
+
+(function(){
+  'use strict';
+
+  /* Filled by the gate at the bottom before the form is ever shown.
+     Nothing on this page runs until we know who is asking. */
+  var SESSION_EMAIL = '';
+
+  var $  = function(s, r){ return (r || document).querySelector(s); };
+  var $$ = function(s, r){ return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ============================================================
+     Theme toggle
+     ============================================================ */
+  (function(){
+    var html = document.documentElement, btn = $('#themeToggle'), lbl = $('#tsLabel');
+    function sync(){
+      var dark = html.getAttribute('data-theme') === 'dark';
+      btn.setAttribute('aria-checked', String(dark));
+      btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+      lbl.textContent = dark ? 'Light Mode' : 'Dark Mode';
+    }
+    btn.addEventListener('click', function(){
+      var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.classList.add('theme-snap');
+      html.setAttribute('data-theme', next);
+      try{ localStorage.setItem('clipency-theme', next); }catch(e){}
+      sync();
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){ html.classList.remove('theme-snap'); });
+      });
+    });
+    sync();
+  })();
+
+  /* config driven links */
+  $('#igLink').href   = CLIPATHON.instagram;
+  $('#dashLink').href = CLIPATHON.dashboardUrl;
+
+  /* ============================================================
+     Step machine
+     ============================================================ */
+  var steps   = $$('[data-step]'),
+      total   = steps.length,
+      idx     = 0,
+      cats    = [],
+      band    = '',
+      done    = $('#done'),
+      bar     = $('#bar'),
+      progress= $('#progress'),
+      btnBack = $('#btnBack'),
+      btnNext = $('#btnNext'),
+      progFill= $('#progFill'),
+      progBar = $('#progBar'),
+      progStep= $('#progStep'),
+      progPct = $('#progPct'),
+      progDots= $('#progDots');
+
+  /* one dot per question */
+  steps.forEach(function(){
+    var d = document.createElement('span');
+    d.className = 'pdot';
+    progDots.appendChild(d);
+  });
+  var dots = $$('.pdot', progDots);
+
+  function paint(){
+    steps.forEach(function(s, i){ s.classList.toggle('on', i === idx); });
+    dots.forEach(function(d, i){
+      d.classList.toggle('done', i < idx);
+      d.classList.toggle('now',  i === idx);
+    });
+    var pct = Math.round(idx / total * 100);
+    progFill.style.width = pct + '%';
+    progBar.setAttribute('aria-valuenow', String(pct));
+    progPct.textContent = pct + '%';
+    progStep.textContent = 'Question ' + (idx + 1) + ' of ' + total;
+    btnBack.disabled = idx === 0;
+    var last = idx === total - 1;
+    btnNext.innerHTML = last
+      ? 'Submit registration <span class="arr">&#8594;</span>'
+      : 'Continue <span class="arr">&#8594;</span>';
+    $('#barHint').textContent = last ? 'Press Enter to submit' : 'Press Enter to continue';
+    if(idx === total - 1) buildReview();
+    focusStep();
+  }
+
+  function focusStep(){
+    var s = steps[idx],
+        first = $('.f-input, .f-select, .opt-card, .chip, input[type="checkbox"]', s);
+    if(!first) return;
+    /* Don't steal focus on touch: it yanks the keyboard open mid-transition. */
+    if(window.matchMedia('(hover: hover) and (pointer: fine)').matches){
+      setTimeout(function(){ try{ first.focus({preventScroll:true}); }catch(e){} }, reduced ? 0 : 340);
+    }
+  }
+
+  /* ---- validation ---------------------------------------- */
+  function msg(key, text){
+    var box = $('.f-msg[data-for="' + key + '"]');
+    if(box){ box.textContent = text; box.classList.add('show'); }
+    var f = document.getElementById(key);
+    if(f) f.classList.add('bad');
+    if(key === 'rTerms') $('#rTermsWrap').classList.add('bad');
+  }
+  function clearMsg(key){
+    var box = $('.f-msg[data-for="' + key + '"]');
+    if(box){ box.textContent = ''; box.classList.remove('show'); }
+    var f = document.getElementById(key);
+    if(f) f.classList.remove('bad');
+    if(key === 'rTerms') $('#rTermsWrap').classList.remove('bad');
+  }
+
+  function normaliseUrl(v){
+    v = (v || '').trim();
+    if(!v) return '';
+    if(v.charAt(0) === '@') v = 'instagram.com/' + v.slice(1);
+    if(!/^https?:\/\//i.test(v)) v = 'https://' + v.replace(/^\/+/, '');
+    return v;
+  }
+  function looksLikeProfile(v){
+    try{
+      var u = new URL(normaliseUrl(v));
+      return /\./.test(u.hostname) && u.hostname.length > 3 && u.pathname.length > 1;
+    }catch(e){ return false; }
+  }
+
+  var rules = {
+    rName  : function(){ return $('#rName').value.trim().length >= 2 || 'Please enter your full name.'; },
+    rPhone : function(){
+      var d = $('#rPhone').value.replace(/[^0-9]/g,'');
+      return (d.length >= 7 && d.length <= 15) || 'Enter a valid number we can send an OTP to.';
+    },
+    rProfile: function(){
+      return looksLikeProfile($('#rProfile').value) || 'Paste a link to your public profile, e.g. instagram.com/yourhandle';
+    },
+    band   : function(){ return !!band || 'Pick the range that fits your account.'; },
+    cats   : function(){ return cats.length > 0 || 'Choose at least one category.'; },
+    rTerms : function(){ return $('#rTerms').checked || 'You need to accept the rules and content rights terms.'; }
+  };
+
+  function validateStep(){
+    var need = steps[idx].getAttribute('data-required');
+    if(!need) return true;
+    var keys = need.split(','), ok = true, firstBad = null;
+    keys.forEach(function(k){
+      clearMsg(k);
+      var r = rules[k] ? rules[k]() : true;
+      if(r !== true){ msg(k, r); ok = false; if(!firstBad) firstBad = k; }
+    });
+    if(!ok && firstBad){
+      var el = document.getElementById(firstBad) || $('#' + (firstBad === 'band' ? 'rBand' : 'rCats'));
+      if(el && el.focus) try{ el.focus({preventScroll:true}); }catch(e){}
+    }
+    return ok;
+  }
+
+  /* ---- movement ------------------------------------------- */
+  function next(){
+    if(!validateStep()) return;
+    if(idx === total - 1){ submit(); return; }
+    idx++;
+    paint();
+    window.scrollTo({top:0, behavior: reduced ? 'auto' : 'smooth'});
+  }
+  function back(){
+    if(idx === 0) return;
+    idx--;
+    paint();
+    window.scrollTo({top:0, behavior: reduced ? 'auto' : 'smooth'});
+  }
+  btnNext.addEventListener('click', next);
+  btnBack.addEventListener('click', back);
+
+  /* Enter advances, except inside the terms checkbox where space is the control */
+  $('#quiz').addEventListener('keydown', function(e){
+    if(e.key !== 'Enter') return;
+    if(e.target.tagName === 'TEXTAREA') return;
+    e.preventDefault();
+    next();
+  });
+
+  /* clear a field's error as soon as it is touched */
+  ['rName','rPhone','rProfile','rProfile2'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('input', function(){ clearMsg(id); });
+  });
+  $('#rTerms').addEventListener('change', function(){ clearMsg('rTerms'); });
+
+  /* ---- follower band, single select ----------------------- */
+  $$('#rBand .opt-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      $$('#rBand .opt-card').forEach(function(c){
+        c.classList.remove('on');
+        c.setAttribute('aria-checked','false');
+      });
+      card.classList.add('on');
+      card.setAttribute('aria-checked','true');
+      band = card.dataset.val;
+      clearMsg('band');
+    });
+  });
+
+  /* ---- categories, multi select --------------------------- */
+  $$('#rCats .chip').forEach(function(chip){
+    chip.setAttribute('aria-pressed','false');
+    chip.addEventListener('click', function(){
+      var on = chip.classList.toggle('on');
+      chip.setAttribute('aria-pressed', String(on));
+      cats = $$('#rCats .chip.on').map(function(c){ return c.dataset.val; });
+      if(cats.length) clearMsg('cats');
+    });
+  });
+
+  /* ---- the referral code fills itself in -------------------
+     Three places, freshest first: the URL this page was opened with,
+     the cookie the bridge page set, then localStorage. A creator who
+     arrived on somebody's link should never be asked to type a code
+     they were never shown, and forgetting to type it is exactly how
+     a referral goes uncredited.
+
+     Whatever is found is written back to both stores, so the code
+     survives a reload, a back button, or a detour through the inbox
+     to fetch the six digit code.
+     --------------------------------------------------------- */
+  var REF_SHAPE = /^[A-Z0-9][A-Z0-9._-]{2,23}$/;
+
+  function refFromUrl(){
+    try{
+      var q = new URLSearchParams(location.search);
+      return (q.get('ref') || q.get('c') || '').trim().toUpperCase();
+    }catch(e){ return ''; }
+  }
+  function refFromCookie(){
+    try{
+      var m = document.cookie.match(/(?:^|;\s*)clipathon_ref=([^;]+)/);
+      return m ? decodeURIComponent(m[1]).trim().toUpperCase() : '';
+    }catch(e){ return ''; }
+  }
+  function refFromStore(){
+    try{
+      var raw = localStorage.getItem('clipathon-ref');
+      if(!raw) return '';
+      var o = JSON.parse(raw);
+      /* A month is the window. Older than that and we are guessing. */
+      if(!o || !o.code || (Date.now() - (o.at || 0)) > 30 * 864e5) return '';
+      return String(o.code).trim().toUpperCase();
+    }catch(e){ return ''; }
+  }
+  function refRemember(code){
+    try{ localStorage.setItem('clipathon-ref', JSON.stringify({code:code, at:Date.now()})); }catch(e){}
+    try{ document.cookie = 'clipathon_ref=' + encodeURIComponent(code) +
+      ';path=/;max-age=' + (60*60*24*30) + ';samesite=lax'; }catch(e){}
+  }
+
+  /* The field lives behind a toggle on the review step now. Opening it is
+     for the person who was told a code out loud; everyone who arrived on a
+     link never has to see it, because the code is already in the box and
+     the review panel above says who invited them. */
+  (function refToggle(){
+    var open = $('#rRefToggle'), wrap = $('#rRefWrap');
+    if(!open || !wrap) return;
+    open.onclick = function(){
+      wrap.hidden = false;
+      var line = $('#rRefOpen');
+      if(line) line.hidden = true;
+      var input = $('#rRef');
+      if(input && !input.readOnly) input.focus();
+    };
+  })();
+
+  (function autoRef(){
+    var code = refFromUrl() || refFromCookie() || refFromStore();
+    if(!REF_SHAPE.test(code)) return;
+    refRemember(code);
+
+    var input = $('#rRef'), note = $('#rRefNote');
+    if(!input) return;
+    input.value = code;
+    input.readOnly = true;
+    input.classList.add('locked');
+
+    /* They did not type this, so the toggle should not ask them to. */
+    var open = $('#rRefOpen');
+    if(open) open.innerHTML = 'Invited on code <b>' + code.replace(/[<>&]/g, '') + '</b>. ' +
+      '<button type="button" id="rRefClear">Not right? Clear it</button>';
+
+    if(note){
+      note.hidden = false;
+      note.textContent = 'Applied from the link you opened. It credits them and changes nothing about your entry.';
+    }
+
+    var clear = $('#rRefClear');
+    if(clear) clear.onclick = function(){
+      input.value = '';
+      input.readOnly = false;
+      input.classList.remove('locked');
+      if(note) note.hidden = true;
+      var wrap = $('#rRefWrap');
+      if(wrap) wrap.hidden = false;
+      if(open) open.hidden = true;
+      try{ localStorage.removeItem('clipathon-ref'); }catch(e){}
+      try{ document.cookie = 'clipathon_ref=;path=/;max-age=0;samesite=lax'; }catch(e){}
+      input.focus();
+    };
+  })();
+
+  /* ---- review panel on the last step ---------------------- */
+  function bandLabel(){
+    var c = $('#rBand .opt-card.on');
+    return c ? c.textContent.trim() : '';
+  }
+  function buildReview(){
+    var rows = [
+      ['Name',       $('#rName').value.trim()],
+      ['Phone',      $('#rCode').value + ' ' + $('#rPhone').value.replace(/[^0-9]/g,'')],
+      ['Email',      SESSION_EMAIL],
+      ['Profile',    normaliseUrl($('#rProfile').value)],
+      ['Second',     normaliseUrl($('#rProfile2').value)],
+      ['Followers',  bandLabel()],
+      ['Categories', $$('#rCats .chip.on').map(function(c){ return c.textContent.trim(); }).join(', ')],
+      ['Invited by', ($('#rRef') ? $('#rRef').value.trim() : '')]
+    ].filter(function(r){ return r[1]; });
+
+    $('#review').innerHTML = rows.map(function(r){
+      var v = String(r[1]).replace(/[<>&]/g, function(ch){
+        return {'<':'&lt;','>':'&gt;','&':'&amp;'}[ch];
+      });
+      return '<div class="review-row"><b>' + r[0] + '</b><span>' + v + '</span></div>';
+    }).join('');
+  }
+
+  /* ---- submit --------------------------------------------- */
+  function payload(){
+    return {
+      full_name    : $('#rName').value.trim(),
+      country_code : $('#rCode').value,
+      phone        : $('#rCode').value + $('#rPhone').value.replace(/[^0-9]/g,''),
+      email        : SESSION_EMAIL,
+      profile_url  : normaliseUrl($('#rProfile').value),
+      profile_url_2: normaliseUrl($('#rProfile2').value),
+      /* City and college stopped being asked. register_creator takes both
+         as nullable and nullifs a blank, so sending nothing is the same
+         shape it always was. Rows registered before this keep theirs. */
+      city         : '',
+      campus       : '',
+      follower_band: band,
+      content_cats : cats,
+      referral_code: $('#rRef') ? $('#rRef').value.trim() : '',
+      terms        : $('#rTerms').checked,
+      cycle        : CLIPATHON.cycle,
+      source_page  : 'clipathon-register'
+    };
+  }
+
+  function finish(r){
+    r = r || {};
+    $('#quiz').style.display = 'none';
+    progress.style.display = 'none';
+    bar.style.display = 'none';
+
+    /* A creator who re-submits the same email is not a new signup, and
+       telling them "you are in the queue" again would be a lie. */
+    if(r.already_registered){
+      $('#doneTitle').innerHTML = 'You are <em>already in</em>.';
+      $('#doneBody').textContent =
+        'This email is already registered for ' + (r.cycle || 'this Clipathon') +
+        '. Your status is ' + (r.status || 'pending') + '. Nothing has been duplicated.';
+    }
+
+    if(r.creator_code){
+      $('#doneCodes').style.display = '';
+      $('#doneCid').textContent = r.creator_code;
+      $('#doneRef').textContent = r.referral_code || '';
+    }
+    done.classList.add('on');
+    window.scrollTo({top:0, behavior: reduced ? 'auto' : 'smooth'});
+  }
+
+  /* ---- the Supabase client, created once ---- */
+  var sb = null;
+  function client(){
+    if(sb) return sb;
+    try{
+      /* The Clipathon tables and functions live in their own `clipathon`
+         schema, never in `public`. Without naming it here the client asks
+         PostgREST for public.register_creator, which does not exist, and
+         every submission comes back as a generic save failure. */
+      sb = window.supabase.createClient(CLIPATHON.supabaseUrl, CLIPATHON.supabaseKey, {
+        db: { schema: 'clipathon' }
+      });
+    }catch(e){ sb = null; }
+    return sb;
+  }
+
+  /* Server-side errors come back as a jsonb envelope rather than a
+     thrown exception, so each one can be shown against the field that
+     caused it instead of a generic failure at the end. */
+  var ERR_FIELD = {
+    name_required  : 'rName',
+    email_invalid  : 'rName',
+    phone_invalid  : 'rPhone',
+    profile_invalid: 'rProfile',
+    terms_required : 'rTerms',
+    phone_taken    : 'rPhone',
+    blocked        : 'rName',
+    closed         : 'rTerms'
+  };
+  /* Index into the step list, so these move whenever a step is added or
+     removed. Six questions now: name, phone, links, followers, what they
+     make, review. City/college and the referral question were cut. */
+  var ERR_STEP = {
+    rName: 0, rPhone: 1, rProfile: 2, rTerms: 5
+  };
+
+  function submit(){
+    var label = btnNext.innerHTML;
+    btnNext.disabled = true;
+    btnNext.textContent = 'Submitting…';
+    var data = payload();
+
+    function fail(text, field){
+      btnNext.disabled = false;
+      btnNext.innerHTML = label;
+      field = field || 'rTerms';
+      /* Jump back to the step that owns the problem, otherwise the
+         message lands on a screen the creator cannot see. The page
+         tracks the current step in `idx` and repaints with paint(). */
+      var step = ERR_STEP[field];
+      if(typeof step === 'number' && step !== idx){
+        idx = step;
+        paint();
+        window.scrollTo({top:0, behavior: reduced ? 'auto' : 'smooth'});
+      }
+      msg(field, text || 'Something went wrong on our side. Please try again in a moment.');
+    }
+
+    var c = client();
+    if(!c){
+      fail('We could not reach the server. Check your connection and try again.');
+      return;
+    }
+
+    c.rpc('register_creator', {
+      p_full_name     : data.full_name,
+      p_email         : data.email,
+      p_phone         : data.phone,
+      p_profile_url   : data.profile_url,
+      p_city          : data.city || null,
+      p_campus        : data.campus || null,
+      p_secondary_url : data.profile_url_2 || null,
+      p_follower_band : data.follower_band || null,
+      p_categories    : data.content_cats || [],
+      p_ref_code      : data.referral_code || null,
+      p_terms_accepted: !!data.terms
+    }).then(function(res){
+      if(res.error){
+        console.error('[clipathon] register failed', res.error);
+        fail('We could not save your registration. Please try again in a moment.');
+        return;
+      }
+      var r = res.data || {};
+      if(!r.ok){
+        fail(r.message || 'Please check your details and try again.', ERR_FIELD[r.error]);
+        return;
+      }
+      finish(r);
+    }).catch(function(e){
+      console.error('[clipathon] register threw', e);
+      fail();
+    });
+  }
+
+  /* ============================================================
+     The gate
+     ============================================================
+     These questions belong to a person, and we only know which person
+     because they entered a code from their inbox two minutes ago. So
+     nothing renders until a session is confirmed. Somebody arriving
+     here cold is sent to the front door rather than shown a form whose
+     answers would have nowhere to go.
+     ============================================================ */
+  function gate(){
+    document.body.classList.add('gating');
+    var wait = document.createElement('div');
+    wait.className = 'gate-wait';
+    wait.id = 'gateWait';
+    wait.textContent = 'Checking your login…';
+    document.body.appendChild(wait);
+
+    var done = function(){
+      document.body.classList.remove('gating');
+      var w = document.getElementById('gateWait');
+      if(w) w.remove();
+    };
+    var bounce = function(){ location.replace(CLIPATHON.signinUrl); };
+
+    var c = client();
+    if(!c){ wait.textContent = 'We could not reach the server. Reload to try again.'; return; }
+
+    c.auth.getSession().then(function(r){
+      var s = r && r.data && r.data.session;
+      if(!s || !s.user || !s.user.email){ bounce(); return; }
+
+      SESSION_EMAIL = String(s.user.email).toLowerCase();
+
+      /* Already answered these? Then this page has nothing to ask and
+         the dashboard is where they meant to go. */
+      return c.rpc('me', { p_user_agent: navigator.userAgent }).then(function(res){
+        var m = (res && res.data) || {};
+        if(m.ok && m.needs_registration === false){
+          location.replace(CLIPATHON.dashboardUrl);
+          return;
+        }
+        var who = document.getElementById('whoami');
+        document.getElementById('whoEmail').textContent = SESSION_EMAIL;
+        who.hidden = false;
+        done();
+        paint();
+      }).catch(function(){
+        /* me() failing should not strand somebody who is demonstrably
+           signed in. Let them answer; the server validates again. */
+        var who = document.getElementById('whoami');
+        document.getElementById('whoEmail').textContent = SESSION_EMAIL;
+        who.hidden = false;
+        done();
+        paint();
+      });
+    }).catch(bounce);
+
+    var out = document.getElementById('whoOut');
+    if(out) out.addEventListener('click', function(){
+      var cc = client();
+      (cc ? cc.auth.signOut() : Promise.resolve())
+        .then(bounce).catch(bounce);
+    });
+  }
+
+  gate();
+})();
+</script>
+</body>
+</html>

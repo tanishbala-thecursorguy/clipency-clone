@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Clipency portal · diagnostics</title>
+<style>
+  :root{ --bg:#0B0B0B; --panel:#131211; --hair:rgba(255,255,255,.09);
+         --ink:#F2EFEA; --ink55:rgba(242,239,234,.55); --gold:#C9A227;
+         --ok:#5BBF7A; --warn:#E0A93C; --bad:#D9604F; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:400 14px/1.6 Inter,system-ui,-apple-system,sans-serif;padding:40px 24px}
+  .wrap{max-width:860px;margin:0 auto}
+  h1{font:500 30px/1.2 'Cormorant Garamond',Georgia,serif;margin:0 0 6px;letter-spacing:.01em}
+  .sub{color:var(--ink55);font-size:13px;margin:0 0 28px}
+  .card{background:var(--panel);border:1px solid var(--hair);border-radius:10px;
+        padding:0;margin:0 0 18px;overflow:hidden}
+  .row{display:flex;gap:14px;align-items:flex-start;padding:13px 18px;
+       border-bottom:1px solid var(--hair)}
+  .row:last-child{border-bottom:0}
+  .dot{flex:0 0 8px;width:8px;height:8px;border-radius:50%;margin-top:8px;background:var(--ink55)}
+  .dot.ok{background:var(--ok)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
+  .k{flex:0 0 210px;font-size:13px;color:var(--ink55)}
+  .v{flex:1;font-size:13px;word-break:break-word;font-variant-numeric:tabular-nums}
+  .v code{font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;
+          background:rgba(255,255,255,.05);padding:1px 5px;border-radius:4px}
+  h2{font:500 12px/1 Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;
+     color:var(--gold);margin:26px 0 10px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:9px 18px;border-bottom:1px solid var(--hair)}
+  th{color:var(--ink55);font-weight:500;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .banner{padding:14px 18px;border-radius:8px;margin:0 0 24px;font-size:13px;
+          border:1px solid}
+  .banner.live{background:rgba(91,191,122,.09);border-color:rgba(91,191,122,.3);color:#A6E0B8}
+  .banner.mock{background:rgba(224,169,60,.09);border-color:rgba(224,169,60,.32);color:#F0D9A6}
+  a{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Portal diagnostics</h1>
+  <p class="sub">Confirms what this deployment is actually connected to. Open the browser console for the full log.</p>
+
+  <div id="banner" class="banner mock">Running checks…</div>
+
+  <h2>Connection</h2>
+  <div class="card" id="conn"></div>
+
+  <h2>Data pulled</h2>
+  <div class="card" id="data"></div>
+
+  <h2>Columns present in <code>clip_submissions</code></h2>
+  <div class="card" id="cols"></div>
+
+  <h2>Write protection</h2>
+  <div class="card" id="writes"></div>
+
+  <h2>First 10 clips</h2>
+  <div class="card"><table id="rows"><thead><tr>
+    <th>Title</th><th>Creator</th><th>Platform</th><th class="num">Views</th><th class="num">$</th>
+  </tr></thead><tbody></tbody></table></div>
+</div>
+
+<script src="./data.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script src="./js/live.js"></script>
+<script type="module">
+if (window.CLIPENCY_LIVE) {
+  try { await window.CLIPENCY_LIVE.ready; }
+  catch (e) { console.error(e); }
+}
+
+const L   = window.CLIPENCY_LIVE || { mode: 'mock', log: [], columns: {} };
+const C   = window.CLIPENCY;
+const CFG = window.CLIPENCY_CONFIG || {};
+const live = L.mode === 'live';
+
+function row(host, state, k, v) {
+  document.getElementById(host).insertAdjacentHTML('beforeend',
+    `<div class="row"><div class="dot ${state}"></div>` +
+    `<div class="k">${k}</div><div class="v">${v}</div></div>`);
+}
+
+/* ---- banner ---- */
+const b = document.getElementById('banner');
+b.className = 'banner ' + (live ? 'live' : 'mock');
+b.innerHTML = live
+  ? '<b>LIVE</b> — this page is reading the real production database, read-only.'
+  : '<b>MOCK</b> — the live read did not succeed, so you are seeing sample data. Reasons are listed below.';
+
+/* ---- connection ---- */
+const ref = (CFG.SUPABASE_URL || '').replace(/^https?:\/\//, '').split('.')[0];
+const isProd = ref === 'spwtkdgpgeutrhwcjrpy';
+row('conn', live ? 'ok' : 'bad', 'Mode', `<code>${L.mode}</code>`);
+row('conn', isProd ? 'warn' : 'ok', 'Supabase project',
+    `<code>${ref || '—'}</code> ${isProd ? '· <b>PRODUCTION</b>' : '· non-production'}`);
+row('conn', 'ok', 'Anon key set', CFG.SUPABASE_ANON_KEY ? 'yes' : '<b>no</b>');
+row('conn', window.supabase ? 'ok' : 'bad', 'supabase-js loaded',
+    window.supabase ? 'yes' : 'no — CDN blocked?');
+row('conn', L.campaignId ? 'ok' : 'warn', 'Campaign id',
+    L.campaignId ? `<code>${L.campaignId}</code>` : 'not resolved');
+
+/* ---- data ---- */
+const T = C.totals();
+row('data', C.submissions.length ? 'ok' : 'bad', 'Campaign / client', C.campaign.client);
+row('data', 'ok', 'Clips loaded', `${T.allCount} total · ${T.approvedCount} approved · ${T.pendingCount} pending · ${T.rejectedCount} rejected`);
+row('data', 'ok', 'Approved views', T.approvedViews.toLocaleString('en-US'));
+row('data', 'ok', 'Spend', C.money(T.spend) + (live ? ' (summed from approved_amount)' : ' (derived from CPM — mock)'));
+row('data', C.campaign.budget ? 'ok' : 'warn', 'Budget',
+    C.campaign.budget ? C.money(C.campaign.budget) + ` · ${T.budgetUsed}% used` : 'not set on campaign');
+row('data', 'ok', 'Rate', C.campaign.payoutModel === 'per_video'
+  ? C.money(C.campaign.ratePerVideo) + ' per approved video'
+  : C.money(C.campaign.cpm) + ' per 1,000 views');
+row('data', 'ok', 'Window', C.campaign.start + ' → today');
+
+/* ---- columns ---- */
+[['title','falls back to campaign_title'],
+ ['cover_url','falls back to YouTube thumbnail; Instagram has no cover']]
+  .forEach(([c, fallback]) => {
+    const has = L.columns[c] === true;
+    row('cols', has ? 'ok' : 'warn', c, has ? 'present' : `missing — ${fallback}`);
+  });
+
+/* ---- write protection ---- */
+row('writes', CFG.READ_ONLY ? 'ok' : 'bad', 'READ_ONLY',
+    CFG.READ_ONLY ? 'true — inserts/updates/deletes/rpc are blocked'
+                  : '<b>false — this page CAN write to production</b>');
+let blocked = 'not tested';
+if (window.clipencySupabase) {
+  try {
+    window.clipencySupabase.from('clip_flags').insert({ reason: 'diagnostic' });
+    blocked = '<b>NOT blocked</b> — a write got through';
+  } catch (e) { blocked = 'blocked correctly'; }
+}
+row('writes', blocked.startsWith('blocked') ? 'ok' : 'bad', 'Live insert attempt', blocked);
+
+/* ---- rows ---- */
+document.querySelector('#rows tbody').innerHTML =
+  C.submissions.slice(0, 10).map(r =>
+    `<tr><td>${r.title}</td><td>${r.creator}</td><td>${r.platform || '—'}</td>` +
+    `<td class="num">${r.views.toLocaleString('en-US')}</td>` +
+    `<td class="num">${r.amount != null ? C.money(r.amount) : '—'}</td></tr>`
+  ).join('') || '<tr><td colspan="5">no rows</td></tr>';
+
+/* ---- log ---- */
+if (L.log.length) {
+  const host = document.getElementById('conn');
+  L.log.forEach(e => row('conn',
+    e.level === 'error' ? 'bad' : e.level === 'warn' ? 'warn' : 'ok',
+    e.level, e.msg));
+}
+</script>
+</body>
+</html>

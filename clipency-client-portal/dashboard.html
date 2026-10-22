@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipency — Campaign Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){try{
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('clipency-theme') || 'light');
+  /* Gate: the portal used to be opened with a 6-digit PIN kept in
+     sessionStorage. It is now a real login, so the gate checks for a
+     Supabase session instead. This is the synchronous, no-dependency
+     version so it can run before anything paints; js/live.js does the
+     authoritative check (getUser) and redirects if the token is stale. */
+  /* Demo mode: ?demo=1 opens the real portal on the sample data in
+     data.js, with no account. The flag is kept in sessionStorage so the
+     other pages stay in demo as you click through the nav, and it dies
+     with the tab so nobody is left stuck in a fake dashboard. */
+  var __d = /[?&]demo=1/.test(location.search);
+  try{
+    if(__d) sessionStorage.setItem('clipency-demo','1');
+    if(/[?&]demo=0/.test(location.search)) sessionStorage.removeItem('clipency-demo');
+    __d = sessionStorage.getItem('clipency-demo') === '1';
+  }catch(e){}
+  if(!__d && !localStorage.getItem('sb-spwtkdgpgeutrhwcjrpy-auth-token')) location.replace('./client-signin.html');
+}catch(e){ document.documentElement.setAttribute('data-theme','light'); }})();
+</script>
+<link rel="stylesheet" href="./dashboard.css">
+<style>
+/* page-specific */
+.live-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ok);border:1px solid rgba(90,122,82,.3);border-radius:999px;padding:7px 16px;
+  background:rgba(90,122,82,.07);white-space:nowrap;
+}
+.live-pill b{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:lp 1.6s ease-in-out infinite;}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.3}}
+
+.donut-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:4px;}
+.donut-box{position:relative;width:180px;height:180px;}
+.donut-box svg{width:100%;height:100%;transform:rotate(-90deg);}
+.donut-center{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.donut-center .big{font-family:var(--serif);font-size:34px;color:var(--ink-2);line-height:1;}
+.donut-center .small{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-40);margin-top:5px;}
+
+.mini-cover{width:34px;height:52px;border-radius:6px;object-fit:cover;background:var(--surface-2);border:1px solid var(--hair);display:block;}
+.clip-cell{display:flex;align-items:center;gap:12px;min-width:0;}
+.clip-cell .t{font-weight:500;color:var(--ink-90);max-width:230px;overflow:hidden;text-overflow:ellipsis;}
+.clip-cell .c{font-size:12px;color:var(--ink-40);}
+.panel.mt{margin-top:16px;}
+.view-all{margin-top:16px;text-align:right;}
+.grid2.rev{grid-template-columns:1fr 1.7fr;}
+@media (max-width:960px){ .grid2.rev{grid-template-columns:1fr;} }
+
+/* chart controls */
+.chart-controls{display:flex;gap:6px;flex-wrap:wrap;}
+.chart-controls .chip{padding:5px 12px;font-size:11px;}
+
+/* campaign timeline */
+.tl{position:relative;flex:1;padding-left:22px;margin-top:6px;}
+.tl::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:1px;background:var(--hair-warm);}
+.tl-item{position:relative;padding:0 0 20px 14px;}
+.tl-item:last-child{padding-bottom:0;}
+.tl-item::before{
+  content:"";position:absolute;left:-20px;top:5px;width:9px;height:9px;border-radius:50%;
+  background:var(--gold);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--hair-warm);
+}
+.tl-item.big::before{background:var(--bronze);}
+.tl-date{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);}
+.tl-label{font-size:13.5px;color:var(--ink-90);font-weight:500;margin-top:2px;line-height:1.45;}
+.tl-sub{font-size:12px;color:var(--ink-55);margin-top:1px;}
+
+/* budget bar inside stat card */
+.budget-track{height:6px;border-radius:4px;background:var(--hair);overflow:hidden;margin-top:12px;}
+.budget-fill{height:100%;border-radius:4px;width:0;background:var(--ink-2);transition:width 1.3s var(--ease), background .4s ease;}
+.budget-fill.warn{background:#C4553C;}
+</style>
+</head>
+<body>
+<div class="paper-field" aria-hidden="true"></div>
+<div class="shell">
+  <div id="side"></div>
+  <div class="main">
+    <div id="topbar"></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Overview</span>
+          <h1 id="welcome">Welcome back.</h1>
+          <p id="summary"></p>
+        </div>
+        <span class="live-pill"><b></b> Campaign Live</span>
+      </div>
+
+      <section class="stats" aria-label="Campaign stats">
+        <div class="stat"><span class="lbl">Views Delivered</span><div class="num" id="stViews">0</div><div class="foot">across all platforms</div></div>
+        <div class="stat"><span class="lbl">Clips Live</span><div class="num" id="stClips">0</div><div class="foot" id="stClipsFoot"></div></div>
+        <div class="stat"><span class="lbl">Budget Used</span><div class="num" id="stBudget">0%</div><div class="foot" id="stBudgetFoot"></div>
+          <div class="budget-track"><div class="budget-fill" id="budgetFill"></div></div>
+        </div>
+        <div class="stat"><span class="lbl">Spend</span><div class="num" id="stSpend">$0</div><div class="foot" id="stSpendFoot"></div></div>
+      </section>
+
+      <section class="grid2">
+        <div class="panel">
+          <div class="panel-h">
+            <h2>Views over time</h2>
+            <div class="chart-controls">
+              <div class="chips" id="modeChips">
+                <button class="chip on" data-mode="cum">Cumulative</button>
+                <button class="chip" data-mode="daily">Per day</button>
+              </div>
+              <div class="chips" id="rangeChips">
+                <button class="chip" data-range="7">7D</button>
+                <button class="chip" data-range="14">14D</button>
+                <button class="chip on" data-range="30">30D</button>
+              </div>
+            </div>
+          </div>
+          <div class="chart-wrap" id="lineWrap">
+            <div class="chart-tip" id="lineTip"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2>Platform split</h2><span id="donutSub"></span></div>
+          <div class="donut-wrap">
+            <div class="donut-box" id="donutBox">
+              <div class="donut-center"><span class="big" id="donutPct"></span><span class="small">total views</span></div>
+            </div>
+            <div class="legend" id="donutLegend"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid2 rev" style="margin-top:16px;">
+        <div class="panel">
+          <div class="panel-h"><h2>Campaign timeline</h2><span>Key moments</span></div>
+          <div class="tl" id="timeline"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2>At a glance</h2><span>This campaign</span></div>
+          <div class="tl-stats" id="glance" style="display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;"></div>
+        </div>
+      </section>
+
+      <section class="panel mt">
+        <div class="panel-h"><h2>Latest clips</h2><span>Most recent submissions</span></div>
+        <div style="overflow-x:auto;">
+        <table class="tbl" id="latestTbl">
+          <thead><tr>
+            <th>Clip</th><th>Platform</th>
+            <th class="num">Views</th><th class="num">Likes</th><th class="num">Comments</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+        </div>
+        <div class="view-all"><a class="btn btn-line" href="./clips.html">View all clips <span class="arr">&#8594;</span></a></div>
+      </section>
+
+      <section class="panel mt" id="briefWrap" style="display:none;">
+        <div class="panel-h"><h2>Campaign brief</h2><span id="briefSub"></span></div>
+        <div class="brief-box" style="border:none;padding:0;max-width:none;margin:0;" id="briefBody"></div>
+      </section>
+
+      <p class="foot-note" id="footNote"></p>
+    </main>
+  </div>
+</div>
+
+<script src="./data.js"></script>
+<script src="./db.js"></script>
+<script src="./export.js"></script>
+<script src="./shell.js"></script>
+<script src="./tour.js"></script>
+<!-- live data (read-only production Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script src="./js/live.js"></script>
+
+<script type="module">
+/* wait for live production data before painting; resolves to 'live' or 'mock' */
+if (window.CLIPENCY_LIVE) {
+  try { await window.CLIPENCY_LIVE.ready; }
+  catch (e) { console.error('[clipency] live load threw, painting anyway', e); }
+}
+
+CLIPSHELL.init('overview');
+(function(){
+  if(CLIPSHELL.emptyState()) return;
+  var C = CLIPENCY, T = C.totals();
+
+  document.getElementById('welcome').textContent = 'Welcome back, ' + C.campaign.client + '.';
+  document.getElementById('summary').textContent =
+    'Your campaign has delivered ' + C.fmtFull(T.approvedViews) + ' views across ' +
+    T.approvedCount + ' live clips. Everything below updates as the network posts.';
+  document.getElementById('footNote').textContent =
+    'CLIPENCY — ' + C.campaign.label + ' · data refreshed in real time';
+
+  /* campaign brief (requirements / guidelines / content link) */
+  (function(){
+    if(!window.CLIPDB) return;
+    var camp = CLIPDB.active();
+    if(!camp) return;
+    var html = CLIPSHELL.briefPanel(camp);
+    if(!html) return;
+    document.getElementById('briefWrap').style.display = '';
+    document.getElementById('briefSub').textContent = (camp.brand || camp.name) + (camp.category ? ' · ' + camp.category : '');
+    document.getElementById('briefBody').outerHTML = html.replace('class="brief-box"', 'class="brief-box" style="border:none;padding:0;max-width:none;margin:0;" id="briefBody"');
+  })();
+
+  /* animated stats */
+  var plats = C.byPlatform();
+  CLIPSHELL.count(document.getElementById('stViews'), T.approvedViews, function(v){ return C.fmtFull(Math.round(v)); });
+  CLIPSHELL.count(document.getElementById('stClips'), T.approvedCount, function(v){ return Math.round(v); }, 1100);
+  CLIPSHELL.count(document.getElementById('stBudget'), T.budgetUsed, function(v){ return v.toFixed(1)+'%'; });
+  CLIPSHELL.count(document.getElementById('stSpend'), T.spend, function(v){ return C.money(v); });
+  document.getElementById('stClipsFoot').textContent = 'across ' + plats.length + ' platforms';
+  document.getElementById('stBudgetFoot').textContent = C.money(T.spend) + ' of ' + C.money(T.budget) + ' budget';
+  document.getElementById('stSpendFoot').textContent = C.campaign.payoutModel === 'per_video'
+    ? 'at ' + C.money(C.campaign.ratePerVideo) + ' per approved video'
+    : 'at ' + C.money(C.campaign.cpm) + ' per 1,000 views';
+  var bfill = document.getElementById('budgetFill');
+  if(T.budgetUsed >= 85) bfill.classList.add('warn');
+  setTimeout(function(){ bfill.style.width = Math.min(T.budgetUsed,100) + '%'; }, 200);
+
+  /* ---------- views chart (range + mode) ---------- */
+  var allDays = C.daily();
+  var wrap = document.getElementById('lineWrap'), tip = document.getElementById('lineTip');
+  var mode = 'cum', range = 30;
+  function drawLine(){
+    var days = allDays.slice(-range);
+    /* recompute cumulative relative to the visible window's baseline so it always starts sensibly */
+    var W = wrap.clientWidth || 600, H = Math.max(wrap.clientHeight, 230);
+    var P = {l:46, r:14, t:14, b:26};
+    var gold = CLIPSHELL.css('--gold'), hair = CLIPSHELL.css('--hair'), axis = CLIPSHELL.css('--ink-40');
+    var key = mode === 'cum' ? 'cum' : 'views';
+    var vals = days.map(function(d){ return d[key]; });
+    var max = Math.max.apply(null, vals) * 1.08 || 1;
+    var min = mode === 'cum' ? Math.min.apply(null, vals) * 0.96 : 0;
+    var X = function(i){ return P.l + (days.length<2?0.5:i/(days.length-1))*(W-P.l-P.r); };
+    var Y = function(v){ return H-P.b - (v-min)/(max-min)*(H-P.t-P.b); };
+    var gridY = [0,.25,.5,.75,1].map(function(f){
+      var v = min + (max-min)*f, y = Y(v);
+      return '<line x1="'+P.l+'" y1="'+y+'" x2="'+(W-P.r)+'" y2="'+y+'" stroke="'+hair+'" stroke-width="1"/>' +
+             '<text x="'+(P.l-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10" fill="'+axis+'" font-family="Inter">'+C.fmt(Math.round(v))+'</text>';
+    }).join('');
+    var nTicks = Math.min(4, days.length);
+    var ticks = [];
+    for(var t=0;t<nTicks;t++){
+      var i = Math.round(t/(nTicks-1||1)*(days.length-1));
+      ticks.push('<text x="'+X(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="'+axis+'" font-family="Inter">'+days[i].date.slice(5).replace('-','/')+'</text>');
+    }
+    wrap.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+    var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    var body;
+    if(mode === 'cum'){
+      var line = days.map(function(d,i){ return (i?'L':'M') + X(i).toFixed(1) + ' ' + Y(d.cum).toFixed(1); }).join(' ');
+      var area = line + ' L' + X(days.length-1).toFixed(1) + ' ' + (H-P.b) + ' L' + X(0).toFixed(1) + ' ' + (H-P.b) + ' Z';
+      body = '<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="'+gold+'" stop-opacity=".28"/>' +
+        '<stop offset="1" stop-color="'+gold+'" stop-opacity="0"/></linearGradient></defs>' +
+        '<path d="'+area+'" fill="url(#ag)"/>' +
+        '<path d="'+line+'" fill="none" stroke="'+gold+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>';
+    } else {
+      var bw = (W-P.l-P.r)/days.length;
+      body = days.map(function(d,i){
+        var h = (d.views-min)/(max-min)*(H-P.t-P.b);
+        return '<rect x="'+(P.l+i*bw+bw*.2)+'" y="'+(H-P.b-h)+'" width="'+(bw*.6)+'" height="'+Math.max(h,1)+'" rx="2.5" fill="'+gold+'" opacity="'+(d.views? .85:.18)+'"/>';
+      }).join('');
+    }
+    svg.innerHTML = gridY + ticks + body +
+      '<circle id="dotHover" r="4.5" fill="'+gold+'" stroke="'+CLIPSHELL.css('--paper')+'" stroke-width="2" opacity="0"/>';
+    wrap.appendChild(svg);
+
+    var dot = svg.getElementById('dotHover');
+    wrap.onmousemove = function(e){
+      var r = wrap.getBoundingClientRect();
+      var i = Math.round((e.clientX - r.left - P.l) / (W-P.l-P.r) * (days.length-1));
+      i = Math.max(0, Math.min(days.length-1, i));
+      var d = days[i];
+      dot.setAttribute('cx', X(i)); dot.setAttribute('cy', Y(d[key])); dot.setAttribute('opacity', mode==='cum'?'1':'0');
+      tip.style.left = X(i)+'px'; tip.style.top = Y(d[key])+'px'; tip.style.opacity = '1';
+      tip.innerHTML = mode === 'cum'
+        ? d.date.slice(5).replace('-','/') + ' &middot; <b>' + C.fmtFull(d.cum) + '</b> total views' + (d.views ? '<br>+' + C.fmtFull(d.views) + ' that day' : '')
+        : d.date.slice(5).replace('-','/') + ' &middot; <b>' + C.fmtFull(d.views) + '</b> views that day';
+    };
+    wrap.onmouseleave = function(){ tip.style.opacity='0'; dot.setAttribute('opacity','0'); };
+  }
+  drawLine();
+  addEventListener('resize', drawLine);
+  document.getElementById('themeToggle').addEventListener('click', function(){ setTimeout(drawLine, 650); });
+  document.querySelectorAll('#modeChips .chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      document.querySelectorAll('#modeChips .chip').forEach(function(x){ x.classList.remove('on'); });
+      ch.classList.add('on'); mode = ch.dataset.mode; drawLine();
+    });
+  });
+  document.querySelectorAll('#rangeChips .chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      document.querySelectorAll('#rangeChips .chip').forEach(function(x){ x.classList.remove('on'); });
+      ch.classList.add('on'); range = +ch.dataset.range; drawLine();
+    });
+  });
+
+  /* ---------- platform donut ---------- */
+  var platColors = {tiktok:'#7A6CD8', instagram:'#C86A8A', youtube:'#C4553C'};
+  function drawDonut(){
+    var box = document.getElementById('donutBox');
+    box.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+    var segs = plats.map(function(p){
+      return {v:p.views, c:platColors[p.platform], l:p.platform.charAt(0).toUpperCase()+p.platform.slice(1), n:p.clips};
+    });
+    var tot = segs.reduce(function(a,s){return a+s.v;},0), R=80, CIRC=2*Math.PI*R, off=0;
+    var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 200 200');
+    var inner = '<circle cx="100" cy="100" r="'+R+'" fill="none" stroke="'+CLIPSHELL.css('--hair')+'" stroke-width="16"/>';
+    segs.forEach(function(s){
+      var frac = s.v/tot, len = frac*CIRC - 3;
+      inner += '<circle cx="100" cy="100" r="'+R+'" fill="none" stroke="'+s.c+'" stroke-width="16" ' +
+        'stroke-dasharray="'+Math.max(len,0)+' '+CIRC+'" stroke-dashoffset="'+(-off)+'" stroke-linecap="round"><title>'+s.l+': '+C.fmtFull(s.v)+' views</title></circle>';
+      off += frac*CIRC;
+    });
+    svg.innerHTML = inner;
+    box.insertBefore(svg, box.firstChild);
+    document.getElementById('donutLegend').innerHTML = segs.map(function(s){
+      return '<span><i style="background:'+s.c+'"></i>'+s.l+' · '+C.fmt(s.v)+'</span>';
+    }).join('');
+  }
+  document.getElementById('donutPct').textContent = C.fmt(T.approvedViews);
+  document.getElementById('donutSub').textContent = T.approvedCount + ' live clips';
+  drawDonut();
+  document.getElementById('themeToggle').addEventListener('click', function(){ setTimeout(drawDonut, 650); });
+
+  /* ---------- latest clips (live only) ---------- */
+  var latest = C.approved().slice().sort(function(a,b){ return b.submitted.localeCompare(a.submitted); }).slice(0,6);
+  document.querySelector('#latestTbl tbody').innerHTML = latest.map(function(r){
+    return '<tr>' +
+      '<td><div class="clip-cell"><img class="mini-cover" loading="lazy" src="'+r.cover+'" alt="">' +
+        '<div><div class="t">'+r.title+'</div><div class="c">'+r.creator+' · '+r.submitted.slice(5).replace('-','/')+'</div></div></div></td>' +
+      '<td><span class="plat '+r.platform+'"><i></i>'+r.platform+'</span></td>' +
+      '<td class="num">'+C.fmtFull(r.views)+'</td>' +
+      '<td class="num">'+C.fmtFull(r.likes)+'</td>' +
+      '<td class="num">'+C.fmtFull(r.comments)+'</td>' +
+      '<td><a href="'+r.url+'" target="_blank" rel="noopener">Open &#8599;</a></td>' +
+    '</tr>';
+  }).join('');
+
+  /* ---------- campaign timeline ---------- */
+  var ap = C.approved();
+  var byDate = ap.slice().sort(function(a,b){ return a.submitted.localeCompare(b.submitted); });
+  var firstClip = byDate[0];
+  var best = C.bestDay();
+  var topClip = C.top(1)[0];
+  /* find the day cumulative views crossed 100k */
+  var cross = null;
+  allDays.forEach(function(d){ if(!cross && d.cum >= 100000) cross = d; });
+  function fmtDate(iso){
+    var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var p = iso.split('-'); return m[+p[1]-1] + ' ' + (+p[2]);
+  }
+  var events = [
+    {date:C.campaign.start, big:true, label:'Campaign launched', sub:C.campaign.client + ' goes live to the network'},
+    {date:firstClip.submitted, label:'First clip posted', sub:firstClip.creator + ' · ' + firstClip.platform},
+    best ? {date:best.date, label:'Biggest day', sub:C.fmtFull(best.views) + ' views in 24 hours'} : null,
+    topClip ? {date:topClip.submitted, label:'Top clip', sub:'“' + topClip.title + '” · ' + C.fmt(topClip.views) + ' views'} : null,
+    cross ? {date:cross.date, big:true, label:'100K views delivered', sub:'Campaign crosses 100,000 views'} : null,
+    {date:'2026-07-20', label:'Today', sub:C.fmtFull(T.approvedViews) + ' views · ' + T.approvedCount + ' live clips'}
+  ].filter(Boolean).sort(function(a,b){ return a.date.localeCompare(b.date); });
+  document.getElementById('timeline').innerHTML = events.map(function(e){
+    return '<div class="tl-item'+(e.big?' big':'')+'">' +
+      '<div class="tl-date">'+fmtDate(e.date)+'</div>' +
+      '<div class="tl-label">'+e.label+'</div>' +
+      '<div class="tl-sub">'+e.sub+'</div></div>';
+  }).join('');
+
+  /* ---------- at a glance ---------- */
+  var eng = C.engagement();
+  var totalEng = ap.reduce(function(a,r){ return a+r.likes+r.comments; }, 0);
+  var days30 = allDays.length;
+  var glance = [
+    ['Avg views per clip', C.fmtFull(Math.round(T.approvedViews/T.approvedCount))],
+    ['Avg views per day', C.fmtFull(Math.round(T.approvedViews/days30))],
+    ['Engagement rate', eng.toFixed(1) + '%'],
+    ['Total engagement', C.fmtFull(totalEng) + ' likes + comments'],
+    ['Top platform', plats[0].platform.charAt(0).toUpperCase()+plats[0].platform.slice(1) + ' · ' + C.fmt(plats[0].views) + ' views']
+  ];
+  document.getElementById('glance').innerHTML = glance.map(function(g, i){
+    var border = i < glance.length-1 ? 'border-bottom:1px solid var(--hair);padding-bottom:14px;' : '';
+    return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;'+border+'">' +
+      '<span style="font-size:13px;color:var(--ink-55);">'+g[0]+'</span>' +
+      '<b style="font-family:var(--serif);font-size:19px;color:var(--ink-2);font-weight:500;font-variant-numeric:tabular-nums;text-align:right;">'+g[1]+'</b></div>';
+  }).join('');
+})();
+</script>
+</body>
+</html>

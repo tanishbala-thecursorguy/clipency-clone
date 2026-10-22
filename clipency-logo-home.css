@@ -1,0 +1,20 @@
+.cx-logo-home-sidebar {
+  position: relative !important;
+}
+
+.cx-logo-home-hitbox {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  max-width: 320px;
+  height: 98px;
+  z-index: 50;
+  cursor: pointer;
+  display: block;
+  background: transparent;
+}
+
+.cx-logo-home-hitbox:hover {
+  background: linear-gradient(90deg, rgba(167,139,250,0.045), transparent);
+}

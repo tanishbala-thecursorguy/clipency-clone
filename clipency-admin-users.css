@@ -1,0 +1,354 @@
+/* =========================================================
+   CLIPENCY ADMIN USERS PAGE
+   Premium access-control UI
+   ========================================================= */
+
+body.cx-admin-mode {
+  background:
+    radial-gradient(circle at 24% 0%, rgba(124,58,237,0.10), transparent 34%),
+    radial-gradient(circle at 92% 8%, rgba(20,184,166,0.07), transparent 30%),
+    #050509 !important;
+}
+
+/* Hide old clipper-only sidebar items on admin pages */
+body.cx-admin-mode .cx-admin-hide-old {
+  display: none !important;
+}
+
+.cx-admin-nav {
+  width: calc(100% - 32px);
+  margin: 18px 16px 28px;
+  display: grid;
+  gap: 8px;
+}
+
+.cx-admin-nav-label {
+  margin: 8px 16px 8px;
+  color: rgba(255,255,255,0.32);
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.cx-admin-nav a {
+  min-height: 52px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: 17px;
+  color: rgba(255,255,255,0.58);
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 850;
+  transition:
+    background 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cx-admin-nav a:hover {
+  color: white;
+  background: rgba(255,255,255,0.055);
+  transform: translateX(2px);
+}
+
+.cx-admin-nav a.active {
+  color: white;
+  background: rgba(124,58,237,0.24);
+}
+
+.cx-admin-nav svg {
+  width: 20px;
+  height: 20px;
+  color: #a78bfa;
+  flex: 0 0 auto;
+}
+
+/* Page shell */
+.cx-admin-users-shell {
+  width: min(1120px, calc(100vw - 430px - 72px));
+  min-width: 0;
+  margin: 0 auto;
+  padding: 54px 0 90px;
+}
+
+.cx-admin-users-hero {
+  margin-bottom: 28px;
+}
+
+.cx-admin-users-hero span {
+  display: inline-flex;
+  color: #a78bfa;
+  font-size: 12px;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.cx-admin-users-hero h1 {
+  margin: 10px 0 12px;
+  color: white;
+  font-size: clamp(48px, 5.6vw, 76px);
+  line-height: 0.94;
+  letter-spacing: -0.075em;
+}
+
+.cx-admin-users-hero p {
+  max-width: 780px;
+  margin: 0;
+  color: rgba(255,255,255,0.58);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+/* Cards */
+.cx-role-create-card,
+.cx-role-table-card {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(167,139,250,0.16);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at top left, rgba(124,58,237,0.14), transparent 30%),
+    linear-gradient(135deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018));
+  box-shadow:
+    0 24px 70px rgba(0,0,0,0.32),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  padding: 28px;
+  margin-top: 22px;
+  overflow: hidden;
+}
+
+.cx-role-create-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+}
+
+.cx-role-create-card h2,
+.cx-role-table-head h2 {
+  margin: 0;
+  color: white;
+  font-size: clamp(26px, 3vw, 36px);
+  line-height: 1.05;
+  letter-spacing: -0.055em;
+}
+
+.cx-role-create-card p {
+  max-width: 640px;
+  margin: 8px 0 0;
+  color: rgba(255,255,255,0.55);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+/* Form */
+#cx-role-form {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 170px 150px;
+  gap: 12px;
+  align-items: center;
+}
+
+#cx-role-form input,
+#cx-role-form select {
+  width: 100%;
+  height: 50px;
+  box-sizing: border-box;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.06);
+  color: white;
+  padding: 0 15px;
+  outline: none;
+  font: inherit;
+  font-weight: 800;
+}
+
+#cx-role-form input::placeholder {
+  color: rgba(255,255,255,0.36);
+}
+
+#cx-role-form select {
+  appearance: none;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.035));
+}
+
+#cx-role-form button,
+.cx-user-actions button {
+  min-height: 42px;
+  border: 1px solid rgba(167,139,250,0.26);
+  border-radius: 999px;
+  background: rgba(124,58,237,0.22);
+  color: white;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 160ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#cx-role-form button {
+  height: 50px;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+}
+
+#cx-role-form button:hover,
+.cx-user-actions button:hover {
+  transform: translateY(-1px);
+}
+
+#cx-role-form button:disabled,
+.cx-user-actions button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.cx-user-actions button.danger {
+  border-color: rgba(248,113,113,0.28);
+  background: rgba(248,113,113,0.10);
+  color: #fecaca;
+}
+
+/* Table */
+.cx-role-table-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.cx-role-table-head span {
+  color: rgba(255,255,255,0.46);
+  font-weight: 850;
+}
+
+.cx-role-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+}
+
+.cx-role-table-card table {
+  width: 100%;
+  min-width: 880px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.cx-role-table-card th {
+  text-align: left;
+  color: rgba(255,255,255,0.45);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.cx-role-table-card th:nth-child(1),
+.cx-role-table-card td:nth-child(1) {
+  width: 34%;
+}
+
+.cx-role-table-card th:nth-child(2),
+.cx-role-table-card td:nth-child(2) {
+  width: 14%;
+}
+
+.cx-role-table-card th:nth-child(3),
+.cx-role-table-card td:nth-child(3) {
+  width: 22%;
+}
+
+.cx-role-table-card th:nth-child(4),
+.cx-role-table-card td:nth-child(4) {
+  width: 30%;
+}
+
+.cx-role-table-card td {
+  color: rgba(255,255,255,0.76);
+  padding: 18px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.cx-user-email {
+  color: white;
+  font-weight: 900;
+}
+
+.cx-user-note {
+  margin-top: 4px;
+  color: rgba(255,255,255,0.42);
+  font-size: 12px;
+}
+
+.cx-role-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border-radius: 999px;
+  padding: 0 11px;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.cx-role-badge.admin {
+  color: #c4b5fd;
+  background: rgba(124,58,237,0.18);
+}
+
+.cx-role-badge.reviewer {
+  color: #86efac;
+  background: rgba(34,197,94,0.14);
+}
+
+.cx-user-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cx-admin-empty {
+  padding: 28px;
+  color: rgba(255,255,255,0.52);
+  text-align: center;
+}
+
+/* Prevent horizontal page strain */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 1200px) {
+  .cx-admin-users-shell {
+    width: min(980px, calc(100vw - 390px - 40px));
+  }
+
+  #cx-role-form {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .cx-admin-users-shell {
+    width: calc(100vw - 32px);
+    padding: 36px 0 70px;
+  }
+}

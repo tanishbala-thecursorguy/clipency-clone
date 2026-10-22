@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipency — Client Access</title>
+<meta name="description" content="Enter your 6-digit access code to open your Clipency campaign dashboard.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){try{
+  /* joining from the landing page: queue the portal tour for when Home opens */
+  sessionStorage.setItem('clipency-fresh-login','1');
+  /* Theme follows the visitor's one site-wide choice (clipency-theme). */
+  var __t; try{ __t = localStorage.getItem('clipency-theme'); }catch(e){}
+  document.documentElement.setAttribute('data-theme', __t === 'dark' ? 'dark' : 'light');
+}catch(e){
+  document.documentElement.setAttribute('data-theme', 'light');
+}})();
+</script>
+<style>
+/* ============================================================
+   CLIPENCY — tokens
+   ============================================================ */
+:root{
+  --ink:#0B0B0B; --ink-2:#111111; --paper:#F5F2ED;
+  --gold:#D8AA74; --bronze:#8C6A45;
+  --ink-90:rgba(11,11,11,.9); --ink-70:rgba(11,11,11,.7);
+  --ink-55:rgba(11,11,11,.55); --ink-40:rgba(11,11,11,.42); --ink-25:rgba(11,11,11,.25);
+  --hair:rgba(11,11,11,.12); --hair-warm:rgba(140,106,69,.28);
+  --gold-08:rgba(216,170,116,.08);
+  --serif:'Cormorant Garamond', Georgia, serif;
+  --sans:'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --card:#F5F2ED; --surface:#FAF8F5; --field:#FDFCFA; --field-focus:#FFFFFF;
+  --btn-bg:#0B0B0B; --btn-fg:#EDE8DF; --btn-line-border:rgba(11,11,11,.22);
+  --card-inset:rgba(255,255,255,.5);
+  --inv:invert(0) hue-rotate(0deg);
+}
+[data-theme="dark"]{
+  --ink:#E9E4DA; --ink-2:#F2EDE3; --paper:#141210;
+  --ink-90:rgba(233,228,218,.92); --ink-70:rgba(233,228,218,.72);
+  --ink-55:rgba(233,228,218,.56); --ink-40:rgba(233,228,218,.42); --ink-25:rgba(233,228,218,.26);
+  --hair:rgba(233,228,218,.13); --hair-warm:rgba(216,170,116,.3);
+  --gold:#DDB07C; --bronze:#BE9A67; --gold-08:rgba(221,176,124,.1);
+  --card:#181512; --surface:#1C1916; --field:#211E1A; --field-focus:#282420;
+  --btn-bg:#E9E4DA; --btn-fg:#161310; --btn-line-border:rgba(233,228,218,.26);
+  --card-inset:rgba(255,255,255,.04);
+  --inv:invert(1) hue-rotate(180deg);
+  color-scheme:dark;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+@keyframes pageIn{from{opacity:0}}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh; display:flex; align-items:center; justify-content:center;
+  padding:26px; overflow:hidden;
+  animation:pageIn .7s ease-out both;
+}
+::selection{background:rgba(216,170,116,.3);}
+
+/* paper grain + washes */
+.paper-field{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.paper-field::before{
+  content:"";position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  opacity:.045;mix-blend-mode:multiply;
+}
+[data-theme="dark"] .paper-field::before{opacity:.06;}
+.wash{position:fixed;pointer-events:none;z-index:0;border-radius:50%;filter:blur(90px);}
+.wash-tr{top:-180px;right:-160px;width:640px;height:520px;background:radial-gradient(closest-side, rgba(216,170,116,.10), transparent 70%);}
+.wash-bl{bottom:-220px;left:-200px;width:700px;height:560px;background:radial-gradient(closest-side, rgba(30,28,26,.07), transparent 70%);}
+[data-theme="dark"] .wash-bl{background:radial-gradient(closest-side, rgba(216,170,116,.05), transparent 70%);}
+
+/* theme cross-fade */
+html.theming, html.theming *, html.theming *::before, html.theming *::after{
+  transition:background-color .55s ease, border-color .55s ease, color .55s ease,
+             fill .55s ease, stroke .55s ease, filter .55s ease, box-shadow .55s ease,
+             opacity .55s ease !important;
+}
+
+/* ============================================================
+   Card
+   ============================================================ */
+.gate{
+  position:relative;z-index:2;width:100%;max-width:460px;text-align:center;
+  background:var(--surface);border:1px solid var(--hair);border-radius:18px;
+  padding:56px 46px 48px;
+  box-shadow:0 1px 2px rgba(11,11,11,.08), 0 30px 70px -30px rgba(11,11,11,.35),
+             inset 0 1px 0 var(--card-inset);
+}
+.gate::before{
+  content:"";position:absolute;top:-1px;left:56px;right:56px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none;margin-bottom:34px;}
+.brand svg{width:20px;height:20px;}
+.brand-name{font-family:var(--sans);font-weight:600;font-size:14px;letter-spacing:.22em;}
+.eyebrow{
+  display:block;font-family:var(--sans);font-size:10.5px;font-weight:500;
+  letter-spacing:.38em;text-transform:uppercase;color:var(--bronze);margin-bottom:16px;
+}
+h1{font-family:var(--serif);font-weight:500;color:var(--ink-2);font-size:34px;line-height:1.15;}
+.sub{color:var(--ink-55);font-size:14.5px;margin-top:14px;max-width:320px;margin-left:auto;margin-right:auto;}
+
+/* code inputs */
+.code-row{display:flex;gap:10px;justify-content:center;margin-top:36px;}
+.code-row input{
+  width:52px;height:64px;text-align:center;
+  font-family:var(--serif);font-size:30px;font-weight:500;color:var(--ink-2);
+  background:var(--field);border:1px solid var(--hair);border-radius:10px;
+  outline:none;caret-color:var(--bronze);
+  transition:border-color .3s ease, background .3s ease, box-shadow .3s ease, transform .2s ease;
+}
+.code-row input:focus{
+  border-color:var(--bronze);background:var(--field-focus);
+  box-shadow:0 0 0 3px var(--gold-08);
+}
+.code-row input.filled{border-color:var(--hair-warm);}
+@media (max-width:420px){ .code-row input{width:44px;height:56px;font-size:25px;} }
+
+/* error / success */
+.msg{min-height:22px;margin-top:18px;font-size:13px;letter-spacing:.04em;}
+.msg.err{color:#B4543C;}
+.msg.ok{color:var(--bronze);}
+@keyframes shake{
+  10%,90%{transform:translateX(-1px);} 20%,80%{transform:translateX(2px);}
+  30%,50%,70%{transform:translateX(-4px);} 40%,60%{transform:translateX(4px);}
+}
+.gate.shake{animation:shake .5s ease;}
+
+/* button */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;
+  font-family:var(--sans);font-size:14px;font-weight:500;letter-spacing:.01em;
+  cursor:pointer;border:none;margin-top:26px;
+  padding:16px 30px;border-radius:8px;
+  background:var(--btn-bg);color:var(--btn-fg);
+  box-shadow:0 1px 2px rgba(11,11,11,.18), 0 12px 34px -14px rgba(11,11,11,.4);
+  transition:transform .45s var(--ease), box-shadow .45s var(--ease), opacity .3s ease;
+}
+.btn .arr{color:var(--gold);transition:transform .45s var(--ease);display:inline-flex;}
+.btn:hover{transform:translateY(-1px);}
+.btn:hover .arr{transform:translateX(4px);}
+.btn:disabled{opacity:.45;cursor:default;transform:none;}
+.btn:focus-visible{outline:2px solid var(--bronze);outline-offset:3px;}
+
+.hint{margin-top:26px;font-size:12px;color:var(--ink-40);letter-spacing:.05em;}
+.hint a{color:var(--bronze);text-decoration:none;}
+.hint a:hover{text-decoration:underline;}
+.back{
+  position:fixed;top:26px;left:30px;z-index:3;font-size:13px;color:var(--ink-55);
+  text-decoration:none;letter-spacing:.04em;transition:color .3s;
+}
+.back:hover{color:var(--bronze);}
+
+/* theme switch (corner) */
+.theme-switch{position:fixed;top:24px;right:30px;z-index:3;display:flex;align-items:center;gap:11px;background:none;border:none;cursor:pointer;padding:0;}
+.ts-label{font-family:var(--sans);font-size:10.5px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-55);transition:color .35s ease;white-space:nowrap;}
+.theme-switch:hover .ts-label{color:var(--bronze);}
+.ts-track{position:relative;width:54px;height:29px;flex:none;border-radius:15px;border:1px solid var(--hair-warm);background:var(--card);transition:border-color .5s ease, background .5s ease;}
+.theme-switch:hover .ts-track{border-color:var(--bronze);}
+.ts-knob{position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:var(--gold);color:#141210;display:flex;align-items:center;justify-content:center;transition:transform .55s var(--ease), background .5s ease, color .5s ease;}
+[data-theme="dark"] .ts-knob{transform:translateX(25px);}
+.ts-knob svg{position:absolute;width:13px;height:13px;transition:opacity .4s ease, transform .55s var(--ease);}
+.ts-sun{opacity:1;} .ts-moon{opacity:0;transform:rotate(-100deg) scale(.4);}
+[data-theme="dark"] .ts-sun{opacity:0;transform:rotate(100deg) scale(.4);}
+[data-theme="dark"] .ts-moon{opacity:1;transform:none;}
+
+/* leaving transition */
+body.leaving{opacity:0;transition:opacity .5s ease;}
+</style>
+</head>
+<body>
+
+<div class="paper-field" aria-hidden="true"></div>
+<div class="wash wash-tr" aria-hidden="true"></div>
+<div class="wash wash-bl" aria-hidden="true"></div>
+
+<a class="back" href="./landing.html">&#8592; Back to site</a>
+
+<button class="theme-switch" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Switch theme">
+  <span class="ts-label" id="tsLabel">Dark Mode</span>
+  <span class="ts-track" aria-hidden="true">
+    <span class="ts-knob">
+      <svg class="ts-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="3.4" fill="currentColor" stroke="none"/>
+        <path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M18.7 5.3L17 7M7 17l-1.7 1.7"/>
+      </svg>
+      <svg class="ts-moon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>
+      </svg>
+    </span>
+  </span>
+</button>
+
+<main class="gate" id="gate">
+  <a class="brand" href="./landing.html" aria-label="Clipency home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <circle cx="6.2" cy="6.2" r="2.7"/>
+      <circle cx="6.2" cy="17.8" r="2.7"/>
+      <line x1="8.3" y1="8.1" x2="20.5" y2="19"/>
+      <line x1="8.3" y1="15.9" x2="20.5" y2="5"/>
+    </svg>
+    <span class="brand-name">CLIPENCY</span>
+  </a>
+
+  <span class="eyebrow">Client Access</span>
+  <h1>Enter your access code.</h1>
+  <p class="sub">Your 6-digit code was shared with you by your Clipency campaign manager.</p>
+
+  <div class="code-row" id="codeRow" aria-label="6-digit access code">
+    <input inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Digit 1">
+    <input inputmode="numeric" maxlength="1" aria-label="Digit 2">
+    <input inputmode="numeric" maxlength="1" aria-label="Digit 3">
+    <input inputmode="numeric" maxlength="1" aria-label="Digit 4">
+    <input inputmode="numeric" maxlength="1" aria-label="Digit 5">
+    <input inputmode="numeric" maxlength="1" aria-label="Digit 6">
+  </div>
+
+  <p class="msg" id="msg" role="status"></p>
+
+  <button class="btn" id="enterBtn" disabled>Open Dashboard <span class="arr">&#8594;</span></button>
+
+  <p class="hint">Don't have a code? <a href="https://calendly.com/ayush-clipency/editors-sync-up-with-clipency?month=2026-07" target="_blank" rel="noopener">Book a call</a> to start a campaign.</p>
+</main>
+
+<script>
+/* ============================================================
+   Theme toggle
+   ============================================================ */
+(function(){
+  var html = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  var lbl = document.getElementById('tsLabel');
+  function sync(){
+    var dark = html.getAttribute('data-theme') === 'dark';
+    btn.setAttribute('aria-checked', dark);
+    lbl.textContent = dark ? 'Light Mode' : 'Dark Mode';
+  }
+  btn.addEventListener('click', function(){
+    var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.classList.add('theming');
+    html.setAttribute('data-theme', next);
+    try{ localStorage.setItem('clipency-theme', next); }catch(e){}
+    sync();
+    clearTimeout(window.__thmT);
+    window.__thmT = setTimeout(function(){ html.classList.remove('theming'); }, 620);
+  });
+  sync();
+})();
+
+/* ============================================================
+   6-digit access code
+   — change ACCESS_CODE below (or add more to the list) any time.
+   ============================================================ */
+var ACCESS_CODES = ['482913'];          /* <- valid codes for now */
+
+(function(){
+  var inputs = Array.prototype.slice.call(document.querySelectorAll('#codeRow input'));
+  var btn = document.getElementById('enterBtn');
+  var msg = document.getElementById('msg');
+  var gate = document.getElementById('gate');
+
+  function code(){ return inputs.map(function(i){ return i.value; }).join(''); }
+  function refresh(){
+    inputs.forEach(function(i){ i.classList.toggle('filled', !!i.value); });
+    btn.disabled = code().length !== 6;
+  }
+  function clearAll(){
+    inputs.forEach(function(i){ i.value=''; });
+    refresh(); inputs[0].focus();
+  }
+
+  inputs.forEach(function(input, idx){
+    input.addEventListener('input', function(){
+      input.value = input.value.replace(/\D/g,'').slice(0,1);
+      if(input.value && idx < 5) inputs[idx+1].focus();
+      msg.textContent=''; msg.className='msg';
+      refresh();
+      if(code().length === 6) submit();
+    });
+    input.addEventListener('keydown', function(e){
+      if(e.key === 'Backspace' && !input.value && idx > 0){ inputs[idx-1].focus(); }
+      if(e.key === 'Enter' && code().length === 6){ submit(); }
+    });
+    input.addEventListener('paste', function(e){
+      e.preventDefault();
+      var digits = (e.clipboardData.getData('text')||'').replace(/\D/g,'').slice(0,6).split('');
+      digits.forEach(function(d,i){ if(inputs[i]) inputs[i].value = d; });
+      inputs[Math.min(digits.length,5)].focus();
+      refresh();
+      if(code().length === 6) submit();
+    });
+  });
+
+  var busy = false;
+  function submit(){
+    if(busy) return;
+    busy = true;
+    btn.disabled = true;
+    msg.className='msg'; msg.textContent='Checking…';
+    setTimeout(function(){
+      if(ACCESS_CODES.indexOf(code()) !== -1){
+        msg.className='msg ok'; msg.textContent='Welcome back.';
+        try{
+          sessionStorage.setItem('clipency-access','granted');
+          /* fresh entry from the landing page: show the tour (theme stays as the visitor chose) */
+          sessionStorage.setItem('clipency-fresh-login','1');
+        }catch(e){}
+        document.body.classList.add('leaving');
+        setTimeout(function(){ location.href='./home.html'; }, 480);
+      } else {
+        msg.className='msg err'; msg.textContent='That code doesn’t match. Check with your campaign manager.';
+        gate.classList.add('shake');
+        setTimeout(function(){ gate.classList.remove('shake'); clearAll(); busy=false; }, 550);
+      }
+    }, 450);
+  }
+
+  btn.addEventListener('click', submit);
+  inputs[0].focus();
+})();
+</script>
+</body>
+</html>

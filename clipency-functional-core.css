@@ -1,0 +1,1011 @@
+/* =========================================================
+   CLIPENCY FUNCTIONAL CORE
+   Campaign → submission → review → stats → payouts
+   Light styling only. No redesign.
+   ========================================================= */
+
+.cx-core-shell {
+  width: min(1320px, 100%);
+  margin: 0 auto;
+  padding: 8px 0 40px;
+}
+
+.cx-core-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.cx-core-header h1 {
+  margin: 0;
+  font-size: clamp(44px, 5vw, 76px);
+  line-height: .95;
+  letter-spacing: -0.055em;
+}
+
+.cx-core-header p {
+  margin: 12px 0 0;
+  max-width: 680px;
+  color: rgba(255,255,255,.58);
+  line-height: 1.6;
+}
+
+.cx-core-pill {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  padding: 0 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.045);
+  color: rgba(255,255,255,.68);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cx-core-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 18px;
+}
+
+.cx-core-grid.two {
+  grid-template-columns: repeat(2, minmax(0,1fr));
+}
+
+.cx-core-grid.four {
+  grid-template-columns: repeat(4, minmax(0,1fr));
+}
+
+.cx-core-card {
+  min-width: 0;
+  border: 1px solid rgba(167,139,250,.16);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top left, rgba(124,58,237,.16), transparent 34%),
+    rgba(255,255,255,.04);
+  padding: 22px;
+  overflow: hidden;
+}
+
+.cx-core-card h2,
+.cx-core-card h3 {
+  margin: 0;
+  letter-spacing: -0.04em;
+}
+
+.cx-core-card p {
+  color: rgba(255,255,255,.58);
+  line-height: 1.55;
+}
+
+.cx-core-muted {
+  color: rgba(255,255,255,.54);
+}
+
+.cx-core-value {
+  display: block;
+  margin-top: 12px;
+  font-size: clamp(32px, 3vw, 48px);
+  line-height: 1;
+  font-weight: 900;
+  letter-spacing: -0.055em;
+}
+
+.cx-core-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.cx-core-btn {
+  min-height: 42px;
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 999px;
+  padding: 0 16px;
+  color: white;
+  background: rgba(255,255,255,.055);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cx-core-btn.primary {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  border-color: rgba(167,139,250,.45);
+}
+
+.cx-core-btn:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.cx-core-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 22px;
+}
+
+.cx-core-filter-row button {
+  min-height: 40px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 999px;
+  padding: 0 15px;
+  background: rgba(255,255,255,.045);
+  color: rgba(255,255,255,.68);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cx-core-filter-row button.active {
+  color: white;
+  background: rgba(124,58,237,.42);
+  border-color: rgba(167,139,250,.46);
+}
+
+.cx-core-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.cx-core-badge {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: rgba(167,139,250,.13);
+  color: #d8ccff;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.cx-core-badge.green {
+  background: rgba(34,197,94,.13);
+  color: #86efac;
+}
+
+.cx-core-badge.yellow {
+  background: rgba(250,204,21,.13);
+  color: #fde68a;
+}
+
+.cx-core-badge.red {
+  background: rgba(239,68,68,.13);
+  color: #fca5a5;
+}
+
+.cx-core-campaign-top {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.cx-core-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  background: rgba(167,139,250,.14);
+  border: 1px solid rgba(167,139,250,.24);
+  font-size: 24px;
+}
+
+.cx-core-spark {
+  height: 72px;
+  margin: 18px 0;
+  display: flex;
+  align-items: end;
+  justify-content: center;
+}
+
+.cx-core-spark svg {
+  width: 150px;
+  max-width: 100%;
+}
+
+.cx-core-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cx-core-table th,
+.cx-core-table td {
+  padding: 14px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  color: rgba(255,255,255,.72);
+  text-align: left;
+  font-size: 14px;
+}
+
+.cx-core-table th {
+  color: rgba(255,255,255,.42);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-size: 11px;
+}
+
+.cx-core-table-wrap {
+  overflow-x: auto;
+}
+
+.cx-core-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: none;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,.62);
+  backdrop-filter: blur(12px);
+}
+
+.cx-core-modal.open {
+  display: grid;
+}
+
+.cx-core-modal-card {
+  width: min(560px, 100%);
+  border: 1px solid rgba(167,139,250,.22);
+  border-radius: 26px;
+  background: #100c1f;
+  box-shadow: 0 28px 100px rgba(0,0,0,.46);
+  padding: 24px;
+}
+
+.cx-core-modal-card h2 {
+  margin: 0 0 10px;
+  font-size: 30px;
+}
+
+.cx-core-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.cx-core-form label {
+  display: grid;
+  gap: 8px;
+  color: rgba(255,255,255,.52);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.cx-core-form input,
+.cx-core-form select,
+.cx-core-form textarea {
+  min-height: 46px;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 15px;
+  background: rgba(255,255,255,.055);
+  color: white;
+  padding: 0 13px;
+  font: inherit;
+}
+
+.cx-core-form textarea {
+  min-height: 90px;
+  padding: 12px 13px;
+  resize: vertical;
+}
+
+.cx-core-notice {
+  margin-top: 14px;
+  color: rgba(255,255,255,.62);
+  line-height: 1.5;
+}
+
+.cx-core-chart {
+  width: 100%;
+  height: 260px;
+}
+
+.cx-core-empty {
+  padding: 28px;
+  border: 1px dashed rgba(255,255,255,.14);
+  border-radius: 22px;
+  color: rgba(255,255,255,.56);
+}
+
+@media (max-width: 1200px) {
+  .cx-core-grid,
+  .cx-core-grid.four {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  .cx-core-header {
+    display: block;
+  }
+
+  .cx-core-grid,
+  .cx-core-grid.two,
+  .cx-core-grid.four {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   CAMPAIGN BUDGET HOVER
+   Shows remaining budget only when hovering campaign card
+   ========================================================= */
+
+.cx-core-campaign-card {
+  position: relative;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.cx-core-campaign-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(167, 139, 250, 0.34);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+}
+
+.cx-core-budget-hover {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(8px);
+  transition:
+    max-height 220ms ease,
+    opacity 180ms ease,
+    transform 180ms ease,
+    margin 180ms ease;
+  margin-top: 0;
+  pointer-events: none;
+}
+
+.cx-core-campaign-card:hover .cx-core-budget-hover {
+  max-height: 130px;
+  opacity: 1;
+  transform: translateY(0);
+  margin-top: 16px;
+}
+
+.cx-core-budget-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.cx-core-budget-row span {
+  color: rgba(255, 255, 255, 0.52);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cx-core-budget-row strong {
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.cx-core-budget-track {
+  height: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.cx-core-budget-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+
+.cx-core-budget-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   CAMPAIGN DETAILS MODAL — RESTORED OLD BEHAVIOUR
+   Click campaign card → details open
+   ========================================================= */
+
+.cx-core-campaign-card {
+  cursor: pointer;
+}
+
+.cx-core-campaign-card .cx-core-btn {
+  cursor: pointer;
+}
+
+.cx-campaign-details-card {
+  width: min(720px, 100%);
+  padding: 28px;
+}
+
+.cx-campaign-detail-top {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 22px;
+}
+
+.cx-campaign-detail-top h2 {
+  margin: 12px 0 0;
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.cx-campaign-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.cx-campaign-detail-tile {
+  min-width: 0;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 20px;
+  padding: 18px;
+  background: rgba(255,255,255,.045);
+}
+
+.cx-campaign-detail-tile span,
+.cx-campaign-detail-section span {
+  display: block;
+  color: rgba(255,255,255,.46);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.cx-campaign-detail-tile strong {
+  display: block;
+  margin-top: 10px;
+  color: white;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.cx-core-budget-detail {
+  margin: 18px 0 22px;
+}
+
+.cx-campaign-detail-section {
+  margin-top: 18px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding-top: 18px;
+}
+
+.cx-campaign-detail-section p {
+  margin: 10px 0 0;
+  color: rgba(255,255,255,.68);
+  line-height: 1.65;
+}
+
+@media (max-width: 640px) {
+  .cx-campaign-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   OLD CAMPAIGN DETAILS BEHAVIOUR RESTORE
+   Card click opens campaign detail modal.
+   ========================================================= */
+
+.cx-core-campaign-card {
+  cursor: pointer;
+}
+
+.cx-old-campaign-detail-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: none;
+  place-items: center;
+  padding: 22px;
+  background: rgba(0, 0, 0, 0.66);
+  backdrop-filter: blur(14px);
+}
+
+.cx-old-campaign-detail-modal.open {
+  display: grid;
+}
+
+.cx-old-campaign-detail-card {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: min(86vh, 760px);
+  overflow: auto;
+  border-radius: 28px;
+  border: 1px solid rgba(167, 139, 250, 0.24);
+  background:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 36%),
+    #100c1f;
+  box-shadow: 0 34px 120px rgba(0, 0, 0, 0.55);
+  padding: 30px;
+}
+
+.cx-old-campaign-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.cx-old-campaign-head {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 24px;
+  padding-right: 42px;
+}
+
+.cx-old-campaign-icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: rgba(167,139,250,0.16);
+  border: 1px solid rgba(167,139,250,0.28);
+  font-size: 28px;
+}
+
+.cx-old-eyebrow {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  padding: 0 11px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.62);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.cx-old-campaign-head h2 {
+  margin: 12px 0 0;
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.cx-old-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.cx-old-tags span {
+  min-height: 26px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(167,139,250,0.14);
+  color: #d8ccff;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.cx-old-tags span.green {
+  background: rgba(34,197,94,0.14);
+  color: #86efac;
+}
+
+.cx-old-campaign-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 22px 0;
+}
+
+.cx-old-campaign-metrics > div {
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.045);
+  padding: 20px;
+}
+
+.cx-old-campaign-metrics span,
+.cx-old-section span {
+  display: block;
+  color: rgba(255,255,255,0.46);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cx-old-campaign-metrics strong {
+  display: block;
+  margin-top: 10px;
+  color: white;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.cx-old-budget-block {
+  margin: 18px 0 24px;
+}
+
+.cx-old-budget-track {
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.08);
+}
+
+.cx-old-budget-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+
+.cx-old-budget-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 9px;
+  color: rgba(255,255,255,0.48);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.cx-old-section {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.cx-old-section p,
+.cx-old-muted {
+  margin: 10px 0 0;
+  color: rgba(255,255,255,0.66);
+  line-height: 1.65;
+}
+
+.cx-old-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cx-old-primary,
+.cx-old-secondary {
+  min-height: 46px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 0 18px;
+  color: white;
+  font: inherit;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.cx-old-primary {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  border-color: rgba(167,139,250,0.48);
+}
+
+.cx-old-secondary {
+  background: rgba(255,255,255,0.06);
+}
+
+@media (max-width: 680px) {
+  .cx-old-campaign-detail-card {
+    padding: 24px;
+  }
+
+  .cx-old-campaign-head,
+  .cx-old-campaign-metrics {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================================
+   RESTORE FIRST-VERSION CAMPAIGN CARDS
+   Compact premium card, sparkline, rate, creators, hover budget.
+   ========================================================= */
+
+.cx-core-grid .cx-first-campaign-card {
+  min-height: 300px;
+}
+
+.cx-first-campaign-card {
+  position: relative;
+  cursor: pointer;
+  padding: 26px !important;
+  border-radius: 26px !important;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.14), transparent 38%),
+    linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.028)) !important;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.cx-first-campaign-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(167, 139, 250, 0.34);
+  box-shadow: 0 26px 90px rgba(0, 0, 0, 0.34);
+}
+
+.cx-first-card-head {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.cx-first-music-icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 19px;
+  background: rgba(167, 139, 250, 0.13);
+  border: 1px solid rgba(167, 139, 250, 0.24);
+  color: #a78bfa;
+  font-size: 30px;
+  line-height: 1;
+}
+
+.cx-first-title-wrap {
+  min-width: 0;
+}
+
+.cx-first-title-wrap h3 {
+  margin: 4px 0 10px;
+  color: #fff;
+  font-size: 20px !important;
+  line-height: 1.18 !important;
+  letter-spacing: -0.035em;
+  white-space: normal;
+}
+
+.cx-first-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cx-first-tags span {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(167, 139, 250, 0.14);
+  color: #d8ccff;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.cx-first-tags span.green {
+  background: rgba(34, 197, 94, 0.14);
+  color: #86efac;
+}
+
+.cx-first-sparkline {
+  height: 106px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  color: #8b5cf6;
+  margin: 18px 0 12px;
+}
+
+.cx-first-campaign-card:nth-child(2n) .cx-first-sparkline {
+  color: #14b8a6;
+}
+
+.cx-first-campaign-card:nth-child(3n) .cx-first-sparkline {
+  color: #facc15;
+}
+
+.cx-first-campaign-card:nth-child(4n) .cx-first-sparkline {
+  color: #ec4899;
+}
+
+.cx-first-sparkline svg {
+  width: 145px;
+  height: 86px;
+}
+
+.cx-first-card-bottom {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.cx-first-card-bottom span {
+  display: block;
+  color: rgba(255,255,255,0.46);
+  font-size: 13px;
+  font-weight: 750;
+  margin-bottom: 6px;
+}
+
+.cx-first-card-bottom strong {
+  display: block;
+  color: white;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.055em;
+  font-weight: 950;
+}
+
+.cx-first-card-bottom .right {
+  text-align: right;
+}
+
+.cx-first-card-bottom .right strong {
+  color: #a78bfa;
+  font-size: 22px;
+}
+
+/* Hover budget reveal exactly like the first behaviour */
+.cx-first-budget-hover {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(8px);
+  transition:
+    max-height 220ms ease,
+    opacity 180ms ease,
+    transform 180ms ease,
+    margin 180ms ease;
+  margin-top: 0;
+  pointer-events: none;
+}
+
+.cx-first-campaign-card:hover .cx-first-budget-hover {
+  max-height: 120px;
+  opacity: 1;
+  transform: translateY(0);
+  margin-top: 16px;
+}
+
+.cx-first-budget-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.cx-first-budget-row span {
+  color: rgba(255,255,255,0.50);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cx-first-budget-row strong {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.035em;
+}
+
+.cx-first-budget-track {
+  height: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.08);
+}
+
+.cx-first-budget-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+
+.cx-first-budget-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  color: rgba(255,255,255,0.42);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Keep the details modal bridge working */
+.cx-first-campaign-card:focus-visible {
+  outline: 2px solid rgba(167,139,250,0.72);
+  outline-offset: 4px;
+}
+
+@media (max-width: 1280px) {
+  .cx-core-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+/* =========================================================
+   CLIPPER PAGE SCALE FIX
+   Smaller headings for Stats / Payouts / Dashboard core pages
+   ========================================================= */
+
+.cx-core-header {
+  margin-bottom: 24px !important;
+}
+
+.cx-core-header h1 {
+  font-size: clamp(42px, 4.2vw, 64px) !important;
+  line-height: 0.95 !important;
+  letter-spacing: -0.055em !important;
+}
+
+.cx-core-header p {
+  font-size: 16px !important;
+  max-width: 660px !important;
+}
+
+.cx-core-card h2 {
+  font-size: clamp(24px, 2.4vw, 34px) !important;
+}
+
+.cx-core-value {
+  font-size: clamp(30px, 3vw, 44px) !important;
+}
+
+@media (max-width: 900px) {
+  .cx-core-header h1 {
+    font-size: clamp(36px, 11vw, 48px) !important;
+  }
+}
+

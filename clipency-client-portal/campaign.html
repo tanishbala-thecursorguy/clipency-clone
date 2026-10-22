@@ -1,0 +1,2414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipency — Campaign Dashboard</title>
+<meta name="description" content="Your Clipency campaign — clips, analytics, spend and creators in real time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){try{
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('clipency-theme') || 'light');
+  /* Gate: the portal used to be opened with a 6-digit PIN kept in
+     sessionStorage. It is now a real login, so the gate checks for a
+     Supabase session instead. This is the synchronous, no-dependency
+     version so it can run before anything paints; js/live.js does the
+     authoritative check (getUser) and redirects if the token is stale. */
+  /* Demo mode: ?demo=1 opens the real portal on the sample data in
+     data.js, with no account. The flag is kept in sessionStorage so the
+     other pages stay in demo as you click through the nav, and it dies
+     with the tab so nobody is left stuck in a fake dashboard. */
+  var __d = /[?&]demo=1/.test(location.search);
+  try{
+    if(__d) sessionStorage.setItem('clipency-demo','1');
+    if(/[?&]demo=0/.test(location.search)) sessionStorage.removeItem('clipency-demo');
+    __d = sessionStorage.getItem('clipency-demo') === '1';
+  }catch(e){}
+  if(!__d && !localStorage.getItem('sb-spwtkdgpgeutrhwcjrpy-auth-token')) location.replace('./client-signin.html');
+}catch(e){ document.documentElement.setAttribute('data-theme','light'); }})();
+</script>
+<link rel="stylesheet" href="./dashboard.css">
+<style>
+/* ============================================================
+   GENERATED FILE — do not edit by hand.
+   Produced by build-campaign.py from dashboard/clips/analytics/
+   billing/creators .html. Edit those, then re-run the script.
+   ============================================================ */
+
+/* Section visibility. [hidden] alone is not enough because several rules in
+   the page CSS below set `display`, which would override it. */
+.cx-view[hidden]{ display:none !important; }
+
+/* ---- Overview (from dashboard.html) ---- */
+[data-view="overview"] /* page-specific */
+.live-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--ok);border:1px solid rgba(90,122,82,.3);border-radius:999px;padding:7px 16px;
+  background:rgba(90,122,82,.07);white-space:nowrap;
+}[data-view="overview"] .live-pill b{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:lp 1.6s ease-in-out infinite;}@keyframes lp{0%,100%{opacity:1}50%{opacity:.3}}[data-view="overview"] .donut-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:4px;}[data-view="overview"] .donut-box{position:relative;width:180px;height:180px;}[data-view="overview"] .donut-box svg{width:100%;height:100%;transform:rotate(-90deg);}[data-view="overview"] .donut-center{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+}[data-view="overview"] .donut-center .big{font-family:var(--serif);font-size:34px;color:var(--ink-2);line-height:1;}[data-view="overview"] .donut-center .small{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-40);margin-top:5px;}[data-view="overview"] .mini-cover{width:34px;height:52px;border-radius:6px;object-fit:cover;background:var(--surface-2);border:1px solid var(--hair);display:block;}[data-view="overview"] .clip-cell{display:flex;align-items:center;gap:12px;min-width:0;}[data-view="overview"] .clip-cell .t{font-weight:500;color:var(--ink-90);max-width:230px;overflow:hidden;text-overflow:ellipsis;}[data-view="overview"] .clip-cell .c{font-size:12px;color:var(--ink-40);}[data-view="overview"] .panel.mt{margin-top:16px;}[data-view="overview"] .view-all{margin-top:16px;text-align:right;}[data-view="overview"] .grid2.rev{grid-template-columns:1fr 1.7fr;}@media (max-width:960px){[data-view="overview"] .grid2.rev{grid-template-columns:1fr;} }[data-view="overview"] /* chart controls */
+.chart-controls{display:flex;gap:6px;flex-wrap:wrap;}[data-view="overview"] .chart-controls .chip{padding:5px 12px;font-size:11px;}[data-view="overview"] /* campaign timeline */
+.tl{position:relative;flex:1;padding-left:22px;margin-top:6px;}[data-view="overview"] .tl::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:1px;background:var(--hair-warm);}[data-view="overview"] .tl-item{position:relative;padding:0 0 20px 14px;}[data-view="overview"] .tl-item:last-child{padding-bottom:0;}[data-view="overview"] .tl-item::before{
+  content:"";position:absolute;left:-20px;top:5px;width:9px;height:9px;border-radius:50%;
+  background:var(--gold);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--hair-warm);
+}[data-view="overview"] .tl-item.big::before{background:var(--bronze);}[data-view="overview"] .tl-date{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);}[data-view="overview"] .tl-label{font-size:13.5px;color:var(--ink-90);font-weight:500;margin-top:2px;line-height:1.45;}[data-view="overview"] .tl-sub{font-size:12px;color:var(--ink-55);margin-top:1px;}[data-view="overview"] /* budget bar inside stat card */
+.budget-track{height:6px;border-radius:4px;background:var(--hair);overflow:hidden;margin-top:12px;}[data-view="overview"] .budget-fill{height:100%;border-radius:4px;width:0;background:var(--ink-2);transition:width 1.3s var(--ease), background .4s ease;}[data-view="overview"] .budget-fill.warn{background:#C4553C;}
+
+
+/* ---- Clips Feed (from clips.html) ---- */
+[data-view="clips"] /* ---------- top three podium ---------- */
+.top3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px;}[data-view="clips"] .top-card{
+  position:relative;display:flex;gap:16px;align-items:stretch;
+  background:var(--surface);border:1px solid var(--hair);border-radius:14px;
+  padding:16px;cursor:pointer;text-decoration:none;color:inherit;overflow:hidden;
+  transition:transform .5s var(--ease), border-color .4s ease, box-shadow .5s var(--ease);
+}[data-view="clips"] .top-card:hover{transform:translateY(-4px);border-color:var(--hair-warm);box-shadow:0 22px 48px -24px rgba(11,11,11,.35);}[data-view="clips"] .top-card .rank{
+  position:absolute;top:12px;right:14px;
+  font-family:var(--serif);font-style:italic;font-size:26px;color:var(--ink-25);line-height:1;
+}[data-view="clips"] .top-card img{width:86px;height:140px;object-fit:cover;border-radius:9px;background:var(--surface-2);border:1px solid var(--hair);flex:none;}[data-view="clips"] .top-card .info{display:flex;flex-direction:column;min-width:0;padding-top:2px;}[data-view="clips"] .top-card .t{font-weight:500;color:var(--ink-90);font-size:14px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;padding-right:26px;}[data-view="clips"] .top-card .c{font-size:12px;color:var(--ink-40);margin-top:4px;}[data-view="clips"] .top-card .metrics{margin-top:auto;display:flex;flex-direction:column;gap:2px;font-size:12.5px;color:var(--ink-55);}[data-view="clips"] .top-card .metrics b{font-family:var(--serif);font-size:22px;color:var(--ink-2);font-weight:500;}[data-view="clips"] .top-card .open{font-size:11.5px;color:var(--bronze);margin-top:8px;}@media (max-width:960px){[data-view="clips"] .top3{grid-template-columns:1fr;} }[data-view="clips"] /* ---------- filters ---------- */
+.filter-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:36px 0 18px;}[data-view="clips"] .feed-tabs{display:inline-flex;gap:4px;padding:4px;margin-top:30px;border:1px solid var(--hair);border-radius:999px;background:var(--surface);}[data-view="clips"] .feed-tabs .ft{border:0;background:transparent;border-radius:999px;padding:9px 18px;font:500 13px/1 var(--sans);color:var(--ink-55);cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:background .25s ease,color .25s ease;}[data-view="clips"] .feed-tabs .ft.on{background:var(--ink-2);color:var(--surface);}[data-view="clips"] .feed-tabs .ft-n{font-size:11px;opacity:.7;font-variant-numeric:tabular-nums;}[data-view="clips"] .rej-list{display:flex;flex-direction:column;gap:12px;}[data-view="clips"] .rej-row{display:grid;grid-template-columns:56px 1fr auto;gap:16px;align-items:start;padding:16px;border:1px solid var(--hair);border-radius:14px;background:var(--surface);}[data-view="clips"] .rej-row img{width:56px;height:86px;object-fit:cover;border-radius:8px;background:var(--surface-2);border:1px solid var(--hair);}[data-view="clips"] .rej-row .t{font-weight:500;color:var(--ink-90);font-size:14px;}[data-view="clips"] .rej-row .c{font-size:12px;color:var(--ink-40);margin-top:3px;}[data-view="clips"] .rej-row .why{font-size:13px;color:var(--ink-70);margin-top:10px;line-height:1.5;}[data-view="clips"] .rej-row .why b{color:var(--ink-90);font-weight:500;}[data-view="clips"] .rej-row .note{font-size:12.5px;color:var(--ink-55);margin-top:8px;padding:8px 10px;border-left:2px solid var(--hair-warm);background:var(--surface-2);border-radius:0 8px 8px 0;}[data-view="clips"] .rej-row .rj-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px;white-space:nowrap;}[data-view="clips"] .rej-row .rj-side a{font-size:12px;color:var(--bronze);text-decoration:none;}[data-view="clips"] .rs{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;border-radius:6px;padding:4px 9px;}[data-view="clips"] .rs.open{background:rgba(201,162,39,.14);color:#8a6d12;}[data-view="clips"] .rs.upheld{background:rgba(180,84,60,.12);color:var(--bad);}[data-view="clips"] .rs.dismissed{background:rgba(60,130,90,.12);color:#2f7a52;}[data-view="clips"] .rej-empty{padding:28px 0;color:var(--ink-40);font-size:13px;}[data-view="clips"] .apr-banner{display:flex;align-items:center;gap:12px;margin-top:26px;padding:13px 14px 13px 16px;border:1px solid rgba(201,162,39,.35);border-radius:14px;background:rgba(201,162,39,.08);font-size:13.5px;color:var(--ink-70);line-height:1.5;}[data-view="clips"] .apr-banner[hidden]{display:none;}[data-view="clips"] .apr-banner b{color:var(--ink-90);font-weight:600;}[data-view="clips"] .apr-banner .ab-dot{flex:none;width:8px;height:8px;border-radius:50%;background:#c9a227;box-shadow:0 0 0 4px rgba(201,162,39,.18);}[data-view="clips"] .apr-banner .ab-txt{flex:1;min-width:0;}[data-view="clips"] .apr-banner .ab-go{flex:none;border:0;border-radius:999px;background:var(--ink-2);color:var(--surface);font:500 12.5px/1 var(--sans);padding:10px 16px;cursor:pointer;}[data-view="clips"] .feed-tabs .ft-dot{width:7px;height:7px;border-radius:50%;background:#c9a227;margin-right:-2px;}[data-view="clips"] .feed-tabs .ft-dot[hidden]{display:none;}[data-view="clips"] .rs.pending{background:rgba(201,162,39,.14);color:#8a6d12;}[data-view="clips"] .rs.client{background:rgba(180,84,60,.12);color:var(--bad);}[data-view="clips"] .apr-row .due{font-size:13px;color:var(--ink-70);margin-top:10px;line-height:1.5;}[data-view="clips"] .apr-row .due b{color:var(--ink-90);font-weight:500;}[data-view="clips"] .apr-row .due.soon b{color:#8a6d12;}[data-view="clips"] .apr-row .acts{display:flex;gap:8px;margin-top:4px;}[data-view="clips"] .apr-row .acts button{border-radius:999px;font:500 12.5px/1 var(--sans);padding:9px 15px;cursor:pointer;border:1px solid var(--hair);background:var(--surface);color:var(--ink-70);transition:border-color .2s ease,background .2s ease,color .2s ease;}[data-view="clips"] .apr-row .acts .apr-ok{background:var(--ink-2);border-color:var(--ink-2);color:var(--surface);}[data-view="clips"] .apr-row .acts .apr-rej:hover{border-color:var(--bad);color:var(--bad);}[data-view="clips"] .apr-row .acts button:disabled{opacity:.55;cursor:default;}[data-view="clips"] .apr-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-55);}[data-view="clips"] .apr-head button{border:1px solid var(--ink-2);background:transparent;color:var(--ink-2);border-radius:999px;font:500 12.5px/1 var(--sans);padding:9px 15px;cursor:pointer;}[data-view="clips"] .apr-head button.confirm{background:var(--ink-2);color:var(--surface);}@media (max-width:640px){[data-view="clips"] .apr-banner{flex-wrap:wrap;}[data-view="clips"] .apr-row .acts{width:100%;justify-content:flex-end;}}@media (max-width:640px){[data-view="clips"] .rej-row{grid-template-columns:48px 1fr;}[data-view="clips"] .rej-row .rj-side{grid-column:1/-1;flex-direction:row;justify-content:space-between;}}[data-view="clips"] .count-note{font-size:12px;color:var(--ink-40);letter-spacing:.06em;white-space:nowrap;}[data-view="clips"] /* ---------- cover grid ---------- */
+.clip-grid{
+  display:grid;grid-template-columns:repeat(auto-fill, minmax(148px, 1fr));gap:14px;
+}[data-view="clips"] .clip-card{
+  position:relative;display:block;border-radius:12px;overflow:hidden;
+  border:1px solid var(--hair);background:var(--surface-2);
+  aspect-ratio:9/16;cursor:pointer;text-decoration:none;
+  transition:transform .45s var(--ease), border-color .4s ease, box-shadow .5s var(--ease), opacity .4s ease;
+}[data-view="clips"] .clip-card:hover{transform:translateY(-4px) scale(1.015);border-color:var(--hair-warm);box-shadow:0 18px 40px -18px rgba(11,11,11,.4);z-index:2;}[data-view="clips"] .clip-card img{width:100%;height:100%;object-fit:cover;display:block;}[data-view="clips"] .clip-card .shade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.72) 100%);}[data-view="clips"] .clip-card .st{position:absolute;top:8px;left:8px;}[data-view="clips"] .clip-card .ov{
+  position:absolute;left:0;right:0;bottom:0;padding:10px 11px;color:#F2EDE3;
+}[data-view="clips"] .clip-card .ov .t{font-size:11.5px;font-weight:500;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}[data-view="clips"] .clip-card .ov .m{display:flex;justify-content:space-between;font-size:10.5px;opacity:.85;margin-top:5px;font-variant-numeric:tabular-nums;}[data-view="clips"] .clip-card .go{
+  position:absolute;top:8px;right:40px;width:26px;height:26px;border-radius:50%;
+  background:rgba(20,18,16,.55);display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .35s ease;pointer-events:none;
+}[data-view="clips"] .clip-card:hover .go{opacity:1;}[data-view="clips"] .clip-card .go svg{width:11px;height:11px;stroke:#F2EDE3;}[data-view="clips"] .clip-card.hide{display:none;}[data-view="clips"] /* ---------- 3-dot menu ---------- */
+.clip-menu-btn{
+  position:absolute;top:8px;right:8px;z-index:4;
+  width:26px;height:26px;border-radius:50%;border:none;cursor:pointer;
+  background:rgba(20,18,16,.55);color:#F2EDE3;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .3s ease, background .25s ease;
+  font-size:15px;line-height:1;
+}[data-view="clips"] .clip-card:hover .clip-menu-btn, [data-view="clips"] .clip-menu-btn.open{opacity:1;}[data-view="clips"] .clip-menu-btn:hover{background:rgba(20,18,16,.8);}[data-view="clips"] .clip-menu{
+  position:absolute;top:38px;right:8px;z-index:6;min-width:150px;
+  background:var(--surface);border:1px solid var(--hair);border-radius:10px;
+  box-shadow:0 16px 40px -14px rgba(11,11,11,.5);padding:5px;
+  opacity:0;transform:translateY(-6px) scale(.97);pointer-events:none;
+  transition:opacity .22s var(--ease), transform .22s var(--ease);
+}[data-view="clips"] .clip-menu.open{opacity:1;transform:none;pointer-events:auto;}[data-view="clips"] .clip-menu button{
+  display:flex;align-items:center;gap:9px;width:100%;text-align:left;
+  background:none;border:none;cursor:pointer;font-family:var(--sans);
+  font-size:13px;color:var(--ink-70);padding:9px 10px;border-radius:6px;
+  transition:background .2s ease, color .2s ease;
+}[data-view="clips"] .clip-menu button:hover{background:var(--gold-08);color:var(--ink);}[data-view="clips"] .clip-menu button.flag:hover{color:var(--bad);}[data-view="clips"] .clip-menu button svg{width:14px;height:14px;stroke:currentColor;flex:none;}[data-view="clips"] .clip-menu hr{border:none;border-top:1px solid var(--hair);margin:4px 2px;}[data-view="clips"] /* flagged state */
+.clip-card.flagged{box-shadow:0 0 0 2px var(--bad);}[data-view="clips"] .flag-badge{
+  position:absolute;top:8px;left:8px;z-index:3;display:none;align-items:center;gap:5px;
+  background:rgba(180,84,60,.92);color:#fff;border-radius:5px;padding:3px 8px;
+  font-size:9.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+}[data-view="clips"] .clip-card.flagged .flag-badge{display:inline-flex;}[data-view="clips"] .flag-badge svg{width:9px;height:9px;stroke:#fff;}/* ---------- flag modal ----------
+   Lives outside <main>, so it must NOT be scoped to [data-view="clips"].
+   The port prefixed it (and the comment hid the prefix), which left the
+   dialog unstyled at the bottom of the page. */
+.modal-scrim{
+  position:fixed;inset:0;z-index:100;background:rgba(11,11,11,.5);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  display:flex;align-items:center;justify-content:center;padding:26px;
+  opacity:0;pointer-events:none;transition:opacity .3s ease;
+}.modal-scrim.open{opacity:1;pointer-events:auto;}.modal{
+  width:100%;max-width:460px;background:var(--surface);
+  border:1px solid var(--hair);border-radius:16px;padding:30px;
+  box-shadow:0 30px 70px -30px rgba(11,11,11,.6);
+  transform:translateY(14px) scale(.98);transition:transform .3s var(--ease);
+}.modal-scrim.open .modal{transform:none;}.modal .m-eyebrow{font-size:10.5px;font-weight:500;letter-spacing:.3em;text-transform:uppercase;color:var(--bad);margin-bottom:10px;}.modal h3{font-family:var(--serif);font-weight:500;font-size:24px;color:var(--ink-2);line-height:1.2;}.modal .m-clip{
+  display:flex;align-items:center;gap:11px;margin:16px 0 22px;padding:10px;
+  background:var(--surface-2);border:1px solid var(--hair);border-radius:10px;
+}.modal .m-clip img{width:34px;height:52px;border-radius:6px;object-fit:cover;flex:none;background:var(--card);}.modal .m-clip .t{font-size:13px;font-weight:500;color:var(--ink-90);line-height:1.35;}.modal .m-clip .c{font-size:12px;color:var(--ink-40);}.modal label{display:block;font-size:11px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-55);margin-bottom:9px;}.modal .reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}.modal .reason-grid button{
+  font-family:var(--sans);font-size:12.5px;color:var(--ink-70);text-align:left;
+  border:1px solid var(--hair);border-radius:8px;padding:10px 12px;background:var(--field);
+  cursor:pointer;transition:all .2s ease;line-height:1.3;
+}.modal .reason-grid button:hover{border-color:var(--hair-warm);}.modal .reason-grid button.sel{border-color:var(--bad);background:rgba(180,84,60,.08);color:var(--ink-2);}.modal textarea{
+  width:100%;min-height:88px;resize:vertical;font-family:var(--sans);font-size:13.5px;
+  color:var(--ink-90);background:var(--field);border:1px solid var(--hair);border-radius:9px;
+  padding:12px 13px;outline:none;transition:border-color .3s ease, background .3s ease;line-height:1.6;
+}.modal textarea:focus{border-color:var(--bronze);background:var(--field-focus);}.modal .m-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;}.modal .btn-danger{background:var(--bad);color:#fff;}.modal .btn-danger:hover{filter:brightness(1.06);}.modal .btn-danger:disabled{opacity:.4;cursor:default;filter:none;}/* toast (also outside <main>, unscoped for the same reason) */
+.toast{
+  position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);z-index:120;
+  background:var(--btn-bg);color:var(--btn-fg);font-size:13.5px;
+  border-radius:10px;padding:13px 20px;display:flex;align-items:center;gap:10px;
+  box-shadow:0 18px 44px -16px rgba(11,11,11,.6);opacity:0;pointer-events:none;
+  transition:opacity .3s ease, transform .3s var(--ease);
+}.toast.show{opacity:1;transform:translateX(-50%);}.toast.bad{background:var(--bad);color:#fff;}.toast.bad svg{display:none;}.toast svg{width:15px;height:15px;stroke:var(--gold);}
+
+
+/* ---- Analytics (from analytics.html) ---- */
+[data-view="analytics"] .platbars{display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;}[data-view="analytics"] .pbar .row1{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-55);margin-bottom:7px;}[data-view="analytics"] .pbar .row1 b{color:var(--ink-90);font-weight:500;text-transform:capitalize;}[data-view="analytics"] .pbar .track{height:9px;border-radius:5px;background:var(--hair);overflow:hidden;}[data-view="analytics"] .pbar .fill{height:100%;border-radius:5px;width:0;transition:width 1.2s var(--ease);}[data-view="analytics"] .panel.mt{margin-top:16px;}[data-view="analytics"] .mini-cover{width:34px;height:52px;border-radius:6px;object-fit:cover;background:var(--surface-2);border:1px solid var(--hair);display:block;}[data-view="analytics"] .clip-cell{display:flex;align-items:center;gap:12px;min-width:0;}[data-view="analytics"] .clip-cell .t{font-weight:500;color:var(--ink-90);max-width:220px;overflow:hidden;text-overflow:ellipsis;}[data-view="analytics"] .clip-cell .c{font-size:12px;color:var(--ink-40);}[data-view="analytics"] .filter-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+
+
+/* ---- Spend & Billing (from billing.html) ---- */
+[data-view="billing"] .panel.mt{margin-top:16px;}[data-view="billing"] .rate-card{display:flex;flex-direction:column;gap:14px;justify-content:center;flex:1;}[data-view="billing"] .rate-line{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;color:var(--ink-55);padding-bottom:12px;border-bottom:1px solid var(--hair);}[data-view="billing"] .rate-line:last-child{border-bottom:none;padding-bottom:0;}[data-view="billing"] .rate-line b{font-family:var(--serif);font-size:20px;color:var(--ink-2);font-weight:500;font-variant-numeric:tabular-nums;}[data-view="billing"] .mini-cover{width:34px;height:52px;border-radius:6px;object-fit:cover;background:var(--surface-2);border:1px solid var(--hair);display:block;}[data-view="billing"] .clip-cell{display:flex;align-items:center;gap:12px;min-width:0;}[data-view="billing"] .clip-cell .t{font-weight:500;color:var(--ink-90);max-width:230px;overflow:hidden;text-overflow:ellipsis;}[data-view="billing"] .clip-cell .c{font-size:12px;color:var(--ink-40);}[data-view="billing"] .tbl tfoot td{
+  border-top:1px solid var(--hair-warm);border-bottom:none;
+  font-weight:500;color:var(--ink-2);padding-top:16px;
+}[data-view="billing"] .tbl tfoot .total{font-family:var(--serif);font-size:22px;}[data-view="billing"] .note{
+  margin-top:14px;font-size:12.5px;color:var(--ink-40);line-height:1.7;
+  border-left:2px solid var(--hair-warm);padding-left:14px;
+}
+
+
+/* ---- Creators (from creators.html) ---- */
+[data-view="creators"] .panel.mt{margin-top:30px;}[data-view="creators"] .avatar{
+  width:38px;height:38px;border-radius:50%;flex:none;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;color:#EDE8DF;letter-spacing:.02em;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08), 0 0 0 1px var(--hair);
+}[data-view="creators"] .handle-cell{display:flex;align-items:center;gap:13px;}[data-view="creators"] .handle-cell .h{font-weight:500;color:var(--ink-90);}[data-view="creators"] .handle-cell .p{font-size:12px;color:var(--ink-40);text-transform:capitalize;}[data-view="creators"] .rate-track{width:90px;height:6px;border-radius:4px;background:var(--hair);overflow:hidden;display:inline-block;vertical-align:middle;margin-right:9px;}[data-view="creators"] .rate-fill{height:100%;border-radius:4px;background:var(--ok);width:0;transition:width 1.1s var(--ease);}[data-view="creators"] .rank-num{font-family:var(--serif);font-style:italic;color:var(--ink-40);font-size:17px;width:26px;display:inline-block;}
+
+
+/* ---- Review section (shares the Clips Feed row styles), hidden fix, rejected-clip card ---- */
+[data-view="review"] .rej-list{display:flex;flex-direction:column;gap:12px;}[data-view="review"] .rej-row{display:grid;grid-template-columns:56px 1fr auto;gap:16px;align-items:start;padding:16px;border:1px solid var(--hair);border-radius:14px;background:var(--surface);}[data-view="review"] .rej-row img{width:56px;height:86px;object-fit:cover;border-radius:8px;background:var(--surface-2);border:1px solid var(--hair);}[data-view="review"] .rej-row .t{font-weight:500;color:var(--ink-90);font-size:14px;}[data-view="review"] .rej-row .c{font-size:12px;color:var(--ink-40);margin-top:3px;}[data-view="review"] .rej-row .why{font-size:13px;color:var(--ink-70);margin-top:10px;line-height:1.5;}[data-view="review"] .rej-row .why b{color:var(--ink-90);font-weight:500;}[data-view="review"] .rej-row .note{font-size:12.5px;color:var(--ink-55);margin-top:8px;padding:8px 10px;border-left:2px solid var(--hair-warm);background:var(--surface-2);border-radius:0 8px 8px 0;}[data-view="review"] .rej-row .rj-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px;white-space:nowrap;}[data-view="review"] .rej-row .rj-side a{font-size:12px;color:var(--bronze);text-decoration:none;}[data-view="review"] .rs{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;border-radius:6px;padding:4px 9px;}[data-view="review"] .rs.open{background:rgba(201,162,39,.14);color:#8a6d12;}[data-view="review"] .rs.upheld{background:rgba(180,84,60,.12);color:var(--bad);}[data-view="review"] .rs.dismissed{background:rgba(60,130,90,.12);color:#2f7a52;}[data-view="review"] .rej-empty{padding:28px 0;color:var(--ink-40);font-size:13px;}[data-view="review"] .apr-banner{display:flex;align-items:center;gap:12px;margin-top:26px;padding:13px 14px 13px 16px;border:1px solid rgba(201,162,39,.35);border-radius:14px;background:rgba(201,162,39,.08);font-size:13.5px;color:var(--ink-70);line-height:1.5;}[data-view="review"] .apr-banner[hidden]{display:none;}[data-view="review"] .apr-banner b{color:var(--ink-90);font-weight:600;}[data-view="review"] .apr-banner .ab-dot{flex:none;width:8px;height:8px;border-radius:50%;background:#c9a227;box-shadow:0 0 0 4px rgba(201,162,39,.18);}[data-view="review"] .apr-banner .ab-txt{flex:1;min-width:0;}[data-view="review"] .apr-banner .ab-go{flex:none;border:0;border-radius:999px;background:var(--ink-2);color:var(--surface);font:500 12.5px/1 var(--sans);padding:10px 16px;cursor:pointer;}[data-view="review"] .rs.pending{background:rgba(201,162,39,.14);color:#8a6d12;}[data-view="review"] .rs.client{background:rgba(180,84,60,.12);color:var(--bad);}[data-view="review"] .apr-row .due{font-size:13px;color:var(--ink-70);margin-top:10px;line-height:1.5;}[data-view="review"] .apr-row .due b{color:var(--ink-90);font-weight:500;}[data-view="review"] .apr-row .due.soon b{color:#8a6d12;}[data-view="review"] .apr-row .acts{display:flex;gap:8px;margin-top:4px;}[data-view="review"] .apr-row .acts button{border-radius:999px;font:500 12.5px/1 var(--sans);padding:9px 15px;cursor:pointer;border:1px solid var(--hair);background:var(--surface);color:var(--ink-70);transition:border-color .2s ease,background .2s ease,color .2s ease;}[data-view="review"] .apr-row .acts .apr-ok{background:var(--ink-2);border-color:var(--ink-2);color:var(--surface);}[data-view="review"] .apr-row .acts .apr-rej:hover{border-color:var(--bad);color:var(--bad);}[data-view="review"] .apr-row .acts button:disabled{opacity:.55;cursor:default;}[data-view="review"] .apr-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-55);}[data-view="review"] .apr-head button{border:1px solid var(--ink-2);background:transparent;color:var(--ink-2);border-radius:999px;font:500 12.5px/1 var(--sans);padding:9px 15px;cursor:pointer;}[data-view="review"] .apr-head button.confirm{background:var(--ink-2);color:var(--surface);}[data-view="review"] .count-note{font-size:12px;color:var(--ink-40);letter-spacing:.06em;white-space:nowrap;}[hidden]{display:none !important;}[data-view="review"] .filter-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:30px 0 18px;}[data-view="review"] .rej-row{cursor:default;}[data-view="clips"] #rejList .rej-row{cursor:pointer;transition:border-color .2s ease,box-shadow .2s ease;}[data-view="clips"] #rejList .rej-row:hover{border-color:var(--hair-warm);box-shadow:0 14px 30px -22px rgba(11,11,11,.35);}[data-view="clips"] #rejList .rej-row:focus-visible{outline:2px solid var(--ink-2);outline-offset:2px;}@media (max-width:640px){[data-view="review"] .rej-row{grid-template-columns:48px 1fr;}[data-view="review"] .rej-row .rj-side{grid-column:1/-1;flex-direction:row;justify-content:space-between;flex-wrap:wrap;}[data-view="review"] .apr-row .acts{width:100%;justify-content:flex-end;}}.modal .rd-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 18px;}.modal .rd-kpi{border:1px solid var(--hair);border-radius:10px;padding:10px 10px 9px;background:var(--surface-2);}.modal .rd-kpi .v{font-family:var(--serif);font-size:18px;color:var(--ink-2);line-height:1.1;}.modal .rd-kpi .l{font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-40);margin-top:5px;}.modal .rd-reason{border-left:2px solid var(--bad);background:rgba(180,84,60,.06);border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:12px;}.modal .rd-reason .k{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-40);margin-bottom:5px;}.modal .rd-reason .r{font-size:14px;color:var(--ink-90);line-height:1.5;word-break:break-word;}.modal .rd-meta{font-size:12.5px;color:var(--ink-55);line-height:1.6;margin-bottom:6px;}.modal .rd-note{font-size:12.5px;color:var(--ink-70);padding:9px 12px;border-left:2px solid var(--hair-warm);background:var(--surface-2);border-radius:0 8px 8px 0;margin:8px 0 4px;}.modal .rd-link{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px;padding:11px 13px;border:1px solid var(--hair);border-radius:10px;font-size:12.5px;color:var(--ink-55);}.modal .rd-link span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;}.modal .m-eyebrow.ok{color:#2f7a52;}.modal .m-eyebrow.wait{color:#8a6d12;}.modal a.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;}@media (max-width:520px){.modal .rd-kpis{grid-template-columns:repeat(2,1fr);}}
+.rv-nudge{display:flex;align-items:center;gap:12px;margin:22px 0 4px;padding:13px 16px;border:1px solid rgba(201,162,39,.35);border-radius:14px;background:rgba(201,162,39,.08);font-size:13.5px;color:var(--ink-70);line-height:1.5;text-decoration:none;}.rv-nudge b{color:var(--ink-90);font-weight:600;}.rv-nudge .ab-dot{flex:none;width:8px;height:8px;border-radius:50%;background:#c9a227;box-shadow:0 0 0 4px rgba(201,162,39,.18);}.rv-nudge .rv-txt{flex:1;min-width:0;}.rv-nudge .rv-go{flex:none;border-radius:999px;background:var(--ink-2);color:var(--surface);font:500 12.5px/1 var(--sans);padding:10px 16px;}@media (max-width:640px){.rv-nudge{flex-wrap:wrap;}}
+.mi-locked{display:block;padding:9px 12px;font-size:12.5px;color:var(--ink-40,#8a8378);cursor:default;}
+</style>
+<style>
+/* ---- filter bar: Review and Clips Feed ---- */
+.fbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px 16px;margin:30px 0 18px;padding:10px 12px 10px 16px;
+  border:1px solid var(--hair);border-radius:18px;background:var(--surface);}
+.fbar .fgroup{display:flex;align-items:center;gap:10px;min-width:0;}
+.fbar .fl{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-40);white-space:nowrap;}
+.fbar .fsep{width:1px;height:26px;background:var(--hair);}
+.fbar .fsep[hidden]{display:none;}
+.fbar .chips{gap:6px;}
+.fbar .chip{padding:6px 13px;display:inline-flex;align-items:center;gap:6px;}
+.fbar .chip .cn{font-size:10.5px;opacity:.6;font-variant-numeric:tabular-nums;letter-spacing:0;}
+/* creator picker: a pill that opens a panel (platform bar, search, names).
+   The <select> underneath keeps the state; the panel is the face of it. */
+.creator-pick{position:relative;display:inline-flex;align-items:center;}
+.cp-model{position:absolute;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none;margin:0;padding:0;border:0;}
+.cp-pill{display:inline-flex;align-items:center;height:32px;border:1px solid var(--hair);border-radius:999px;background:var(--surface);transition:border-color .25s ease,background .25s ease;max-width:320px;}
+.cp-pill:hover{border-color:var(--bronze);}
+.creator-pick.open .cp-pill{border-color:var(--bronze);background:var(--gold-08);}
+.creator-pick.on .cp-pill{background:var(--btn-bg);border-color:var(--btn-bg);}
+.cp-btn{display:inline-flex;align-items:center;gap:8px;height:100%;padding:0 12px 0 14px;border:0;background:transparent;font:500 12.5px var(--sans);letter-spacing:.02em;color:var(--ink-70);cursor:pointer;min-width:0;}
+.creator-pick.on .cp-btn{color:var(--btn-fg);padding-right:6px;}
+.cp-txt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;}
+.cp-chev{width:11px;height:11px;flex:none;color:var(--ink-40);transition:transform .25s ease;}
+.creator-pick.open .cp-chev{transform:rotate(180deg);color:var(--bronze);}
+.creator-pick.on .cp-chev{display:none;}
+.cp-dot{width:6px;height:6px;border-radius:50%;flex:none;background:var(--ink-40);}
+.cp-dot[hidden]{display:none;}
+.cp-dot.instagram{background:#C86A8A;}.cp-dot.youtube{background:#C4553C;}.cp-dot.tiktok{background:#7A6CD8;}
+.creator-pick .cp-clear{border:0;background:rgba(237,232,223,.16);color:var(--btn-fg);width:18px;height:18px;border-radius:50%;font-size:13px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;margin:0 8px 0 0;}
+.creator-pick .cp-clear:hover{background:rgba(237,232,223,.3);}
+.creator-pick .cp-clear[hidden]{display:none;}
+.cp-pop{position:absolute;top:calc(100% + 8px);left:0;width:376px;max-width:calc(100vw - 32px);background:var(--surface);border:1px solid var(--hair);border-radius:14px;box-shadow:0 24px 50px -22px rgba(11,11,11,.42),0 2px 6px rgba(11,11,11,.05);padding:10px;z-index:40;outline:none;text-align:left;}
+.cp-pop[hidden]{display:none;}
+.cp-seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border:1px solid var(--hair);border-radius:999px;background:var(--paper);margin-bottom:10px;}
+.cp-seg[hidden]{display:none;}
+.cp-seg button{height:28px;border:0;border-radius:999px;background:transparent;font:500 12px var(--sans);letter-spacing:.04em;color:var(--ink-55);display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;min-width:0;white-space:nowrap;}
+.cp-seg button i{width:6px;height:6px;border-radius:50%;flex:none;background:var(--ink-25);}
+.cp-seg button.instagram i{background:#C86A8A;}.cp-seg button.youtube i{background:#C4553C;}.cp-seg button.tiktok i{background:#7A6CD8;}
+.cp-seg button .cn{font-size:10.5px;opacity:.6;font-variant-numeric:tabular-nums;letter-spacing:0;}
+.cp-seg button.on{background:var(--btn-bg);color:var(--btn-fg);}
+.cp-seg button.on .cn{opacity:.75;}
+.cp-search{height:34px;display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid var(--hair);border-radius:10px;background:var(--paper);color:var(--ink-40);margin-bottom:6px;cursor:text;}
+.cp-search:focus-within{border-color:var(--bronze);}
+.cp-search svg{width:13px;height:13px;flex:none;}
+.cp-search input{flex:1;min-width:0;border:0;background:transparent;font:400 12.5px var(--sans);color:var(--ink-90);outline:none;padding:0;margin:0;}
+.cp-search input::placeholder{color:var(--ink-25);}
+.cp-list{list-style:none;margin:0;padding:0;max-height:312px;overflow:auto;overscroll-behavior:contain;}
+.cp-list li{height:38px;display:flex;align-items:center;gap:10px;padding:0 10px;border-radius:9px;font-size:13px;color:var(--ink-90);cursor:pointer;}
+.cp-list li:hover,.cp-list li.hov{background:var(--gold-08);box-shadow:inset 0 0 0 1px var(--hair-warm);}
+.cp-list li.sel{background:var(--sel);}
+.cp-list li.all{font-weight:500;}
+.cp-list .av{width:24px;height:24px;border-radius:50%;background:var(--gold-08);border:1px solid var(--hair-warm);color:var(--bronze);font:600 10.5px var(--sans);display:inline-flex;align-items:center;justify-content:center;flex:none;text-transform:uppercase;}
+.cp-list li.all .av{background:var(--btn-bg);border-color:var(--btn-bg);color:var(--btn-fg);font-size:11px;text-transform:none;}
+.cp-list .h{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cp-list mark{background:none;color:var(--bronze);font-weight:600;}
+.cp-list .k{font-size:11.5px;color:var(--ink-40);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.cp-list .pp{display:inline-flex;gap:4px;}
+.cp-list .pp b{display:inline-flex;align-items:center;gap:5px;font:600 10px var(--sans);letter-spacing:.04em;color:var(--ink-55);padding:2px 7px;border-radius:5px;background:var(--paper);border:1px solid var(--hair);font-variant-numeric:tabular-nums;}
+.cp-list .pp b i{width:5px;height:5px;border-radius:50%;background:var(--ink-25);}
+.cp-list .pp b.instagram i{background:#C86A8A;}.cp-list .pp b.youtube i{background:#C4553C;}.cp-list .pp b.tiktok i{background:#7A6CD8;}
+.cp-list .cp-empty{height:auto;padding:18px 10px;color:var(--ink-40);font-size:12.5px;cursor:default;justify-content:center;}
+.cp-list .cp-empty:hover{background:none;box-shadow:none;}
+.cp-foot{display:flex;justify-content:space-between;align-items:center;padding:10px 8px 2px;border-top:1px solid var(--hair);margin-top:4px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-40);}
+.cp-keys{display:inline-flex;gap:4px;}
+.cp-keys kbd{font:500 10px var(--sans);letter-spacing:0;text-transform:none;border:1px solid var(--hair);border-radius:4px;padding:1px 5px;background:var(--paper);color:var(--ink-55);}
+.cp-done,.cp-scrim{display:none;}
+@media (max-width:640px){
+  .cp-scrim{display:block;position:fixed;inset:0;background:rgba(11,11,11,.26);z-index:39;}
+  .cp-scrim[hidden]{display:none;}
+  .cp-pop{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;max-width:none;border-radius:22px 22px 0 0;padding:10px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -18px 40px -20px rgba(11,11,11,.4);}
+  .cp-pop::before{content:"";display:block;width:38px;height:4px;border-radius:2px;background:var(--hair);margin:0 auto 12px;}
+  .cp-seg button{height:32px;}
+  .cp-search{height:38px;}
+  .cp-list{max-height:min(46vh,380px);}
+  .cp-list li{height:44px;font-size:14px;}
+  .cp-keys{display:none;}
+  .cp-done{display:flex;align-items:center;justify-content:center;margin-top:10px;height:44px;width:100%;border:0;border-radius:12px;background:var(--btn-bg);color:var(--btn-fg);font:500 13.5px var(--sans);cursor:pointer;}
+}
+.fbar .count-note{margin-left:auto;}
+@media (max-width:760px){.fbar .fsep{display:none;}.fbar .count-note{margin-left:0;width:100%;}}
+</style>
+</head>
+<body>
+<div class="paper-field" aria-hidden="true"></div>
+<div class="shell">
+  <div id="side"></div>
+  <div class="main">
+    <div id="topbar"></div>
+    <main class="content">
+
+      <section class="cx-view" data-view="overview" role="tabpanel" aria-label="Overview" hidden>
+
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Overview</span>
+          <h1 id="welcome">Welcome back.</h1>
+          <p id="summary"></p>
+        </div>
+        <span class="live-pill"><b></b> Campaign Live</span>
+      </div>
+
+      <a class="rv-nudge" id="ovReview" href="?view=review" hidden>
+        <span class="ab-dot" aria-hidden="true"></span>
+        <span class="rv-txt"><b id="ovReviewN"></b> waiting for your review. Approve or reject them, or they are approved automatically after <span class="apr-hours">18</span> hours.</span>
+        <span class="rv-go">Review now &#8594;</span>
+      </a>
+
+      <section class="stats" aria-label="Campaign stats">
+        <div class="stat"><span class="lbl">Views Delivered</span><div class="num" id="stViews">0</div><div class="foot">across all platforms</div></div>
+        <div class="stat"><span class="lbl">Clips Live</span><div class="num" id="stClips">0</div><div class="foot" id="stClipsFoot"></div></div>
+        <div class="stat"><span class="lbl">Budget Used</span><div class="num" id="stBudget">0%</div><div class="foot" id="stBudgetFoot"></div>
+          <div class="budget-track"><div class="budget-fill" id="budgetFill"></div></div>
+        </div>
+        <div class="stat"><span class="lbl">Spend</span><div class="num" id="stSpend">$0</div><div class="foot" id="stSpendFoot"></div></div>
+      </section>
+
+      <section class="grid2">
+        <div class="panel">
+          <div class="panel-h">
+            <h2>Views over time</h2>
+            <div class="chart-controls">
+              <div class="chips" id="modeChips">
+                <button class="chip on" data-mode="cum">Cumulative</button>
+                <button class="chip" data-mode="daily">Per day</button>
+              </div>
+              <div class="chips" id="rangeChips">
+                <button class="chip" data-range="7">7D</button>
+                <button class="chip" data-range="14">14D</button>
+                <button class="chip on" data-range="30">30D</button>
+              </div>
+            </div>
+          </div>
+          <div class="chart-wrap" id="lineWrap">
+            <div class="chart-tip" id="lineTip"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2>Platform split</h2><span id="donutSub"></span></div>
+          <div class="donut-wrap">
+            <div class="donut-box" id="donutBox">
+              <div class="donut-center"><span class="big" id="donutPct"></span><span class="small">total views</span></div>
+            </div>
+            <div class="legend" id="donutLegend"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid2 rev" style="margin-top:16px;">
+        <div class="panel">
+          <div class="panel-h"><h2>Campaign timeline</h2><span>Key moments</span></div>
+          <div class="tl" id="timeline"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2>At a glance</h2><span>This campaign</span></div>
+          <div class="tl-stats" id="glance" style="display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;"></div>
+        </div>
+      </section>
+
+      <section class="panel mt">
+        <div class="panel-h"><h2>Latest clips</h2><span>Most recent submissions</span></div>
+        <div style="overflow-x:auto;">
+        <table class="tbl" id="latestTbl">
+          <thead><tr>
+            <th>Clip</th><th>Platform</th>
+            <th class="num">Views</th><th class="num">Likes</th><th class="num">Comments</th><th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+        </div>
+        <div class="view-all"><a class="btn btn-line" href="./clips.html">View all clips <span class="arr">&#8594;</span></a></div>
+      </section>
+
+      <section class="panel mt" id="briefWrap" style="display:none;">
+        <div class="panel-h"><h2>Campaign brief</h2><span id="briefSub"></span></div>
+        <div class="brief-box" style="border:none;padding:0;max-width:none;margin:0;" id="briefBody"></div>
+      </section>
+
+      <p class="foot-note" id="footNote"></p>
+      </section>
+
+      <section class="cx-view" data-view="review" role="tabpanel" aria-label="Review" hidden>
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Review</span>
+          <h1>New clips, waiting for you.</h1>
+          <p>Every clip a creator submits lands here first. Watch it, then approve it to count it toward your campaign, or reject it with a reason the creator will see. Anything you have not reviewed within <span class="apr-hours">18</span> hours is approved automatically.</p>
+        </div>
+      </div>
+
+      <div class="fbar" role="group" aria-label="Filter submissions">
+        <div class="fgroup"><span class="fl">Platform</span>
+          <div class="chips" id="revPlat"><button class="chip on" data-plat="all">All platforms</button></div>
+        </div>
+        <span class="fsep" aria-hidden="true"></span>
+        <div class="fgroup"><span class="fl">Creator</span>
+          <div class="creator-pick" id="revCreatorPick">
+            <select id="revCreatorSel" class="cp-model" aria-hidden="true" tabindex="-1" aria-label="Show submissions from one creator"></select>
+            <span class="cp-pill">
+              <button type="button" class="cp-btn" id="revCreatorBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="revCreatorPop"><span class="cp-dot" hidden></span><span class="cp-txt">All creators</span><svg class="cp-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+              <button type="button" class="cp-clear" id="revCreatorClear" aria-label="Show all creators" hidden>&times;</button>
+            </span>
+            <span class="cp-scrim" hidden></span>
+            <div class="cp-pop" id="revCreatorPop" tabindex="-1" hidden>
+              <div class="cp-seg" hidden></div>
+              <label class="cp-search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m10.5 10.5 3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input type="text" placeholder="Find a creator" aria-label="Find a creator" autocomplete="off" spellcheck="false"></label>
+              <ul class="cp-list" id="revCreatorList" role="listbox" aria-label="Creators"></ul>
+              <div class="cp-foot"><span class="cp-n"></span><span class="cp-keys" aria-hidden="true"><kbd>&uarr;&darr;</kbd><kbd>Enter</kbd><kbd>Esc</kbd></span></div>
+              <button type="button" class="cp-done">Done</button>
+            </div>
+          </div>
+        </div>
+        <span class="count-note" id="revNote"></span>
+      </div>
+
+      <section class="rej-list" id="aprList" aria-label="Clips awaiting your approval"></section>
+      </section>
+
+      <section class="cx-view" data-view="clips" role="tabpanel" aria-label="Clips Feed" hidden>
+
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Clips Feed</span>
+          <h1>Every clip, live.</h1>
+          <p>Every clip that is live on your campaign. Click any clip to open the original post. New submissions wait in Review until you approve or reject them.</p>
+        </div>
+      </div>
+
+      <!-- waiting for the client -->
+      <div class="apr-banner" id="aprBanner" role="status" hidden>
+        <span class="ab-dot" aria-hidden="true"></span>
+        <span class="ab-txt"><b id="aprBN"></b> waiting in Review. Anything you have not reviewed is approved automatically <span class="apr-hours">18</span> hours after it was submitted.</span>
+        <button type="button" class="ab-go" id="aprGo">Review now</button>
+      </div>
+
+      <!-- live / awaiting approval / rejected -->
+      <div class="feed-tabs" id="feedTabs" role="tablist" aria-label="Clips">
+        <button class="ft on" type="button" role="tab" data-tab="live" aria-selected="true">Live clips <span class="ft-n" id="ftLive"></span></button>
+        <button class="ft" type="button" role="tab" data-tab="rejected" aria-selected="false">Rejected <span class="ft-n" id="ftRej"></span></button>
+      </div>
+
+      <!-- top three -->
+      <section aria-label="Top clips" id="topSection">
+        <div class="panel-h" style="margin:34px 0 0;"><h2 id="topTitle" style="font-family:var(--serif);font-weight:500;font-size:21px;color:var(--ink-2);">Top performers</h2><span style="font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);">By views &amp; engagement</span></div>
+        <div class="top3" id="top3"></div>
+      </section>
+
+      <!-- filters + grid -->
+      <div class="fbar" role="group" aria-label="Filter clips">
+        <div class="fgroup"><span class="fl">Platform</span>
+          <div class="chips" id="platChips"><button class="chip on" data-plat="all">All platforms</button></div>
+        </div>
+        <span class="fsep" aria-hidden="true"></span>
+        <div class="fgroup"><span class="fl">Creator</span>
+          <div class="creator-pick" id="creatorPick">
+            <select id="creatorSel" class="cp-model" aria-hidden="true" tabindex="-1" aria-label="Show clips from one creator"></select>
+            <span class="cp-pill">
+              <button type="button" class="cp-btn" id="creatorBtn" aria-haspopup="listbox" aria-expanded="false" aria-controls="creatorPop"><span class="cp-dot" hidden></span><span class="cp-txt">All creators</span><svg class="cp-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+              <button type="button" class="cp-clear" id="creatorClear" aria-label="Show all creators" hidden>&times;</button>
+            </span>
+            <span class="cp-scrim" hidden></span>
+            <div class="cp-pop" id="creatorPop" tabindex="-1" hidden>
+              <div class="cp-seg" hidden></div>
+              <label class="cp-search"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m10.5 10.5 3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input type="text" placeholder="Find a creator" aria-label="Find a creator" autocomplete="off" spellcheck="false"></label>
+              <ul class="cp-list" id="creatorList" role="listbox" aria-label="Creators"></ul>
+              <div class="cp-foot"><span class="cp-n"></span><span class="cp-keys" aria-hidden="true"><kbd>&uarr;&darr;</kbd><kbd>Enter</kbd><kbd>Esc</kbd></span></div>
+              <button type="button" class="cp-done">Done</button>
+            </div>
+          </div>
+        </div>
+        <span class="fsep" aria-hidden="true" id="sortSep"></span>
+        <div class="fgroup" id="sortGroup"><span class="fl">Sort</span>
+          <div class="chips" id="sortChips">
+            <button class="chip on" data-sort="views">Top views</button>
+            <button class="chip" data-sort="likes">Most liked</button>
+            <button class="chip" data-sort="newest">Newest</button>
+          </div>
+        </div>
+        <span class="count-note" id="countNote"></span>
+      </div>
+
+      <section class="clip-grid" id="clipGrid" aria-label="All clips"></section>
+      <section class="rej-list" id="rejList" aria-label="Clips rejected or flagged" hidden></section>
+
+      <p class="foot-note" id="footNote"></p>
+      </section>
+
+      <section class="cx-view" data-view="analytics" role="tabpanel" aria-label="Analytics" hidden>
+
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Analytics</span>
+          <h1>How your campaign is performing.</h1>
+          <p>Every live clip broken down by platform, day and performance — the same numbers we bill against.</p>
+        </div>
+      </div>
+
+      <section class="stats">
+        <div class="stat"><span class="lbl">Engagement Rate</span><div class="num" id="stEng">0%</div><div class="foot">likes + comments vs views</div></div>
+        <div class="stat"><span class="lbl">Avg Views / Clip</span><div class="num" id="stAvg">0</div><div class="foot" id="stAvgFoot"></div></div>
+        <div class="stat"><span class="lbl">Best Day</span><div class="num" id="stBest" style="font-size:28px;">—</div><div class="foot" id="stBestFoot"></div></div>
+        <div class="stat"><span class="lbl">Total Engagement</span><div class="num" id="stLikes">0</div><div class="foot" id="stLikesFoot"></div></div>
+      </section>
+
+      <section class="grid2">
+        <div class="panel">
+          <div class="panel-h"><h2>Views per day</h2><span>Last 30 days</span></div>
+          <div class="chart-wrap" id="barWrap"><div class="chart-tip" id="barTip"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2>Platforms</h2><span>Views by platform</span></div>
+          <div class="platbars" id="platBars"></div>
+        </div>
+      </section>
+
+      <section class="panel mt">
+        <div class="panel-h"><h2>All live clips</h2><span id="tblCount"></span></div>
+        <div class="filter-row">
+          <div class="chips" id="platChips">
+            <button class="chip on" data-plat="all">All platforms</button>
+            <button class="chip" data-plat="instagram">Instagram</button>
+            <button class="chip" data-plat="youtube">YouTube</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+        <table class="tbl" id="subTbl">
+          <thead><tr>
+            <th>Clip</th><th>Platform</th>
+            <th class="sortable" data-k="submitted">Posted<span class="dir"></span></th>
+            <th class="num sortable" data-k="views">Views<span class="dir"></span></th>
+            <th class="num sortable" data-k="likes">Likes<span class="dir"></span></th>
+            <th class="num sortable" data-k="comments">Comments<span class="dir"></span></th>
+            <th class="num sortable" data-k="eng">Eng. Rate<span class="dir"></span></th>
+            <th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+        </div>
+      </section>
+
+      <p class="foot-note" id="footNote"></p>
+      </section>
+
+      <section class="cx-view" data-view="billing" role="tabpanel" aria-label="Spend & Billing" hidden>
+
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Spend &amp; Billing</span>
+          <h1>Every dollar, accounted for.</h1>
+          <p>You pay only for views delivered by live clips, at a fixed rate. Below is the full line-item breakdown of your campaign spend.</p>
+        </div>
+      </div>
+
+      <section class="stats">
+        <div class="stat"><span class="lbl">Total Spend</span><div class="num" id="stSpend">$0</div><div class="foot">billed to date</div></div>
+        <div class="stat"><span class="lbl">Rate</span><div class="num" id="stCpm">$0</div><div class="foot">per 1,000 views</div></div>
+        <div class="stat"><span class="lbl">Billable Views</span><div class="num" id="stViews">0</div><div class="foot">delivered by live clips</div></div>
+        <div class="stat"><span class="lbl">Avg Cost / Clip</span><div class="num" id="stAvg">$0</div><div class="foot" id="stAvgFoot"></div></div>
+      </section>
+
+      <section class="grid2">
+        <div class="panel">
+          <div class="panel-h"><h2>Spend by week</h2><span>Views delivered &times; rate</span></div>
+          <div class="chart-wrap" id="wkWrap"><div class="chart-tip" id="wkTip"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2>Billing summary</h2><span>Current period</span></div>
+          <div class="rate-card" id="rateCard"></div>
+        </div>
+      </section>
+
+      <section class="panel mt">
+        <div class="panel-h"><h2>Line items</h2><span id="liCount"></span></div>
+        <div style="overflow-x:auto;">
+        <table class="tbl" id="liTbl">
+          <thead><tr>
+            <th>Date</th><th>Clip</th><th>Creator</th>
+            <th class="num">Views</th><th class="num">Amount</th>
+          </tr></thead>
+          <tbody></tbody>
+          <tfoot><tr>
+            <td colspan="3">Total billed</td>
+            <td class="num" id="ftViews"></td>
+            <td class="num total" id="ftTotal"></td>
+          </tr></tfoot>
+        </table>
+        </div>
+        <p class="note">You are only ever billed for views delivered by live clips. Invoices and payment methods will appear here once billing is connected.</p>
+      </section>
+
+      <p class="foot-note" id="footNote"></p>
+      </section>
+
+      <section class="cx-view" data-view="appeals" role="tabpanel" aria-label="Appeals" hidden>
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Appeals</span>
+          <h1>Questions about your decisions.</h1>
+          <p>When a creator appeals a clip you rejected, it lands here with the clip attached. Explain what to change, share a screenshot, or approve it after all. Clipency can see these conversations.</p>
+        </div>
+      </div>
+      <div id="apMount" style="margin-top:28px"></div>
+      </section>
+
+      <section class="cx-view" data-view="chat" role="tabpanel" aria-label="Group chat" hidden>
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Group chat</span>
+          <h1>Talk to every creator at once.</h1>
+          <p>One room for this campaign: post the day’s brief, Drive links to assets, inspo and answers. Every creator posting for the campaign sees it. Turn it on or off any time.</p>
+        </div>
+      </div>
+      <div id="gcMount" style="margin-top:28px"></div>
+      </section>
+
+      <section class="cx-view" data-view="creators" role="tabpanel" aria-label="Creators" hidden>
+
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Creators</span>
+          <h1>The network behind your views.</h1>
+          <p>Every account posting for your campaign, ranked by delivered views. Handles link to their profiles.</p>
+        </div>
+      </div>
+
+      <section class="stats">
+        <div class="stat"><span class="lbl">Active Creators</span><div class="num" id="stN">0</div><div class="foot">posting live clips</div></div>
+        <div class="stat"><span class="lbl">Top Creator</span><div class="num" id="stTop" style="font-size:26px;">—</div><div class="foot" id="stTopFoot"></div></div>
+        <div class="stat"><span class="lbl">Avg Views / Creator</span><div class="num" id="stAvg">0</div><div class="foot">delivered to date</div></div>
+        <div class="stat"><span class="lbl">Roster Engagement</span><div class="num" id="stEng">0%</div><div class="foot">likes + comments vs views</div></div>
+      </section>
+
+      <section class="panel mt">
+        <div class="panel-h"><h2>Roster</h2><span id="rosterCount"></span></div>
+        <div style="overflow-x:auto;">
+        <table class="tbl" id="crTbl">
+          <thead><tr>
+            <th></th><th>Account</th>
+            <th class="num">Live Clips</th>
+            <th class="num">Views Delivered</th>
+            <th class="num">Avg / Clip</th>
+            <th class="num">Likes</th><th class="num">Eng. Rate</th><th class="num">Earned</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+        </div>
+      </section>
+
+      <p class="foot-note" id="footNote"></p>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ===== Clips Feed: markup outside <main> ===== -->
+<!-- ============ Flag modal ============ -->
+<div class="modal-scrim" id="flagScrim" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="flagTitle">
+    <div class="m-eyebrow" id="flagEyebrow">Flag for review</div>
+    <h3 id="flagTitle">Report this clip to your manager.</h3>
+    <div class="m-clip" id="flagClip">
+      <img id="flagCover" src="" alt="">
+      <div><div class="t" id="flagName"></div><div class="c" id="flagMeta"></div></div>
+    </div>
+    <label>Reason</label>
+    <div class="reason-grid" id="reasonGrid"></div>
+    <label for="flagDesc">Description <span style="text-transform:none;letter-spacing:0;color:var(--ink-40);">(optional)</span></label>
+    <textarea id="flagDesc" placeholder="Add any detail that will help the team review this clip…"></textarea>
+    <div class="m-actions">
+      <button class="btn btn-line" id="flagCancel" type="button">Cancel</button>
+      <button class="btn btn-danger" id="flagSubmit" type="button" disabled>Send flag</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Review: reject dialog ============ -->
+<div class="modal-scrim" id="revScrim" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="revTitle">
+    <div class="m-eyebrow">Reject submission</div>
+    <h3 id="revTitle">Reject this clip before it goes live.</h3>
+    <div class="m-clip">
+      <img id="revCover" src="" alt="">
+      <div><div class="t" id="revName"></div><div class="c" id="revMeta"></div></div>
+    </div>
+    <label for="revDesc">Why are you rejecting it? <span style="text-transform:none;letter-spacing:0;color:var(--ink-40);">(required, the creator sees this)</span></label>
+    <textarea id="revDesc" placeholder="Be specific so the creator can fix it, e.g. “The product isn’t on screen until 0:12, show it in the first 3 seconds.”"></textarea>
+    <div class="rev-count" id="revCount" style="font-size:11.5px;color:var(--ink-40);margin-top:6px;text-align:right">At least 15 characters</div>
+    <div class="m-actions">
+      <button class="btn btn-line" id="revCancel" type="button">Cancel</button>
+      <button class="btn btn-danger" id="revSubmit" type="button" disabled>Reject clip</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Clips Feed: rejected clip card ============ -->
+<div class="modal-scrim" id="rdScrim" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="rdTitle">
+    <div class="m-eyebrow" id="rdEyebrow">Rejected</div>
+    <h3 id="rdTitle"></h3>
+    <div class="m-clip">
+      <img id="rdCover" src="" alt="">
+      <div><div class="t" id="rdName"></div><div class="c" id="rdMeta"></div></div>
+    </div>
+    <div class="rd-kpis" id="rdKpis"></div>
+    <div class="rd-reason"><div class="k" id="rdReasonK">Reason</div><div class="r" id="rdReason"></div></div>
+    <div class="rd-meta" id="rdWho"></div>
+    <div class="rd-note" id="rdNote" hidden></div>
+    <a class="rd-link" id="rdLinkRow" href="#" target="_blank" rel="noopener"><span id="rdUrl"></span>&#8599;</a>
+    <div class="m-actions">
+      <button class="btn btn-line" id="rdClose" type="button">Close</button>
+      <a class="btn" id="rdOpen" href="#" target="_blank" rel="noopener">Open post &#8599;</a>
+    </div>
+  </div>
+</div>
+
+<!-- ============ Toast ============ -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="./data.js"></script>
+<script src="./db.js"></script>
+<script src="./export.js"></script>
+<script src="./shell.js"></script>
+<script src="./tour.js"></script>
+<!-- live data (read-only production Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script src="./js/live.js"></script>
+<script src="/clipency-appeals.js"></script>
+<script src="/clipency-groupchat.js"></script>
+
+<script type="module">
+/* wait for live production data before painting; resolves to 'live' or 'mock' */
+if (window.CLIPENCY_LIVE) {
+  try { await window.CLIPENCY_LIVE.ready; }
+  catch (e) { console.error('[clipency] live load threw, painting anyway', e); }
+}
+
+/* ============================================================
+   Section router
+   ------------------------------------------------------------
+   Five sections in one document. Switching does not navigate: no request,
+   no re-parse, no re-run of data.js. Each section's original page script is
+   registered here and executed ONCE, on first view — so the initial paint
+   costs one section, not five, and nothing re-binds on later switches
+   (which is also what keeps listeners from accumulating).
+   ============================================================ */
+const KEYS = ['overview', 'review', 'clips', 'analytics', 'billing', 'creators', 'appeals', 'chat'];
+
+const CX = (function () {
+  const defs = {};
+  const booted = {};
+  let current = null;
+
+  /* Scoped document proxy.
+
+     Seven IDs are duplicated across the source pages (#footNote exists in all
+     five). Instead of renaming them in both markup and script, each section's
+     code runs with a `document` that resolves within its own section first and
+     falls back to the real document for anything outside it (the sidebar,
+     topbar, modals). Everything else — createElementNS, addEventListener —
+     passes straight through. */
+  function scopedDocument(root) {
+    return new Proxy(document, {
+      get(target, prop) {
+        if (prop === 'getElementById') {
+          return function (id) {
+            let el = null;
+            try { el = root.querySelector('#' + CSS.escape(id)); } catch (e) {}
+            return el || target.getElementById(id);
+          };
+        }
+        if (prop === 'querySelector') {
+          return function (sel) {
+            let el = null;
+            try { el = root.querySelector(sel); } catch (e) {}
+            return el || target.querySelector(sel);
+          };
+        }
+        if (prop === 'querySelectorAll') {
+          return function (sel) {
+            let list = [];
+            try { list = root.querySelectorAll(sel); } catch (e) {}
+            return list.length ? list : target.querySelectorAll(sel);
+          };
+        }
+        const v = target[prop];
+        return typeof v === 'function' ? v.bind(target) : v;
+      }
+    });
+  }
+
+  function define(key, fn) { defs[key] = fn; }
+
+  function boot(key) {
+    if (booted[key] || !defs[key]) return;
+    booted[key] = true;
+    const root = document.querySelector('.cx-view[data-view="' + key + '"]');
+    if (!root) return;
+    const t0 = performance.now();
+    try {
+      defs[key](scopedDocument(root));
+    } catch (e) {
+      console.error('[clipency] section "' + key + '" failed to render', e);
+      booted[key] = false;   // let a later switch retry
+      return;
+    }
+    if (window.CLIPENCY_DEBUG) {
+      console.log('[clipency] rendered ' + key + ' in ' +
+        Math.round(performance.now() - t0) + 'ms');
+    }
+  }
+
+  function paint(key) {
+    KEYS.forEach(function (k) {
+      const el = document.querySelector('.cx-view[data-view="' + k + '"]');
+      if (el) el.hidden = (k !== key);
+    });
+    boot(key);
+    syncChrome(key);
+    current = key;
+  }
+
+  /* keep sidebar highlight + breadcrumb in step without rebuilding the shell */
+  function syncChrome(key) {
+    document.querySelectorAll('.snav a[data-nav]').forEach(function (a) {
+      a.classList.toggle('on', a.dataset.nav === key);
+    });
+    const page = (CLIPSHELL.PAGES || []).filter(function (p) { return p.key === key; })[0];
+    const crumb = document.querySelector('.crumb');
+    if (page && crumb) {
+      crumb.innerHTML = '<b>Campaign Dashboard</b> &nbsp;/&nbsp; ' + page.label;
+    }
+    if (page) document.title = 'Clipency — ' + page.label;
+  }
+
+  function go(key, opts) {
+    opts = opts || {};
+    if (KEYS.indexOf(key) === -1) key = KEYS[0];
+    if (key === current && !opts.force) return;
+
+    /* Deliberately NOT using document.startViewTransition here.
+
+       The measured DOM swap is 3-10ms. Wrapping that in a view transition
+       added ~320ms of crossfade (the ::view-transition-*(cx-content) rules,
+       which exist for cross-document navigation) — which is the entire
+       perceptible cost of switching. At this speed there is nothing to hide,
+       so the section just appears, with a short opacity fade from CSS
+       (.cx-view:not([hidden])) to soften the swap without delaying it. */
+    paint(key);
+
+    if (!opts.replace) {
+      history.pushState({ view: key }, '', '?view=' + key);
+    }
+    /* a section change is a new "page" as far as reading position goes */
+    if (!opts.keepScroll) window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  return { define: define, go: go, boot: boot,
+           get current() { return current; } };
+})();
+
+window.CX = CX;
+
+/* ---- which section to open ---------------------------------------------- */
+function wanted() {
+  const sp = new URLSearchParams(location.search);
+  /* The queue used to be a tab of the Clips Feed; old links still land on it. */
+  if (sp.get('view') === 'clips' && sp.get('tab') === 'approvals') return 'review';
+  const q = sp.get('view');
+  return KEYS.indexOf(q) > -1 ? q : KEYS[0];
+}
+
+CLIPSHELL.init(wanted());
+
+/* ---- turn the sidebar into section switches ----------------------------- */
+(function wireNav() {
+  /* Derived from CLIPSHELL.PAGES rather than hardcoded: shell.js writes
+     hrefs as "dashboard.html", not "./dashboard.html", and a hardcoded map
+     silently matched nothing. Reading the source of truth also means adding
+     a page to shell.js can't desync this. */
+  const MAP = {};
+  (CLIPSHELL.PAGES || []).forEach(function (p) {
+    if (p.href && KEYS.indexOf(p.key) > -1) {
+      MAP[p.href.replace(/^\.\//, '')] = p.key;
+    }
+  });
+
+  document.querySelectorAll('.snav a[href]').forEach(function (a) {
+    const key = MAP[a.getAttribute('href').replace(/^\.\//, '')];
+    if (!key) return;
+    a.dataset.nav = key;
+    /* real href so middle-click / cmd-click / "open in new tab" still work,
+       and so the link is meaningful with JS disabled */
+    a.setAttribute('href', '?view=' + key);
+    a.addEventListener('click', function (e) {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault();
+      CX.go(key);
+    });
+  });
+
+  /* prefetch hints from shell.js pointed at the old separate pages; in one
+     document they would just refetch this same file five times */
+  document.querySelectorAll('link[rel="prefetch"]').forEach(function (l) {
+    l.remove();
+  });
+})();
+
+/* ---- browser back / forward -------------------------------------------- */
+window.addEventListener('popstate', function (e) {
+  const key = (e.state && e.state.view) || wanted();
+  CX.go(key, { replace: true });
+});
+
+/* ============================================================
+   Section definitions — verbatim from the original pages.
+   Each receives a section-scoped `document`.
+   ============================================================ */
+CX.define('overview', function(document){
+(function(){
+  if(CLIPSHELL.emptyState()) return;
+  var C = CLIPENCY, T = C.totals();
+
+  document.getElementById('welcome').textContent = 'Welcome back, ' + C.campaign.client + '.';
+  document.getElementById('summary').textContent =
+    'Your campaign has delivered ' + C.fmtFull(T.approvedViews) + ' views across ' +
+    T.approvedCount + ' live clips. Everything below updates as the network posts.';
+  document.getElementById('footNote').textContent =
+    'CLIPENCY — ' + C.campaign.label + ' · data refreshed in real time';
+
+  /* campaign brief (requirements / guidelines / content link) */
+  (function(){
+    if(!window.CLIPDB) return;
+    var camp = CLIPDB.active();
+    if(!camp) return;
+    var html = CLIPSHELL.briefPanel(camp);
+    if(!html) return;
+    document.getElementById('briefWrap').style.display = '';
+    document.getElementById('briefSub').textContent = (camp.brand || camp.name) + (camp.category ? ' · ' + camp.category : '');
+    document.getElementById('briefBody').outerHTML = html.replace('class="brief-box"', 'class="brief-box" style="border:none;padding:0;max-width:none;margin:0;" id="briefBody"');
+  })();
+
+  /* animated stats */
+  var plats = C.byPlatform();
+  CLIPSHELL.count(document.getElementById('stViews'), T.approvedViews, function(v){ return C.fmtFull(Math.round(v)); });
+  CLIPSHELL.count(document.getElementById('stClips'), T.approvedCount, function(v){ return Math.round(v); }, 1100);
+  /* One half of a split campaign: no budget of its own, or the shared one
+     read campaign-wide (T.budgetSpend), never this platform's spend alone. */
+  if(C.campaign.noBudget) document.getElementById('stBudget').textContent = '\u2014';
+  else CLIPSHELL.count(document.getElementById('stBudget'), T.budgetUsed, function(v){ return v.toFixed(1)+'%'; });
+  CLIPSHELL.count(document.getElementById('stSpend'), T.spend, function(v){ return C.money(v); });
+  document.getElementById('stClipsFoot').textContent = plats.length === 1
+    ? 'on ' + cxfName(plats[0].platform)
+    : 'across ' + plats.length + ' platforms';
+  (function(){
+    var vf = document.getElementById('stViews').parentNode.querySelector('.foot');
+    if(vf) vf.textContent = plats.length === 1 ? 'on ' + cxfName(plats[0].platform) : 'across all platforms';
+  })();
+  document.getElementById('stBudgetFoot').textContent = C.campaign.noBudget
+    ? 'no separate budget' + (C.campaign.budgetWith ? ' \u00b7 billed with ' + C.campaign.budgetWith : '')
+    : C.money(T.budgetSpend != null ? T.budgetSpend : T.spend) + ' of ' + C.money(T.budget) + ' budget';
+  document.getElementById('stSpendFoot').textContent = C.campaign.payoutModel === 'per_video'
+    ? 'at ' + C.money(C.campaign.ratePerVideo) + ' per approved video'
+    : 'at ' + C.money(C.campaign.cpm) + ' per 1,000 views';
+  var bfill = document.getElementById('budgetFill');
+  if(T.budgetUsed >= 85) bfill.classList.add('warn');
+  setTimeout(function(){ bfill.style.width = (C.campaign.noBudget ? 0 : Math.min(T.budgetUsed,100)) + '%'; }, 200);
+
+  /* ---------- views chart (range + mode) ---------- */
+  var allDays = C.daily();
+  var wrap = document.getElementById('lineWrap'), tip = document.getElementById('lineTip');
+  var mode = 'cum', range = 30;
+  function drawLine(){
+    var days = allDays.slice(-range);
+    /* recompute cumulative relative to the visible window's baseline so it always starts sensibly */
+    var W = wrap.clientWidth || 600, H = Math.max(wrap.clientHeight, 230);
+    var P = {l:46, r:14, t:14, b:26};
+    var gold = CLIPSHELL.css('--gold'), hair = CLIPSHELL.css('--hair'), axis = CLIPSHELL.css('--ink-40');
+    var key = mode === 'cum' ? 'cum' : 'views';
+    var vals = days.map(function(d){ return d[key]; });
+    var max = Math.max.apply(null, [0].concat(vals)) * 1.08 || 1;
+    var min = (mode === 'cum' && vals.length) ? Math.min.apply(null, vals) * 0.96 : 0;
+    var X = function(i){ return P.l + (days.length<2?0.5:i/(days.length-1))*(W-P.l-P.r); };
+    var Y = function(v){ return H-P.b - (v-min)/(max-min)*(H-P.t-P.b); };
+    var gridY = [0,.25,.5,.75,1].map(function(f){
+      var v = min + (max-min)*f, y = Y(v);
+      return '<line x1="'+P.l+'" y1="'+y+'" x2="'+(W-P.r)+'" y2="'+y+'" stroke="'+hair+'" stroke-width="1"/>' +
+             '<text x="'+(P.l-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10" fill="'+axis+'" font-family="Inter">'+C.fmt(Math.round(v))+'</text>';
+    }).join('');
+    var nTicks = Math.min(4, days.length);
+    var ticks = [];
+    for(var t=0;t<nTicks;t++){
+      var i = Math.round(t/(nTicks-1||1)*(days.length-1));
+      ticks.push('<text x="'+X(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="'+axis+'" font-family="Inter">'+days[i].date.slice(5).replace('-','/')+'</text>');
+    }
+    wrap.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+    var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    var body;
+    if(mode === 'cum'){
+      var line = days.map(function(d,i){ return (i?'L':'M') + X(i).toFixed(1) + ' ' + Y(d.cum).toFixed(1); }).join(' ');
+      var area = line + ' L' + X(days.length-1).toFixed(1) + ' ' + (H-P.b) + ' L' + X(0).toFixed(1) + ' ' + (H-P.b) + ' Z';
+      body = '<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0" stop-color="'+gold+'" stop-opacity=".28"/>' +
+        '<stop offset="1" stop-color="'+gold+'" stop-opacity="0"/></linearGradient></defs>' +
+        '<path d="'+area+'" fill="url(#ag)"/>' +
+        '<path d="'+line+'" fill="none" stroke="'+gold+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>';
+    } else {
+      var bw = (W-P.l-P.r)/days.length;
+      body = days.map(function(d,i){
+        var h = (d.views-min)/(max-min)*(H-P.t-P.b);
+        return '<rect x="'+(P.l+i*bw+bw*.2)+'" y="'+(H-P.b-h)+'" width="'+(bw*.6)+'" height="'+Math.max(h,1)+'" rx="2.5" fill="'+gold+'" opacity="'+(d.views? .85:.18)+'"/>';
+      }).join('');
+    }
+    svg.innerHTML = gridY + ticks + body +
+      '<circle id="dotHover" r="4.5" fill="'+gold+'" stroke="'+CLIPSHELL.css('--paper')+'" stroke-width="2" opacity="0"/>';
+    wrap.appendChild(svg);
+
+    var dot = svg.getElementById('dotHover');
+    wrap.onmousemove = function(e){
+      var r = wrap.getBoundingClientRect();
+      var i = Math.round((e.clientX - r.left - P.l) / (W-P.l-P.r) * (days.length-1));
+      i = Math.max(0, Math.min(days.length-1, i));
+      var d = days[i];
+      dot.setAttribute('cx', X(i)); dot.setAttribute('cy', Y(d[key])); dot.setAttribute('opacity', mode==='cum'?'1':'0');
+      tip.style.left = X(i)+'px'; tip.style.top = Y(d[key])+'px'; tip.style.opacity = '1';
+      tip.innerHTML = mode === 'cum'
+        ? d.date.slice(5).replace('-','/') + ' &middot; <b>' + C.fmtFull(d.cum) + '</b> total views' + (d.views ? '<br>+' + C.fmtFull(d.views) + ' that day' : '')
+        : d.date.slice(5).replace('-','/') + ' &middot; <b>' + C.fmtFull(d.views) + '</b> views that day';
+    };
+    wrap.onmouseleave = function(){ tip.style.opacity='0'; dot.setAttribute('opacity','0'); };
+  }
+  drawLine();
+  addEventListener('resize', drawLine);
+  document.getElementById('themeToggle').addEventListener('click', function(){ setTimeout(drawLine, 650); });
+  document.querySelectorAll('#modeChips .chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      document.querySelectorAll('#modeChips .chip').forEach(function(x){ x.classList.remove('on'); });
+      ch.classList.add('on'); mode = ch.dataset.mode; drawLine();
+    });
+  });
+  document.querySelectorAll('#rangeChips .chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      document.querySelectorAll('#rangeChips .chip').forEach(function(x){ x.classList.remove('on'); });
+      ch.classList.add('on'); range = +ch.dataset.range; drawLine();
+    });
+  });
+
+  /* ---------- platform donut ---------- */
+  var platColors = {tiktok:'#7A6CD8', instagram:'#C86A8A', youtube:'#C4553C'};
+  function drawDonut(){
+    var box = document.getElementById('donutBox');
+    box.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+    var segs = plats.map(function(p){
+      return {v:p.views, c:platColors[p.platform], l:p.platform.charAt(0).toUpperCase()+p.platform.slice(1), n:p.clips};
+    });
+    var tot = segs.reduce(function(a,s){return a+s.v;},0), R=80, CIRC=2*Math.PI*R, off=0;
+    var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 200 200');
+    var inner = '<circle cx="100" cy="100" r="'+R+'" fill="none" stroke="'+CLIPSHELL.css('--hair')+'" stroke-width="16"/>';
+    segs.forEach(function(s){
+      var frac = s.v/tot, len = frac*CIRC - 3;
+      inner += '<circle cx="100" cy="100" r="'+R+'" fill="none" stroke="'+s.c+'" stroke-width="16" ' +
+        'stroke-dasharray="'+Math.max(len,0)+' '+CIRC+'" stroke-dashoffset="'+(-off)+'" stroke-linecap="round"><title>'+s.l+': '+C.fmtFull(s.v)+' views</title></circle>';
+      off += frac*CIRC;
+    });
+    svg.innerHTML = inner;
+    box.insertBefore(svg, box.firstChild);
+    document.getElementById('donutLegend').innerHTML = segs.map(function(s){
+      return '<span><i style="background:'+s.c+'"></i>'+s.l+' · '+C.fmt(s.v)+'</span>';
+    }).join('');
+  }
+  document.getElementById('donutPct').textContent = C.fmt(T.approvedViews);
+  document.getElementById('donutSub').textContent = T.approvedCount + ' live clips';
+  drawDonut();
+  document.getElementById('themeToggle').addEventListener('click', function(){ setTimeout(drawDonut, 650); });
+
+  /* ---------- latest clips (live only) ---------- */
+  var latest = C.approved().slice().sort(function(a,b){ return b.submitted.localeCompare(a.submitted); }).slice(0,6);
+  document.querySelector('#latestTbl tbody').innerHTML = latest.map(function(r){
+    return '<tr>' +
+      '<td><div class="clip-cell"><img class="mini-cover" loading="lazy" src="'+r.cover+'" alt="">' +
+        '<div><div class="t">'+r.title+'</div><div class="c">'+r.creator+' · '+r.submitted.slice(5).replace('-','/')+'</div></div></div></td>' +
+      '<td><span class="plat '+r.platform+'"><i></i>'+r.platform+'</span></td>' +
+      '<td class="num">'+C.fmtFull(r.views)+'</td>' +
+      '<td class="num">'+C.fmtFull(r.likes)+'</td>' +
+      '<td class="num">'+C.fmtFull(r.comments)+'</td>' +
+      '<td><a href="'+r.url+'" target="_blank" rel="noopener">Open &#8599;</a></td>' +
+    '</tr>';
+  }).join('');
+
+  /* ---------- campaign timeline ---------- */
+  var ap = C.approved();
+  var byDate = ap.slice().sort(function(a,b){ return a.submitted.localeCompare(b.submitted); });
+  var firstClip = byDate[0];
+  var best = C.bestDay();
+  var topClip = C.top(1)[0];
+  /* find the day cumulative views crossed 100k */
+  var cross = null;
+  allDays.forEach(function(d){ if(!cross && d.cum >= 100000) cross = d; });
+  function fmtDate(iso){
+    var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var p = iso.split('-'); return m[+p[1]-1] + ' ' + (+p[2]);
+  }
+  var events = [
+    {date:C.campaign.start, big:true, label:'Campaign launched', sub:C.campaign.client + ' goes live to the network'},
+    {date:firstClip.submitted, label:'First clip posted', sub:firstClip.creator + ' · ' + firstClip.platform},
+    best ? {date:best.date, label:'Biggest day', sub:C.fmtFull(best.views) + ' views in 24 hours'} : null,
+    topClip ? {date:topClip.submitted, label:'Top clip', sub:'“' + topClip.title + '” · ' + C.fmt(topClip.views) + ' views'} : null,
+    cross ? {date:cross.date, big:true, label:'100K views delivered', sub:'Campaign crosses 100,000 views'} : null,
+    {date:'2026-07-20', label:'Today', sub:C.fmtFull(T.approvedViews) + ' views · ' + T.approvedCount + ' live clips'}
+  ].filter(Boolean).sort(function(a,b){ return a.date.localeCompare(b.date); });
+  document.getElementById('timeline').innerHTML = events.map(function(e){
+    return '<div class="tl-item'+(e.big?' big':'')+'">' +
+      '<div class="tl-date">'+fmtDate(e.date)+'</div>' +
+      '<div class="tl-label">'+e.label+'</div>' +
+      '<div class="tl-sub">'+e.sub+'</div></div>';
+  }).join('');
+
+  /* ---------- at a glance ---------- */
+  var eng = C.engagement();
+  var totalEng = ap.reduce(function(a,r){ return a+r.likes+r.comments; }, 0);
+  var days30 = allDays.length;
+  var glance = [
+    ['Avg views per clip', C.fmtFull(Math.round((T.approvedCount ? T.approvedViews/T.approvedCount : 0)))],
+    ['Avg views per day', C.fmtFull(Math.round(T.approvedViews/days30))],
+    ['Engagement rate', eng.toFixed(1) + '%'],
+    ['Total engagement', C.fmtFull(totalEng) + ' likes + comments'],
+    ['Top platform', plats[0].platform.charAt(0).toUpperCase()+plats[0].platform.slice(1) + ' · ' + C.fmt(plats[0].views) + ' views']
+  ];
+  document.getElementById('glance').innerHTML = glance.map(function(g, i){
+    var border = i < glance.length-1 ? 'border-bottom:1px solid var(--hair);padding-bottom:14px;' : '';
+    return '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;'+border+'">' +
+      '<span style="font-size:13px;color:var(--ink-55);">'+g[0]+'</span>' +
+      '<b style="font-family:var(--serif);font-size:19px;color:var(--ink-2);font-weight:500;font-variant-numeric:tabular-nums;text-align:right;">'+g[1]+'</b></div>';
+  }).join('');
+})();
+});
+
+/* ---- shared by Review and the Clips Feed ---------------------------------- */
+function cxReviewHours() {
+  var p = (window.CLIPENCY && CLIPENCY.pending) || [];
+  var camps = (window.CLIPENCY_LIVE && window.CLIPENCY_LIVE.campaigns) || [];
+  var act = (window.CLIPDB && CLIPDB.active && CLIPDB.active()) || null;
+  var id = p.length ? String(p[0].campaignId) : (act ? String(act.baseId || act.id) : '');
+  var c = camps.filter(function (x) { return String(x.id) === id; })[0] || camps[0] || {};
+  /* Clients get at most 18 hours to review; after that clips approve automatically. */
+  var h = Number(c.client_review_hours) > 0 ? Number(c.client_review_hours) : 18;
+  return Math.min(h, 18);
+}
+/* Sidebar count on Review, and the nudge on Overview. */
+function cxSyncPendingBadge() {
+  var n = ((window.CLIPENCY && CLIPENCY.pending) || []).length;
+  var a = document.querySelector('.snav a[data-nav="review"]');
+  if (a) {
+    var old = a.querySelector('.navcount'); if (old) old.remove();
+    if (n) {
+      var sp = document.createElement('span');
+      sp.className = 'navcount';
+      sp.title = n + ' clip' + (n === 1 ? '' : 's') + ' waiting for your review';
+      sp.textContent = n;
+      a.appendChild(sp);
+    }
+  }
+  var nudge = document.getElementById('ovReview');
+  if (nudge) {
+    nudge.hidden = !n;
+    var b = document.getElementById('ovReviewN');
+    if (b) b.textContent = n + (n === 1 ? ' new clip is' : ' new clips are');
+  }
+  var ft = document.getElementById('aprBanner');
+  if (ft) {
+    ft.hidden = !n;
+    var bn = document.getElementById('aprBN');
+    if (bn) bn.textContent = n + (n === 1 ? ' new clip is' : ' new clips are');
+  }
+}
+
+/* ---------- filters shared by Review and Clips Feed ----------
+   Platform chips carry counts and only list platforms that have clips in
+   what is on screen. The creator list follows the platform: one platform
+   lists only its creators; All platforms groups them under a bar per
+   platform. Picking a creator under a platform bar also picks that platform.
+   Option values are "platform|@handle" ("all|@handle" for every platform). */
+var CXF_PLATS = ['instagram', 'youtube', 'tiktok'];
+var CXF_NAME = {instagram:'Instagram', youtube:'YouTube', tiktok:'TikTok'};
+function cxfEsc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(ch){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
+function cxfName(p){ return CXF_NAME[p] || (p ? String(p).charAt(0).toUpperCase() + String(p).slice(1) : 'Other'); }
+function cxfPlatsIn(rows, keep){
+  var n = {};
+  rows.forEach(function(r){ var p = r.platform || 'other'; n[p] = (n[p] || 0) + 1; });
+  var list = CXF_PLATS.filter(function(p){ return n[p] || p === keep; })
+    .concat(Object.keys(n).filter(function(p){ return CXF_PLATS.indexOf(p) < 0; }).sort());
+  return { list: list, n: n };
+}
+function cxfPlatChips(rows, plat){
+  var P = cxfPlatsIn(rows, plat === 'all' ? null : plat);
+  return '<button class="chip' + (plat === 'all' ? ' on' : '') + '" data-plat="all">All platforms <span class="cn">' + rows.length + '</span></button>' +
+    P.list.map(function(p){
+      return '<button class="chip' + (plat === p ? ' on' : '') + '" data-plat="' + cxfEsc(p) + '">' + cxfEsc(cxfName(p)) +
+        ' <span class="cn">' + (P.n[p] || 0) + '</span></button>';
+    }).join('');
+}
+function cxfCount(rows, pred){
+  var n = {}; rows.forEach(function(r){ if(pred(r)) n[r.creator] = (n[r.creator] || 0) + 1; });
+  var names = Object.keys(n).sort(function(a, b){ return (n[b] - n[a]) || a.localeCompare(b); });
+  return { n: n, names: names };
+}
+function cxfOpt(val, h, k, on){
+  return '<option value="' + cxfEsc(val) + '"' + (on ? ' selected' : '') + '>' +
+    cxfEsc(h) + ' · ' + k + (k === 1 ? ' clip' : ' clips') + '</option>';
+}
+function cxfCreatorOptions(rows, plat, creator){
+  if(plat !== 'all'){
+    var one = cxfCount(rows, function(r){ return r.platform === plat; });
+    if(creator && !one.n[creator]){ one.n[creator] = 0; one.names.unshift(creator); }
+    return '<option value="">All ' + cxfEsc(cxfName(plat)) + ' creators (' + one.names.length + ')</option>' +
+      one.names.map(function(h){ return cxfOpt(plat + '|' + h, h, one.n[h], h === creator); }).join('');
+  }
+  var every = cxfCount(rows, function(){ return true; });
+  var html = '<option value="">All creators (' + every.names.length + ')</option>';
+  if(creator) html += cxfOpt('all|' + creator, creator + ' · all platforms', every.n[creator] || 0, true);
+  return html + cxfPlatsIn(rows, null).list.map(function(p){
+    var g = cxfCount(rows, function(r){ return (r.platform || 'other') === p; });
+    return '<optgroup label="' + cxfEsc(cxfName(p)) + ' creators (' + g.names.length + ')">' +
+      g.names.map(function(h){ return cxfOpt(p + '|' + h, h, g.n[h], false); }).join('') + '</optgroup>';
+  }).join('');
+}
+function cxfParse(v){
+  v = String(v || ''); var i = v.indexOf('|');
+  return i < 0 ? { plat: null, creator: v } : { plat: v.slice(0, i), creator: v.slice(i + 1) };
+}
+
+
+/* ---------- creator picker ----------
+   The panel behind the Creator pill: a platform bar that counts creators, a
+   search box, and the names sorted by clips. The <select> next to it stays the
+   model (cxfCreatorOptions fills it, its change handler is untouched), so the
+   old path still works; the panel reads the same rows and commits a pick
+   through cfg.commit({plat, creator}). The bar inside the panel only changes
+   the list; a pick commits both the platform and the creator, which is what
+   choosing under a platform bar in the old dropdown did. On narrow screens the
+   panel is a bottom sheet. */
+function cxfPicker(cfg){
+  var pick = cfg.pick;
+  var btn = pick.querySelector('.cp-btn'), txt = pick.querySelector('.cp-txt'), dot = pick.querySelector('.cp-dot');
+  var pop = pick.querySelector('.cp-pop'), segBox = pop.querySelector('.cp-seg'), input = pop.querySelector('input');
+  var list = pop.querySelector('.cp-list'), foot = pop.querySelector('.cp-n'), scrim = pick.querySelector('.cp-scrim'), done = pop.querySelector('.cp-done');
+  var open = false, seg = 'all', q = '', active = -1, items = [];
+  var TAG = {instagram:'IG', youtube:'YT', tiktok:'TT'};
+  function tag(p){ return TAG[p] || String(p || '?').slice(0, 2).toUpperCase(); }
+  function fine(){ return !!(window.matchMedia && window.matchMedia('(hover:hover) and (pointer:fine)').matches); }
+  function creatorsOn(rows, p){
+    return cxfCount(rows, p === 'all' ? function(){ return true; } : function(r){ return (r.platform || 'other') === p; });
+  }
+  function clips(n){ return n + (n === 1 ? ' clip' : ' clips'); }
+  function hi(h){
+    if(!q) return cxfEsc(h);
+    var i = h.toLowerCase().indexOf(q); if(i < 0) return cxfEsc(h);
+    return cxfEsc(h.slice(0, i)) + '<mark>' + cxfEsc(h.slice(i, i + q.length)) + '</mark>' + cxfEsc(h.slice(i + q.length));
+  }
+  function paintBtn(){
+    var s = cfg.state();
+    txt.textContent = s.creator || 'All creators';
+    pick.classList.toggle('on', !!s.creator);
+    pick.classList.toggle('open', open);
+    dot.hidden = !(s.creator && s.plat !== 'all');
+    dot.className = 'cp-dot' + (s.plat !== 'all' ? ' ' + cxfEsc(s.plat) : '');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  function build(){
+    var rows = cfg.rows(), s = cfg.state(), P = cxfPlatsIn(rows, null).list, bar = P.length > 1;
+    if(!bar || (seg !== 'all' && P.indexOf(seg) < 0)) seg = 'all';
+    segBox.hidden = !bar;
+    if(bar){
+      segBox.innerHTML = '<button type="button" data-seg="all"' + (seg === 'all' ? ' class="on"' : '') + '>All <span class="cn">' + creatorsOn(rows, 'all').names.length + '</span></button>' +
+        P.map(function(p){
+          return '<button type="button" data-seg="' + cxfEsc(p) + '" class="' + cxfEsc(p) + (seg === p ? ' on' : '') + '"><i></i>' + cxfEsc(cxfName(p)) +
+            ' <span class="cn">' + creatorsOn(rows, p).names.length + '</span></button>';
+        }).join('');
+    }
+    var scope = seg === 'all' ? rows : rows.filter(function(r){ return (r.platform || 'other') === seg; });
+    var c = creatorsOn(rows, seg), per = {};
+    if(seg === 'all' && bar) rows.forEach(function(r){
+      var p = r.platform || 'other'; per[r.creator] = per[r.creator] || {}; per[r.creator][p] = (per[r.creator][p] || 0) + 1;
+    });
+    var platOut = bar ? seg : s.plat;
+    var names = c.names.filter(function(h){ return !q || h.toLowerCase().indexOf(q) >= 0; });
+    items = (q ? [] : [{ plat: platOut, creator: '', label: seg === 'all' ? 'All creators' : 'All ' + cxfName(seg) + ' creators', n: scope.length }])
+      .concat(names.map(function(h){ return { plat: platOut, creator: h, n: c.n[h] }; }));
+    if(active >= items.length) active = items.length - 1;
+    list.innerHTML = items.length ? items.map(function(it, i){
+      var on = it.creator === s.creator && it.plat === s.plat;
+      var right = it.creator && seg === 'all' && bar
+        ? '<span class="pp">' + Object.keys(per[it.creator] || {}).sort(function(a, b){ return P.indexOf(a) - P.indexOf(b); })
+            .map(function(p){ return '<b class="' + cxfEsc(p) + '"><i></i>' + tag(p) + ' ' + per[it.creator][p] + '</b>'; }).join(' ') + '</span>'
+        : '<span class="k">' + clips(it.n) + '</span>';
+      var av = it.creator ? cxfEsc(it.creator.replace(/^@/, '').charAt(0) || '?') : (on ? '&#10003;' : String(c.names.length));
+      return '<li role="option" id="' + pop.id + '-o' + i + '" data-i="' + i + '" class="' + (it.creator ? '' : 'all') + (on ? ' sel' : '') + (i === active ? ' hov' : '') +
+        '" aria-selected="' + (on ? 'true' : 'false') + '"><span class="av">' + av + '</span> <span class="h">' + (it.creator ? hi(it.creator) : cxfEsc(it.label)) + '</span> ' + right + '</li>';
+    }).join('') : '<li class="cp-empty">No creator matches &ldquo;' + cxfEsc(q) + '&rdquo;</li>';
+    foot.textContent = q ? names.length + ' of ' + c.names.length + ' match'
+      : c.names.length + (c.names.length === 1 ? ' creator' : ' creators') + (items.length > 8 ? ' · scroll for more' : '');
+    input.setAttribute('aria-activedescendant', active >= 0 && items[active] ? pop.id + '-o' + active : '');
+  }
+  function show(){
+    if(open) return;
+    open = true; seg = cfg.state().plat; q = ''; input.value = ''; active = -1;
+    pop.hidden = false; scrim.hidden = false; build(); paintBtn();
+    /* Always opens downward. Low on the page it scrolls the page just enough to
+       be fully on screen; opening upward put its top under the sticky header. */
+    if(getComputedStyle(pop).position === 'absolute' && pop.scrollIntoView){
+      try{ pop.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }catch(e){ pop.scrollIntoView(false); }
+    }
+    document.addEventListener('pointerdown', onDoc, true);
+    document.addEventListener('keydown', onKey, true);
+    if(fine()) input.focus(); else pop.focus();
+  }
+  function hide(refocus){
+    if(!open) return;
+    open = false; pop.hidden = true; scrim.hidden = true; paintBtn();
+    document.removeEventListener('pointerdown', onDoc, true);
+    document.removeEventListener('keydown', onKey, true);
+    if(refocus) btn.focus();
+  }
+  function choose(it){ hide(true); cfg.commit({ plat: it.plat, creator: it.creator }); }
+  function onDoc(e){ if(!pick.contains(e.target)) hide(false); }
+  function onKey(e){
+    if(e.key === 'Escape'){ e.preventDefault(); hide(true); return; }
+    if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+      e.preventDefault(); if(!items.length) return;
+      active = e.key === 'ArrowDown' ? Math.min(items.length - 1, active + 1) : Math.max(0, active - 1);
+      build(); var el = list.querySelector('.hov'); if(el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest' });
+      return;
+    }
+    if(e.key === 'Enter' && document.activeElement === input){
+      e.preventDefault();
+      if(active >= 0 && items[active]) choose(items[active]);
+      else if(items.length === 1) choose(items[0]);
+    }
+  }
+  btn.addEventListener('click', function(e){ e.preventDefault(); if(open) hide(false); else show(); });
+  segBox.addEventListener('click', function(e){
+    var b = e.target.closest('[data-seg]'); if(!b) return;
+    seg = b.dataset.seg; active = -1; build(); if(fine()) input.focus();
+  });
+  input.addEventListener('input', function(){ q = input.value.trim().toLowerCase().replace(/^@/, ''); active = q ? 0 : -1; build(); });
+  list.addEventListener('click', function(e){ var li = e.target.closest('li[data-i]'); if(!li) return; var it = items[+li.dataset.i]; if(it) choose(it); });
+  scrim.addEventListener('click', function(){ hide(false); });
+  done.addEventListener('click', function(){ hide(true); });
+  return { paint: function(){ paintBtn(); if(open) build(); } };
+}
+
+CX.define('review', function(document){
+(function(){
+  if(CLIPSHELL.emptyState()) return;
+  var C = CLIPENCY;
+  var HOURS = cxReviewHours();
+  document.querySelectorAll('.apr-hours').forEach(function(el){ el.textContent = HOURS; });
+
+  var plat = 'all', creator = '', confirmAll = false;
+  var box = document.getElementById('aprList');
+  var sel = document.getElementById('revCreatorSel');
+  var pick = document.getElementById('revCreatorPick');
+  var clear = document.getElementById('revCreatorClear');
+  function pending(){ return (C.pending || []); }
+  function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
+  function fmtDay(iso){
+    if(!iso) return '';
+    var d = new Date(iso); if(isNaN(d)) return '';
+    return d.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+  }
+  function fmtWhen(iso){
+    var d = new Date(iso); if(isNaN(d)) return '';
+    return d.toLocaleString('en-GB', {weekday:'short', day:'numeric', month:'short', hour:'numeric', minute:'2-digit'});
+  }
+  function dueInfo(r){
+    if(r.paused) return { soon:false, html:'<b>Auto-approval is on hold</b> while this campaign is paused.' };
+    if(!r.dueAt) return { soon:false, html:'<b>Waiting for your review.</b>' };
+    var ms = new Date(r.dueAt).getTime() - Date.now();
+    if(!(ms > 0)) return { soon:true, html:'<b>Approving automatically now.</b>' };
+    var h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
+    var left = h >= 24 ? Math.floor(h / 24) + 'd ' + (h % 24) + 'h' : h > 0 ? h + 'h ' + m + 'm' : Math.max(m, 1) + 'm';
+    return { soon: h < 6, html:'<b>Approves automatically in ' + left + '</b> (' + esc(fmtWhen(r.dueAt)) + ') unless you act first.' };
+  }
+  function shown(){
+    return pending().filter(function(r){
+      return (!creator || r.creator === creator) && (plat === 'all' || r.platform === plat);
+    }).sort(function(a,b){ return String(a.dueAt || '9').localeCompare(String(b.dueAt || '9')); });
+  }
+  function paintCreators(){
+    var rows = pending();
+    /* A platform or creator with nothing left waiting falls back to all,
+       so the list never sits on an empty filter after a review. */
+    if(plat !== 'all' && !rows.some(function(r){ return r.platform === plat; })) plat = 'all';
+    if(creator && !rows.some(function(r){ return r.creator === creator; })) creator = '';
+    document.getElementById('revPlat').innerHTML = cxfPlatChips(rows, plat);
+    sel.innerHTML = cxfCreatorOptions(rows, plat, creator);
+    pick.classList.toggle('on', !!creator);
+    clear.hidden = !creator;
+    if(picker) picker.paint();
+  }
+  function render(){
+    var list = shown();
+    var head = list.length > 1
+      ? '<div class="apr-head"><span>Soonest to auto-approve first. Approving counts the clip toward your campaign and its billing.</span>' +
+        '<button type="button" id="aprAll" class="' + (confirmAll ? 'confirm' : '') + '">' +
+        (confirmAll ? 'Confirm: approve ' + list.length : 'Approve all ' + list.length) + '</button></div>'
+      : '';
+    box.innerHTML = list.length ? head + list.map(function(r){
+      var d = dueInfo(r);
+      return '<article class="rej-row apr-row" data-id="' + esc(r.id) + '">' +
+        '<img loading="lazy" src="' + esc(r.cover) + '" alt="">' +
+        '<div><div class="t">' + esc(r.title) + '</div>' +
+          '<div class="c">' + esc(r.creator) + ' · ' + esc(r.platform) + ' · submitted ' + esc(fmtDay(r.submittedAt || r.submitted)) + '</div>' +
+          '<div class="due' + (d.soon ? ' soon' : '') + '">' + d.html + '</div>' +
+        '</div>' +
+        '<div class="rj-side"><span class="rs pending">Awaiting you</span>' +
+          (r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">Watch it first &#8599;</a>' : '') +
+          '<div class="acts"><button type="button" class="apr-rej" data-id="' + esc(r.id) + '">Reject</button>' +
+          '<button type="button" class="apr-ok" data-id="' + esc(r.id) + '">Approve</button></div></div>' +
+      '</article>';
+    }).join('') : '<p class="rej-empty">' + (pending().length
+        ? 'Nothing here for this filter.'
+        : 'Nothing waiting. New clips from creators land here first. If you do not approve or reject one within ' + HOURS + ' hours, it is approved automatically.') + '</p>';
+    document.getElementById('revNote').textContent = list.length + ' waiting' +
+      (plat !== 'all' ? ' on ' + cxfName(plat) : '') + (creator ? ' · ' + creator : '');
+  }
+  document.getElementById('revPlat').addEventListener('click', function(e){
+    var ch = e.target.closest('.chip[data-plat]'); if(!ch) return;
+    plat = ch.dataset.plat;
+    if(creator && plat !== 'all' && !pending().some(function(r){ return r.creator === creator && r.platform === plat; })) creator = '';
+    confirmAll = false; paintCreators(); render();
+  });
+  sel.addEventListener('change', function(){
+    var v = cxfParse(sel.value);
+    creator = v.creator;
+    /* Picked under a platform bar: show that platform, unless it is the only one.
+       "all|@handle" (the panel's All bar) means every platform. */
+    if(v.plat === 'all') plat = 'all';
+    else if(v.plat && cxfPlatsIn(pending(), null).list.length > 1) plat = v.plat;
+    confirmAll = false; paintCreators(); render();
+  });
+  clear.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); creator = ''; paintCreators(); render(); });
+  var picker = cxfPicker({ pick: pick, rows: pending,
+    state: function(){ return { plat: plat, creator: creator }; },
+    commit: function(v){ plat = v.plat; creator = v.creator; confirmAll = false; paintCreators(); render(); } });
+
+  function isDemo(){ try{ return sessionStorage.getItem('clipency-demo') === '1'; }catch(e){ return false; } }
+  function sbClient(){ return window.clipencySupabase || window.supabaseClient || window.sbClient || null; }
+  var toastEl = document.getElementById('toast'), toastMsg = document.getElementById('toastMsg'), toastT;
+  function toast(msg, bad){
+    toastMsg.textContent = msg; toastEl.classList.toggle('bad', !!bad); toastEl.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('show'); }, 2800);
+  }
+
+  /* A decision is final for this page: out of the queue, out of the shared
+     store, out of the 90 s cache so a reload cannot bring it back, and the
+     Clips Feed is told so a rejection shows in its Rejected tab. */
+  function decided(row, approved, reason, settled){
+    var id = String(row.id);
+    [C.pending || [], C.__allPending || []].forEach(function(list){
+      for(var i = list.length - 1; i >= 0; i--) if(String(list[i].id) === id) list.splice(i, 1);
+    });
+    try{ sessionStorage.removeItem('clipency-live-v2'); }catch(e){}
+    cxSyncPendingBadge();
+    var out = approved ? null : { id: row.id, title: row.title, creator: row.creator, platform: row.platform,
+      url: row.url, cover: row.cover, submitted: row.submitted, views: 0, likes: 0, status: 'rejected', flag: null,
+      review: { source:'client', by_me:true, reason: reason, at: new Date().toISOString() } };
+    /* For a Clips Feed that has not opened yet in this tab. */
+    if(out && !settled){ (C.__clientRejected = C.__clientRejected || []).push(out); }
+    document.dispatchEvent(new CustomEvent('clipency:reviewed',
+      { detail: { id: row.id, approved: approved, settled: settled || null, row: out } }));
+  }
+  async function review(row, approve, reason){
+    if(isDemo()){ decided(row, approve, reason); return {}; }
+    var sb = sbClient();
+    if(!sb) throw new Error('Not connected. Reload the page and try again.');
+    var r = await sb.rpc('client_review_clip', { p_submission_id: row.id, p_approve: !!approve, p_reason: reason || null });
+    if(r.error){
+      var msg = r.error.message || '';
+      /* A teammate, Clipency or the timer decided first. */
+      var m = msg.match(/already (approved|rejected)/i);
+      if(m){ decided(row, m[1].toLowerCase() === 'approved', reason, m[1].toLowerCase()); return { settled: m[1].toLowerCase() }; }
+      throw new Error(msg || 'Could not update this clip.');
+    }
+    decided(row, approve, reason);
+    return { already: !!(r.data && r.data.already) };
+  }
+  function byId(id){ return pending().filter(function(x){ return String(x.id) === String(id); })[0]; }
+
+  box.addEventListener('click', async function(e){
+    var all = e.target.closest('#aprAll');
+    if(all){
+      if(!confirmAll){ confirmAll = true; render(); return; }
+      confirmAll = false;
+      var rows = shown();
+      all.disabled = true; all.textContent = 'Approving…';
+      var done = 0, failed = 0;
+      for(var i = 0; i < rows.length; i++){
+        try{ await review(rows[i], true, null); done++; }catch(err){ failed++; }
+      }
+      paintCreators(); render();
+      toast(failed ? done + ' approved, ' + failed + ' could not be updated. Try again.'
+                   : done + ' clip' + (done === 1 ? '' : 's') + ' approved. They show in the Clips Feed once views come in.', !!failed);
+      return;
+    }
+    var ok = e.target.closest('.apr-ok'), no = e.target.closest('.apr-rej');
+    if(!ok && !no) return;
+    var row = byId((ok || no).dataset.id);
+    if(!row){ toast('Could not find that clip. Try refreshing.', true); return; }
+    if(no){ openReject(row); return; }
+    ok.disabled = true; ok.textContent = 'Approving…';
+    try{
+      var res = await review(row, true, null);
+      paintCreators(); render();
+      toast(res.settled ? 'This clip was already ' + res.settled + '.'
+                        : 'Approved. It shows in the Clips Feed once its views come in.');
+    }catch(err){
+      ok.disabled = false; ok.textContent = 'Approve';
+      toast(err.message || 'Could not approve this clip.', true);
+    }
+  });
+
+  /* ---------- reject dialog ----------
+     No pick-a-reason shortcuts: the client has to write, in their own words, why
+     the clip is rejected, so the creator knows exactly what to fix (and can appeal). */
+  var MIN_REASON = 15;
+  var scrim = document.getElementById('revScrim');
+  var desc = document.getElementById('revDesc'), submit = document.getElementById('revSubmit');
+  var count = document.getElementById('revCount');
+  var current = null;
+  function reasonOk(){ return desc.value.trim().length >= MIN_REASON; }
+  function syncReason(){
+    var n = desc.value.trim().length;
+    submit.disabled = !reasonOk();
+    count.textContent = n >= MIN_REASON ? n + ' characters' : (MIN_REASON - n) + ' more character' + (MIN_REASON - n === 1 ? '' : 's') + ' needed';
+    count.style.color = n >= MIN_REASON ? 'var(--ink-40)' : 'var(--bad)';
+  }
+  desc.addEventListener('input', syncReason);
+  function openReject(row){
+    current = row;
+    desc.value = ''; submit.textContent = 'Reject clip';
+    syncReason(); count.style.color = 'var(--ink-40)'; count.textContent = 'At least ' + MIN_REASON + ' characters';
+    document.getElementById('revCover').src = row.cover || '';
+    document.getElementById('revName').textContent = row.title;
+    document.getElementById('revMeta').textContent = row.creator + ' · ' + row.platform;
+    scrim.classList.add('open'); scrim.setAttribute('aria-hidden', 'false');
+    setTimeout(function(){ desc.focus(); }, 60);
+  }
+  function closeReject(){ scrim.classList.remove('open'); scrim.setAttribute('aria-hidden', 'true'); current = null; }
+  document.getElementById('revCancel').addEventListener('click', closeReject);
+  scrim.addEventListener('click', function(e){ if(e.target === scrim) closeReject(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && scrim.classList.contains('open')) closeReject(); });
+  submit.addEventListener('click', async function(){
+    if(!current || !reasonOk()){ syncReason(); desc.focus(); return; }
+    var row = current, reason = desc.value.trim();
+    submit.disabled = true; submit.textContent = 'Rejecting…';
+    try{
+      var res = await review(row, false, reason);
+      closeReject(); paintCreators(); render();
+      toast(res.settled ? 'This clip was already ' + res.settled + '.'
+                        : 'Rejected. The creator sees your reason and can appeal it.');
+    }catch(err){
+      toast(err.message || 'Could not reject this clip.', true);
+    }finally{
+      submit.disabled = !reasonOk(); submit.textContent = 'Reject clip';
+    }
+  });
+
+  paintCreators(); render(); cxSyncPendingBadge();
+  /* Keep the countdowns honest while the page stays open. */
+  setInterval(function(){ if(CX.current === 'review' && !scrim.classList.contains('open')) render(); }, 60000);
+})();
+});
+
+CX.define('clips', function(document){
+(function(){
+  if(CLIPSHELL.emptyState()) return;
+  var C = CLIPENCY;
+  document.getElementById('footNote').textContent = 'CLIPENCY — ' + C.campaign.label;
+
+  /* ---------- top three ----------
+     Same ranking as C.top() (views + likes x10), taken from whatever the
+     creator filter is showing, so picking a creator shows their best clips. */
+  var medals = ['Ⅰ','Ⅱ','Ⅲ']; /* I II III */
+  function topOf(list, n){
+    return list.slice().sort(function(a,b){
+      return (b.views + b.likes*10) - (a.views + a.likes*10);
+    }).slice(0, n);
+  }
+  function renderTop(list){
+  document.getElementById('top3').innerHTML = topOf(list, 3).map(function(r,i){
+    return '<a class="top-card" href="'+r.url+'" target="_blank" rel="noopener" aria-label="Open top clip '+(i+1)+'">' +
+      '<span class="rank">'+medals[i]+'</span>' +
+      '<img loading="lazy" src="'+r.cover+'" alt="">' +
+      '<div class="info">' +
+        '<div class="t">'+r.title+'</div>' +
+        '<div class="c">'+r.creator+' · <span class="plat '+r.platform+'" style="display:inline">'+r.platform+'</span></div>' +
+        '<div class="metrics"><b>'+C.fmt(r.views)+' views</b><span>'+C.fmt(r.likes)+' likes · '+C.fmt(r.comments)+' comments</span></div>' +
+        '<span class="open">Open post &#8599;</span>' +
+      '</div></a>';
+  }).join('');
+  }
+
+  /* ============================================================
+     FLAG SYSTEM
+     Live accounts: "Send flag" calls client_flag_clip(), which pulls the
+     clip out of the approved feed and queues it for the Clipency team to
+     review. Demo mode (no account) keeps a local copy only. The local
+     `flags` map just remembers which cards to badge in this browser.
+     ============================================================ */
+  var FLAG_KEY = 'clipency-flags-' + C.campaign.code;
+  function loadFlags(){ try{ return JSON.parse(localStorage.getItem(FLAG_KEY) || '{}'); }catch(e){ return {}; } }
+  function saveFlags(f){ try{ localStorage.setItem(FLAG_KEY, JSON.stringify(f)); }catch(e){} }
+  var flags = loadFlags();
+
+  var REASONS = [
+    "Doesn't fit our brand",
+    "Misleading or inaccurate",
+    "Wrong product or link",
+    "Low quality / poor edit",
+    "Inappropriate content",
+    "Other"
+  ];
+
+  /* ---------- grid — live clips only, filter + sort ---------- */
+  var all = C.approved().slice();
+  /* A clip the client once flagged stays live and counts as approved. The
+     feed shows it like any other live clip: no badge, no outline. Only the
+     demo tour keeps a local flag map for its walkthrough. */
+  Object.keys(flags).forEach(function(id){ if(flags[id] && flags[id].fromServer) delete flags[id]; });
+  saveFlags(flags);
+  /* Only true rejections live in the Rejected tab: clips the client rejected
+     in Review, and flags Clipency upheld. */
+  var flagged = (C.submissions || []).filter(function(r){
+    return (r.flag && r.flag.id && r.flag.resolution === 'upheld') || isClientRejected(r);
+  });
+  /* Rejected in Review during this visit, before this section first opened. */
+  (C.__clientRejected || []).forEach(function(r){
+    if(!flagged.some(function(x){ return String(x.id) === String(r.id); })) flagged.unshift(r);
+  });
+  function isClientRejected(r){
+    return !(r.flag && r.flag.id) && r.status === 'rejected' && r.review && r.review.source === 'client';
+  }
+  var tab = 'live';
+  var byId = {}; all.forEach(function(r){ byId[r.id] = r; });
+  var grid = document.getElementById('clipGrid');
+  var plat = 'all', sortKey = 'views';
+  /* ---------- creator filter ----------
+     One creator's clips only. Kept in the address (?creator=@handle) so a
+     filtered feed can be reloaded or shared, and so the Creators tab can
+     link straight to it. */
+  var creator = '';
+  try{ creator = new URLSearchParams(location.search).get('creator') || ''; }catch(e){}
+  var creatorSel = document.getElementById('creatorSel');
+  var creatorPick = document.getElementById('creatorPick');
+  var creatorClear = document.getElementById('creatorClear');
+  function esc(t){ return String(t == null ? '' : t).replace(/[&<>"']/g, function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
+  function scopeRows(){ return tab === 'live' ? all : flagged; }
+  function writeCreatorUrl(){
+    try{
+      var u = new URL(location.href);
+      if(creator) u.searchParams.set('creator', creator); else u.searchParams.delete('creator');
+      history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+    }catch(e){}
+  }
+  function paintCreators(){
+    var rows = scopeRows();
+    /* Never sit on a platform this tab has no clips for. A creator picked
+       for a platform they have nothing on is dropped, not shown as 0. */
+    if(plat !== 'all' && !rows.some(function(r){ return r.platform === plat; })) plat = 'all';
+    if(creator && !rows.some(function(r){ return r.creator === creator && (plat === 'all' || r.platform === plat); })){
+      creator = ''; writeCreatorUrl();
+    }
+    document.getElementById('platChips').innerHTML = cxfPlatChips(rows, plat);
+    creatorSel.innerHTML = cxfCreatorOptions(rows, plat, creator);
+    creatorPick.classList.toggle('on', !!creator);
+    creatorClear.hidden = !creator;
+    if(picker) picker.paint();
+  }
+  function setCreator(h){
+    creator = h || '';
+    writeCreatorUrl();
+    paintCreators(); render();
+  }
+  creatorSel.addEventListener('change', function(){
+    var v = cxfParse(creatorSel.value);
+    /* Picked under a platform bar: show that platform, unless it is the only one.
+       "all|@handle" (the panel's All bar) means every platform. */
+    if(v.plat === 'all') plat = 'all';
+    else if(v.plat && cxfPlatsIn(scopeRows(), null).list.length > 1) plat = v.plat;
+    setCreator(v.creator);
+  });
+  creatorClear.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); setCreator(''); });
+  var picker = cxfPicker({ pick: creatorPick, rows: scopeRows,
+    state: function(){ return { plat: plat, creator: creator }; },
+    commit: function(v){ plat = v.plat; setCreator(v.creator); } });
+  var sorters = {
+    views:  function(a,b){ return b.views - a.views; },
+    likes:  function(a,b){ return b.likes - a.likes; },
+    newest: function(a,b){ return b.submitted.localeCompare(a.submitted); }
+  };
+  function fmtDay(iso){
+    if(!iso) return '';
+    var d = new Date(iso); if(isNaN(d)) return '';
+    return d.toLocaleDateString('en-GB', {day:'numeric', month:'short'});
+  }
+  var STATUS = {
+    open:      {cls:'open',      label:'Flagged'},
+    upheld:    {cls:'upheld',    label:'Rejected'},
+    dismissed: {cls:'dismissed', label:'Flagged'}
+  };
+  function renderRejected(){
+    var list = flagged.filter(function(r){
+      return (!creator || r.creator === creator) && (plat === 'all' || r.platform === plat);
+    }).sort(function(a,b){ return String(whenOf(b)).localeCompare(String(whenOf(a))); });
+    var box = document.getElementById('rejList');
+    box.innerHTML = list.length ? list.map(function(r){
+      if(isClientRejected(r)){
+        var v = r.review || {};
+        return '<article class="rej-row" data-id="' + esc(r.id) + '" tabindex="0" role="button" aria-label="Why ' + esc(r.title) + ' was rejected">' +
+          '<img loading="lazy" src="' + esc(r.cover) + '" alt="">' +
+          '<div><div class="t">' + esc(r.title) + '</div>' +
+            '<div class="c">' + esc(r.creator) + ' · ' + esc(r.platform) + ' · submitted ' + esc(fmtDay(r.submitted)) + '</div>' +
+            '<div class="why"><b>' + esc(v.reason || 'Rejected') + '</b><br>Rejected by ' + (v.by_me ? 'you' : 'your team') +
+              (v.at ? ' on ' + fmtDay(v.at) : '') + ' before it went live. Not billed, and the creator has been told why.</div>' +
+          '</div>' +
+          '<div class="rj-side"><span class="rs client">Rejected</span>' +
+            (r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">Open post &#8599;</a>' : '') + '</div>' +
+        '</article>';
+      }
+      var f = r.flag || {}, st = STATUS[f.resolution] || STATUS.open;
+      var who = f.by_me ? 'you' : esc(f.by || 'another client');
+      var outcome = f.resolution === 'upheld'
+          ? 'Clipency agreed. The clip is off your campaign and not billed.'
+          : f.resolution === 'dismissed'
+            ? 'Clipency reviewed it and kept it live in your feed.'
+            : 'It stays live in your feed while Clipency reviews it.';
+      return '<article class="rej-row" data-id="' + esc(r.id) + '" tabindex="0" role="button" aria-label="Details for ' + esc(r.title) + '">' +
+        '<img loading="lazy" src="' + esc(r.cover) + '" alt="">' +
+        '<div><div class="t">' + esc(r.title) + '</div>' +
+          '<div class="c">' + esc(r.creator) + ' · ' + esc(r.platform) + ' · ' + C.fmt(r.views) + ' views</div>' +
+          '<div class="why"><b>' + esc(f.reason || 'Flagged') + '</b><br>Flagged by ' + who +
+            (f.at ? ' on ' + fmtDay(f.at) : '') + '. ' + outcome +
+            (f.resolved_at ? ' Decided ' + fmtDay(f.resolved_at) + '.' : '') + '</div>' +
+          (f.note ? '<div class="note">Clipency: ' + esc(f.note) + '</div>' : '') +
+        '</div>' +
+        '<div class="rj-side"><span class="rs ' + st.cls + '">' + st.label + '</span>' +
+          (r.url ? '<a href="' + esc(r.url) + '" target="_blank" rel="noopener">Open post &#8599;</a>' : '') + '</div>' +
+      '</article>';
+    }).join('') : '<p class="rej-empty">' + (flagged.length
+        ? 'Nothing here for this filter.'
+        : 'Nothing rejected yet. Clips you reject in Review show here.') + '</p>';
+    document.getElementById('countNote').textContent =
+      (list.length ? list.length + ' rejected' : '0 clips') +
+      (plat !== 'all' ? ' on ' + cxfName(plat) : '') + (creator ? ' · ' + creator : '');
+  }
+  function whenOf(r){ return (r.flag && r.flag.at) || (r.review && r.review.at) || r.submitted || ''; }
+
+  /* ---------- waiting in Review ----------
+     The queue itself lives in the Review section (CX view 'review'). The
+     feed only points at it, and picks up what the client rejected there. */
+  function paintBanner(){
+    var n = (C.pending || []).length;
+    document.getElementById('aprBanner').hidden = !n;
+    document.getElementById('aprBN').textContent = n + (n === 1 ? ' new clip is' : ' new clips are');
+    document.querySelectorAll('.apr-hours').forEach(function(el){ el.textContent = cxReviewHours(); });
+  }
+  document.getElementById('aprGo').addEventListener('click', function(){ CX.go('review'); });
+  function setTab(t){
+    tab = t;
+    try{
+      var u = new URL(location.href);
+      if(tab === 'live') u.searchParams.delete('tab'); else u.searchParams.set('tab', tab);
+      history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+    }catch(e){}
+    paintCreators(); render();
+  }
+  document.addEventListener('clipency:reviewed', function(e){
+    var d = e.detail || {};
+    if(d.row && d.approved === false && !d.settled &&
+       !flagged.some(function(x){ return String(x.id) === String(d.row.id); })){
+      flagged.unshift(d.row);
+    }
+    paintCreators(); render();
+  });
+
+  /* ---------- rejected clip card ----------
+     Click (or Enter on) a row in the Rejected tab: the whole story in one
+     card. Why it came down, who decided and when, the numbers it had, and
+     the link to the post. */
+  var rdScrim = document.getElementById('rdScrim');
+  function kpi(v, l){ return '<div class="rd-kpi"><div class="v">' + v + '</div><div class="l">' + l + '</div></div>'; }
+  function openRejDetail(id){
+    var r = flagged.filter(function(x){ return String(x.id) === String(id); })[0];
+    if(!r){ toast('Could not open that clip. Try refreshing.', true); return; }
+    var clientRej = isClientRejected(r), f = r.flag || {}, v = r.review || {};
+    var st = clientRej ? { cls:'upheld', label:'Rejected by ' + (v.by_me ? 'you' : 'your team') }
+                       : (STATUS[f.resolution] || STATUS.open);
+    var eb = document.getElementById('rdEyebrow');
+    eb.textContent = st.label;
+    eb.className = 'm-eyebrow' + (st.cls === 'dismissed' ? ' ok' : st.cls === 'open' ? ' wait' : '');
+    document.getElementById('rdTitle').textContent =
+      clientRej ? 'Rejected before it went live.'
+      : f.resolution === 'upheld' ? 'Taken off your campaign.'
+      : f.resolution === 'dismissed' ? 'Flagged, kept live in your feed.'
+      : 'Flagged while Clipency reviews it.';
+    document.getElementById('rdCover').src = r.cover || '';
+    document.getElementById('rdName').textContent = r.title;
+    document.getElementById('rdMeta').textContent = r.creator + ' · ' + r.platform;
+    var decided = clientRej ? v.at : f.resolved_at;
+    document.getElementById('rdKpis').innerHTML =
+      kpi(C.fmt(r.views || 0), 'Views') + kpi(C.fmt(r.likes || 0), 'Likes') +
+      kpi(esc(fmtDay(r.submitted) || '·'), 'Submitted') + kpi(esc(fmtDay(decided) || 'Pending'), 'Decided');
+    document.getElementById('rdReasonK').textContent = clientRej ? 'Your reason' : 'Reason flagged';
+    document.getElementById('rdReason').textContent = (clientRej ? v.reason : f.reason) || 'No reason recorded';
+    document.getElementById('rdWho').textContent = clientRej
+      ? 'Rejected by ' + (v.by_me ? 'you' : 'your team') + (v.at ? ' on ' + fmtDay(v.at) : '') +
+        '. It never went live on your campaign, it is not billed, and the creator has been told why.'
+      : 'Flagged by ' + (f.by_me ? 'you' : (f.by || 'another client')) + (f.at ? ' on ' + fmtDay(f.at) : '') + '. ' +
+        (f.resolution === 'upheld' ? 'Clipency agreed, so the clip is off your campaign and not billed.'
+         : f.resolution === 'dismissed' ? 'Clipency reviewed it and kept it live in your feed.'
+         : 'It stays live in your feed while Clipency reviews it.');
+    var note = document.getElementById('rdNote');
+    note.hidden = !f.note; note.textContent = f.note ? 'Clipency: ' + f.note : '';
+    var link = document.getElementById('rdLinkRow'), open = document.getElementById('rdOpen');
+    link.hidden = open.hidden = !r.url;
+    link.href = open.href = r.url || '#';
+    document.getElementById('rdUrl').textContent = r.url || '';
+    rdScrim.classList.add('open'); rdScrim.setAttribute('aria-hidden', 'false');
+    document.getElementById('rdClose').focus();
+  }
+  function closeRejDetail(){ rdScrim.classList.remove('open'); rdScrim.setAttribute('aria-hidden', 'true'); }
+  document.getElementById('rdClose').addEventListener('click', closeRejDetail);
+  rdScrim.addEventListener('click', function(e){ if(e.target === rdScrim) closeRejDetail(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && rdScrim.classList.contains('open')) closeRejDetail(); });
+  var rejBox = document.getElementById('rejList');
+  rejBox.addEventListener('click', function(e){
+    if(e.target.closest('a')) return;              // "Open post" goes straight to the post
+    var row = e.target.closest('.rej-row'); if(row) openRejDetail(row.dataset.id);
+  });
+  rejBox.addEventListener('keydown', function(e){
+    var row = e.target.closest('.rej-row');
+    if(row && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); openRejDetail(row.dataset.id); }
+  });
+
+  function paintTabs(){
+    document.getElementById('ftLive').textContent = all.length;
+    document.getElementById('ftRej').textContent = flagged.length;
+    paintBanner();
+    var live = tab === 'live';
+    document.querySelectorAll('#feedTabs .ft').forEach(function(b){
+      var on = b.dataset.tab === tab;
+      b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    document.getElementById('topSection').hidden = !live;
+    document.getElementById('sortGroup').hidden = !live;
+    document.getElementById('sortSep').hidden = !live;
+    grid.hidden = !live;
+    document.getElementById('rejList').hidden = tab !== 'rejected';
+  }
+  document.querySelectorAll('#feedTabs .ft').forEach(function(b){
+    b.addEventListener('click', function(){
+      if(tab === b.dataset.tab) return;
+      setTab(b.dataset.tab);
+    });
+  });
+  try{
+    var qt = new URLSearchParams(location.search).get('tab');
+    if(qt === 'rejected') tab = qt;
+  }catch(e){}
+
+  function render(){
+    paintTabs();
+    if(tab === 'rejected'){ renderRejected(); return; }
+    var mine = all.filter(function(r){ return (!creator || r.creator === creator) && (plat === 'all' || r.platform === plat); });
+    renderTop(mine);
+    document.getElementById('topTitle').textContent =
+      (creator ? 'Top clips from ' + creator : 'Top performers') + (plat !== 'all' ? ' on ' + cxfName(plat) : '');
+    var list = mine.slice().sort(sorters[sortKey]);
+    grid.innerHTML = list.length ? list.map(function(r){
+      var isFlagged = !!flags[r.id];
+      return '<div class="clip-card'+(isFlagged?' flagged':'')+'" role="link" tabindex="0" data-id="'+r.id+'" data-url="'+r.url+'" aria-label="'+r.title.replace(/"/g,'&quot;')+'">' +
+        '<img loading="lazy" src="'+r.cover+'" alt="'+r.title.replace(/"/g,'&quot;')+'">' +
+        '<span class="shade"></span>' +
+        '<span class="flag-badge"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M4 21V4h11l-1.5 3.5L15 11H4"/></svg>Flagged</span>' +
+        '<span class="go"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg></span>' +
+        '<button class="clip-menu-btn" data-id="'+r.id+'" aria-label="Clip options" aria-haspopup="true">&#8942;</button>' +
+        '<div class="clip-menu" data-id="'+r.id+'">' +
+          '<button class="mi-open"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><path d="M7 17L17 7M17 7H8M17 7v9"/></svg>Open post</button>' +
+          /* Clients approve or reject in Review; there is no flagging from the
+             feed. A clip that was flagged in the past keeps its badge only. */
+        '</div>' +
+        '<span class="ov"><span class="t">'+r.title+'</span>' +
+          '<span class="m"><span>'+C.fmt(r.views)+' views</span><span>'+C.fmt(r.likes)+' likes</span></span></span>' +
+      '</div>';
+    }).join('') : '<p class="count-note" style="grid-column:1/-1;padding:18px 0;">No ' +
+        (plat === 'all' ? '' : plat.charAt(0).toUpperCase() + plat.slice(1) + ' ') + 'clips from ' + esc(creator || 'this filter') + '.</p>';
+    var flaggedCount = list.filter(function(r){ return flags[r.id]; }).length;
+    document.getElementById('countNote').textContent =
+      list.length + ' of ' + all.length + ' clips' + (plat !== 'all' ? ' on ' + cxfName(plat) : '') + (creator ? ' · ' + creator : '') +
+      (flaggedCount ? ' · ' + flaggedCount + ' flagged' : '');
+  }
+  document.getElementById('platChips').addEventListener('click', function(e){
+    var ch = e.target.closest('.chip[data-plat]'); if(!ch) return;
+    plat = ch.dataset.plat;
+    paintCreators(); render();
+  });
+  document.querySelectorAll('#sortChips .chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      document.querySelectorAll('#sortChips .chip').forEach(function(x){ x.classList.remove('on'); });
+      ch.classList.add('on'); sortKey = ch.dataset.sort; render();
+    });
+  });
+  paintCreators();
+  render();
+  cxSyncPendingBadge();
+
+  /* ---------- interactions (delegated) ---------- */
+  function closeMenus(){
+    document.querySelectorAll('.clip-menu.open').forEach(function(m){ m.classList.remove('open'); });
+    document.querySelectorAll('.clip-menu-btn.open').forEach(function(b){ b.classList.remove('open'); });
+  }
+  grid.addEventListener('click', function(e){
+    var menuBtn = e.target.closest('.clip-menu-btn');
+    var menu = e.target.closest('.clip-menu');
+    var card = e.target.closest('.clip-card');
+
+    if(menuBtn){
+      e.stopPropagation();
+      var m = card.querySelector('.clip-menu');
+      var wasOpen = m.classList.contains('open');
+      closeMenus();
+      if(!wasOpen){ m.classList.add('open'); menuBtn.classList.add('open'); }
+      return;
+    }
+    if(menu){
+      e.stopPropagation();
+      /* Was +menu.dataset.id. A live clip id is a uuid, and the unary plus
+         turned it into NaN, so byId[id] came back undefined: "Flag this clip"
+         threw inside openFlag before it could show the dialog, and "Open post"
+         in the same menu threw on byId[id].url. The mock rows in data.js use
+         integer ids, which is why both worked in the demo and were dead on
+         real data. Ids stay strings; byId is keyed by string anyway. */
+      var id = String(menu.dataset.id || '');
+      if(e.target.closest('.mi-open')){ window.open(byId[id].url, '_blank'); closeMenus(); }
+      else if(e.target.closest('.mi-flag')){ closeMenus(); openFlag(id); }
+      else if(e.target.closest('.mi-unflag')){ removeFlag(id); closeMenus(); }
+      return;
+    }
+    /* plain card click → open the post */
+    if(card){ window.open(card.dataset.url, '_blank'); }
+  });
+  grid.addEventListener('keydown', function(e){
+    var card = e.target.closest('.clip-card');
+    if(card && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); window.open(card.dataset.url, '_blank'); }
+  });
+  document.addEventListener('click', function(e){ if(!e.target.closest('.clip-menu, .clip-menu-btn')) closeMenus(); });
+
+  /* ---------- flag modal ---------- */
+  var scrim = document.getElementById('flagScrim');
+  var reasonGrid = document.getElementById('reasonGrid');
+  var descEl = document.getElementById('flagDesc');
+  var submitBtn = document.getElementById('flagSubmit');
+  var current = null, chosenReason = null;
+
+  reasonGrid.innerHTML = REASONS.map(function(r,i){ return '<button type="button" data-r="'+i+'">'+r+'</button>'; }).join('');
+  reasonGrid.addEventListener('click', function(e){
+    var b = e.target.closest('button'); if(!b) return;
+    reasonGrid.querySelectorAll('button').forEach(function(x){ x.classList.remove('sel'); });
+    b.classList.add('sel'); chosenReason = REASONS[+b.dataset.r];
+    submitBtn.disabled = false;
+  });
+
+  function openFlag(id){
+    current = byId[id];
+    /* Never leave a half-open dialog behind: if the row cannot be found, say
+       so instead of throwing on the way to showing it. */
+    if(!current){ toast('Could not open that clip. Try refreshing.', true); return; }
+    if(current.status === 'approved'){ toast('This clip is approved, so it can no longer be flagged.', true); return; }
+    chosenReason = null;
+    reasonGrid.querySelectorAll('button').forEach(function(x){ x.classList.remove('sel'); });
+    descEl.value = ''; submitBtn.disabled = true;
+    document.getElementById('flagCover').src = current.cover;
+    document.getElementById('flagName').textContent = current.title;
+    document.getElementById('flagMeta').textContent = current.creator + ' · ' + current.platform;
+    scrim.classList.add('open'); scrim.setAttribute('aria-hidden','false');
+  }
+  function closeFlag(){ scrim.classList.remove('open'); scrim.setAttribute('aria-hidden','true'); current = null; }
+
+  document.getElementById('flagCancel').addEventListener('click', closeFlag);
+  scrim.addEventListener('click', function(e){ if(e.target === scrim) closeFlag(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape' && scrim.classList.contains('open')) closeFlag(); });
+
+  submitBtn.addEventListener('click', async function(){
+    if(!current || !chosenReason) return;
+    var reason = chosenReason + (descEl.value.trim() ? ' — ' + descEl.value.trim() : '');
+
+    /* Demo mode has no account and must not touch the database. Keep the old
+       local behaviour there so the tour still demonstrates the feature. */
+    if(isDemo()){
+      flags[current.id] = { clipId: current.id, reason: reason, flaggedAt: new Date().toISOString() };
+      saveFlags(flags); closeFlag(); render();
+      toast('Flag sent to your Clipency manager.');
+      return;
+    }
+    
+
+    submitBtn.disabled = true; submitBtn.textContent = 'Sending…';
+    try{
+      var sb = supabaseClient();
+      if(!sb) throw new Error('Not connected. Reload the page and try again.');
+      var r = await sb.rpc('client_flag_clip', { p_submission_id: current.id, p_reason: reason });
+      /* Already flagged means the job is done (an earlier click, or a
+         cached page that still showed the clip). Treat it as success. */
+      var already = (r.data && r.data.already) || (r.error && /already flagged/i.test(r.error.message || ''));
+      if(r.error && !already) throw new Error(r.error.message);
+      /* The portal replays a cached payload on reload for 90 s; drop it so a
+         reload shows the flag straight away. */
+      try{ sessionStorage.removeItem('clipency-live-v2'); }catch(e){}
+
+      /* A flagged clip stays live: it keeps its place in the feed, carries a
+         Flagged badge and still counts as approved. Mark it in the shared
+         store too, so every view in this tab agrees. */
+      [C.submissions, C.__allSubmissions || []].forEach(function(list){
+        list.forEach(function(x){ if(String(x.id) === String(current.id)) x.status = 'flagged'; });
+      });
+      current.status = 'flagged';
+      current.flag = { id: (r.data && r.data.flag_id) || 'local', reason: already ? 'Flagged' : reason,
+                       by_me: true, resolution: 'open', at: new Date().toISOString() };
+      flags[current.id] = { clipId: current.id, reason: reason, flaggedAt: current.flag.at,
+                            byMe: true, resolution: 'open', fromServer: true };
+      saveFlags(flags);
+      paintCreators();
+      closeFlag(); render();
+      toast(already ? 'Already flagged. It stays live in your feed while Clipency reviews it.'
+                    : 'Flagged. It stays live in your feed while Clipency reviews it.');
+    }catch(e){
+      toast(e.message || 'Could not flag this clip.', true);
+    }finally{
+      submitBtn.disabled = false; submitBtn.textContent = 'Send flag';
+    }
+  });
+
+  function isDemo(){
+    try{ return sessionStorage.getItem('clipency-demo') === '1'; }catch(e){ return false; }
+  }
+  /* live.js has already built an authenticated client; reuse it rather than
+     making a second one, so the session and the read-only guard are shared. */
+  function supabaseClient(){
+    return window.clipencySupabase || window.supabaseClient || window.sbClient || null;
+  }
+
+  /* Unflagging is deliberately gone once a flag is live: the decision now sits
+     with Clipency, and letting a client silently withdraw a flag would leave
+     the clip down with nothing recording why. Only the local demo copy clears. */
+  function removeFlag(id){
+    if(!isDemo()){ toast('Your Clipency manager is reviewing this flag.'); return; }
+    delete flags[id]; saveFlags(flags);
+    render(); toast('Flag removed.');
+  }
+
+  /* ---------- toast ---------- */
+  var toastEl = document.getElementById('toast'), toastMsg = document.getElementById('toastMsg'), toastT;
+  function toast(msg, bad){
+    toastMsg.textContent = msg; toastEl.classList.toggle('bad', !!bad); toastEl.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function(){ toastEl.classList.remove('show'); }, 2800);
+  }
+})();
+});
+
+CX.define('analytics', function(document){
+(function(){
+  if(CLIPSHELL.emptyState()) return;
+  var C = CLIPENCY, T = C.totals();
+  document.getElementById('footNote').textContent = 'CLIPENCY — ' + C.campaign.label;
+
+  var ap = C.approved();
+  var eng = C.engagement();
+  var best = C.bestDay();
+  var totalEng = ap.reduce(function(a,r){ return a + r.likes + r.comments; }, 0);
+  var totalLikes = ap.reduce(function(a,r){ return a + r.likes; }, 0);
+  var totalComments = ap.reduce(function(a,r){ return a + r.comments; }, 0);
+  CLIPSHELL.count(document.getElementById('stEng'), eng, function(v){ return v.toFixed(1)+'%'; });
+  CLIPSHELL.count(document.getElementById('stAvg'), (T.approvedCount ? T.approvedViews/T.approvedCount : 0), function(v){ return C.fmtFull(Math.round(v)); });
+  document.getElementById('stAvgFoot').textContent = 'across ' + T.approvedCount + ' live clips';
+  document.getElementById('stBest').textContent = best.date.slice(5).replace('-','/');
+  document.getElementById('stBestFoot').textContent = C.fmtFull(best.views) + ' views in one day';
+  CLIPSHELL.count(document.getElementById('stLikes'), totalEng, function(v){ return C.fmtFull(Math.round(v)); });
+  document.getElementById('stLikesFoot').textContent = C.fmtFull(totalLikes) + ' likes · ' + C.fmtFull(totalComments) + ' comments';
+
+  /* ---------- views per day bars ---------- */
+  var days = C.daily();
+  var wrap = document.getElementById('barWrap'), tip = document.getElementById('barTip');
+  function drawBars(){
+    var W = wrap.clientWidth || 600, H = Math.max(wrap.clientHeight, 230);
+    var P = {l:44, r:10, t:12, b:26};
+    var max = Math.max.apply(null, [0].concat(days.map(function(d){ return d.views; }))) * 1.12 || 1;
+    var bw = (W-P.l-P.r)/days.length;
+    var gold = CLIPSHELL.css('--gold'), hair = CLIPSHELL.css('--hair'), axis = CLIPSHELL.css('--ink-40');
+    var g = [0,.5,1].map(function(f){
+      var y = H-P.b - f*(H-P.t-P.b);
+      return '<line x1="'+P.l+'" y1="'+y+'" x2="'+(W-P.r)+'" y2="'+y+'" stroke="'+hair+'"/>' +
+             '<text x="'+(P.l-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10" fill="'+axis+'" font-family="Inter">'+C.fmt(Math.round(max*f))+'</text>';
+    }).join('');
+    var bars = days.map(function(d,i){
+      var h = d.views/max*(H-P.t-P.b);
+      return '<rect data-i="'+i+'" x="'+(P.l+i*bw+bw*.18)+'" y="'+(H-P.b-h)+'" width="'+(bw*.64)+'" height="'+Math.max(h,1)+'" rx="2.5" fill="'+gold+'" opacity="'+(d.views? .85 : .18)+'"/>';
+    }).join('');
+    /* Tick positions used to be the literals [0, 10, 20, days.length-1]. A
+       campaign younger than 21 days has no days[10] or days[20], so this threw
+       a TypeError - and because the whole page is one IIFE, the throw took out
+       everything after it: the chart never got appended, and the platform bars
+       and the clips table below never rendered either. The KPI row above it
+       kept working, which is exactly what it looked like on screen.
+       Now the ticks are derived from the length, deduped, and never index
+       past the end. */
+    var ticks = (function(){
+      if(!days.length) return '';
+      var want = Math.min(4, days.length), idx = [], seen = {};
+      for(var k = 0; k < want; k++){
+        var i = want === 1 ? 0 : Math.round(k * (days.length - 1) / (want - 1));
+        if(i >= 0 && i < days.length && !seen[i]){ seen[i] = 1; idx.push(i); }
+      }
+      return idx.map(function(i){
+        return '<text x="'+(P.l+i*bw+bw/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="'+axis+'" font-family="Inter">'+days[i].date.slice(5).replace('-','/')+'</text>';
+      }).join('');
+    })();
+    wrap.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+    var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    svg.innerHTML = g + bars + ticks;
+    wrap.appendChild(svg);
+    svg.addEventListener('mousemove', function(e){
+      var t = e.target;
+      if(t.tagName === 'rect'){
+        var d = days[+t.dataset.i];
+        tip.style.left = (parseFloat(t.getAttribute('x')) + parseFloat(t.getAttribute('width'))/2) + 'px';
+        tip.style.top = t.getAttribute('y') + 'px';
+        tip.style.opacity = '1';
+        tip.innerHTML = d.date.slice(5).replace('-','/') + ' &middot; <b>' + C.fmtFull(d.views) + '</b> views';
+      } else tip.style.opacity = '0';
+    });
+    svg.addEventListener('mouseleave', function(){ tip.style.opacity='0'; });
+  }
+  drawBars();
+  addEventListener('resize', drawBars);
+  document.getElementById('themeToggle').addEventListener('click', function(){ setTimeout(drawBars, 650); });
+
+  /* ---------- platform bars ---------- */
+  var plats = C.byPlatform(), maxV = plats[0] ? plats[0].views : 1;
+  var colors = {tiktok:'#7A6CD8', instagram:'#C86A8A', youtube:'#C4553C'};
+  document.getElementById('platBars').innerHTML = plats.map(function(p){
+    return '<div class="pbar"><div class="row1"><b>'+p.platform+'</b><span>'+C.fmtFull(p.views)+' views · '+p.clips+' clips</span></div>' +
+      '<div class="track"><div class="fill" data-w="'+(p.views/maxV*100)+'" style="background:'+colors[p.platform]+'"></div></div></div>';
+  }).join('');
+  setTimeout(function(){
+    document.querySelectorAll('.pbar .fill').forEach(function(f){ f.style.width = f.dataset.w + '%'; });
+  }, 150);
+
+  /* ---------- sortable, filterable table (live clips) ---------- */
+  var rows = ap.map(function(r){
+    var o = Object.assign({}, r);
+    o.eng = r.views ? (r.likes + r.comments) / r.views * 100 : 0;
+    return o;
+  });
+  var sortK = 'views', sortDir = -1, platF = 'all';
+  function render(){
+    var list = rows.filter(function(r){ return platF==='all' || r.platform===platF; });
+    list.sort(function(a,b){
+      var va=a[sortK], vb=b[sortK];
+      return (typeof va === 'string' ? va.localeCompare(vb) : va - vb) * sortDir;
+    });
+    document.querySelector('#subTbl tbody').innerHTML = list.map(function(r){
+      return '<tr>' +
+        '<td><div class="clip-cell"><img class="mini-cover" loading="lazy" src="'+r.cover+'" alt="">' +
+          '<div><div class="t">'+r.title+'</div><div class="c">'+r.creator+'</div></div></div></td>' +
+        '<td><span class="plat '+r.platform+'"><i></i>'+r.platform+'</span></td>' +
+        '<td>'+r.submitted.slice(5).replace('-','/')+'</td>' +
+        '<td class="num">'+C.fmtFull(r.views)+'</td>' +
+        '<td class="num">'+C.fmtFull(r.likes)+'</td>' +
+        '<td class="num">'+C.fmtFull(r.comments)+'</td>' +
+        '<td class="num">'+r.eng.toFixed(1)+'%</td>' +
+        '<td><a href="'+r.url+'" target="_blank" rel="noopener">Open &#8599;</a></td>' +
+      '</tr>';
+    }).join('');
+    document.getElementById('tblCount').textContent = list.length + ' live clips';
+    document.querySelectorAll('#subTbl th.sortable').forEach(function(th){
+      th.querySelector('.dir').textContent = th.dataset.k === sortK ? (sortDir<0 ? ' ↓' : ' ↑') : '';
+    });
+  }
+  document.querySelectorAll('#subTbl th.sortable').forEach(function(th){
+    th.addEventListener('click', function(){
+      if(sortK === th.dataset.k) sortDir *= -1;
+      else { sortK = th.dataset.k; sortDir = -1; }
+      render();
+    });
+  });
+  document.querySelectorAll('#platChips .chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      document.querySelectorAll('#platChips .chip').forEach(function(x){ x.classList.remove('on'); });
+      ch.classList.add('on'); platF = ch.dataset.plat; render();
+    });
+  });
+  render();
+})();
+});
+
+CX.define('billing', function(document){
+(function(){
+  if(CLIPSHELL.emptyState()) return;
+  var C = CLIPENCY, T = C.totals();
+  document.getElementById('footNote').textContent = 'CLIPENCY — ' + C.campaign.label;
+
+  var avg = T.approvedCount ? T.spend / T.approvedCount : 0;
+  CLIPSHELL.count(document.getElementById('stSpend'), T.spend, function(v){ return C.money(v); });
+  /* The rate tile's footer is part of the number. A flat per-video fee
+     under "per 1,000 views" would read as a rate 1,000× off. */
+  (function(){
+    var pv = C.campaign.payoutModel === 'per_video';
+    var el = document.getElementById('stCpm');
+    el.textContent = C.money(pv ? C.campaign.ratePerVideo : C.campaign.cpm);
+    var foot = el.parentNode.querySelector('.foot');
+    if(foot) foot.textContent = pv ? 'per approved video' : 'per 1,000 views';
+  })();
+  CLIPSHELL.count(document.getElementById('stViews'), T.approvedViews, function(v){ return C.fmtFull(Math.round(v)); });
+  CLIPSHELL.count(document.getElementById('stAvg'), avg, function(v){ return C.money(v); });
+  document.getElementById('stAvgFoot').textContent = 'across ' + T.approvedCount + ' live clips';
+
+  /* ---------- weekly spend bars ---------- */
+  var days = C.daily();
+  var weeks = [];
+  for(var i = 0; i < days.length; i += 7){
+    var chunk = days.slice(i, i+7);
+    weeks.push({
+      label: chunk[0].date.slice(5).replace('-','/') + '–' + chunk[chunk.length-1].date.slice(5).replace('-','/'),
+      views: chunk.reduce(function(a,d){ return a+d.views; },0),
+      /* Real money, summed from each clip's own priced amount. Correct
+         under both payout models — nothing here derives money from views. */
+      spend: Math.round(chunk.reduce(function(a,d){ return a+(d.spend||0); },0) * 100) / 100
+    });
+  }
+
+  var wrap = document.getElementById('wkWrap'), tip = document.getElementById('wkTip');
+  function draw(){
+    var W = wrap.clientWidth || 600, H = Math.max(wrap.clientHeight, 230);
+    var P = {l:48, r:10, t:14, b:30};
+    var max = Math.max.apply(null, [0].concat(weeks.map(function(w){ return w.spend; }))) * 1.15 || 1;
+    var bw = (W-P.l-P.r)/weeks.length;
+    var gold = CLIPSHELL.css('--gold'), hair = CLIPSHELL.css('--hair'), axis = CLIPSHELL.css('--ink-40');
+    var g = [0,.5,1].map(function(f){
+      var y = H-P.b - f*(H-P.t-P.b);
+      return '<line x1="'+P.l+'" y1="'+y+'" x2="'+(W-P.r)+'" y2="'+y+'" stroke="'+hair+'"/>' +
+             '<text x="'+(P.l-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10" fill="'+axis+'" font-family="Inter">$'+(max*f).toFixed(0)+'</text>';
+    }).join('');
+    var bars = weeks.map(function(w,i){
+      var h = w.spend/max*(H-P.t-P.b);
+      return '<rect data-i="'+i+'" x="'+(P.l+i*bw+bw*.2)+'" y="'+(H-P.b-h)+'" width="'+(bw*.6)+'" height="'+Math.max(h,1)+'" rx="4" fill="'+gold+'" opacity=".85"/>' +
+        '<text x="'+(P.l+i*bw+bw/2)+'" y="'+(H-10)+'" text-anchor="middle" font-size="10" fill="'+axis+'" font-family="Inter">W'+(i+1)+'</text>';
+    }).join('');
+    wrap.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+    var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    svg.innerHTML = g + bars;
+    wrap.appendChild(svg);
+    svg.addEventListener('mousemove', function(e){
+      var t = e.target;
+      if(t.tagName === 'rect'){
+        var w = weeks[+t.dataset.i];
+        tip.style.left = (parseFloat(t.getAttribute('x')) + parseFloat(t.getAttribute('width'))/2) + 'px';
+        tip.style.top = t.getAttribute('y') + 'px';
+        tip.style.opacity = '1';
+        tip.innerHTML = w.label + '<br><b>' + C.money(w.spend) + '</b> · ' + C.fmtFull(w.views) + ' views';
+      } else tip.style.opacity = '0';
+    });
+    svg.addEventListener('mouseleave', function(){ tip.style.opacity='0'; });
+  }
+  draw();
+  addEventListener('resize', draw);
+  document.getElementById('themeToggle').addEventListener('click', function(){ setTimeout(draw, 650); });
+
+  /* ---------- billing summary ---------- */
+  document.getElementById('rateCard').innerHTML =
+    '<div class="rate-line"><span>Campaign period</span><b style="font-size:15px;">Jun 21 – Jul 20</b></div>' +
+    '<div class="rate-line"><span>Views delivered</span><b>'+C.fmtFull(T.approvedViews)+'</b></div>' +
+    '<div class="rate-line"><span>Rate</span><b>'+
+      (C.campaign.payoutModel === 'per_video'
+        ? C.money(C.campaign.ratePerVideo)+' / video'
+        : C.money(C.campaign.cpm)+' / 1K')+'</b></div>' +
+    '<div class="rate-line"><span>Amount due</span><b style="color:var(--bronze)">'+C.money(T.spend)+'</b></div>';
+
+  /* ---------- line items ---------- */
+  var items = C.approved().slice().sort(function(a,b){ return b.submitted.localeCompare(a.submitted); });
+  document.querySelector('#liTbl tbody').innerHTML = items.map(function(r){
+    return '<tr>' +
+      '<td>'+r.submitted.slice(5).replace('-','/')+'</td>' +
+      '<td><div class="clip-cell"><img class="mini-cover" loading="lazy" src="'+r.cover+'" alt="">' +
+        '<div><div class="t">'+r.title+'</div><div class="c"><span class="plat '+r.platform+'" style="display:inline">'+r.platform+'</span></div></div></div></td>' +
+      '<td>'+r.creator+'</td>' +
+      '<td class="num">'+C.fmtFull(r.views)+'</td>' +
+      '<td class="num">'+C.money(r.spend)+'</td>' +
+    '</tr>';
+  }).join('');
+  document.getElementById('liCount').textContent = items.length + ' live clips';
+  document.getElementById('ftViews').textContent = C.fmtFull(T.approvedViews);
+  document.getElementById('ftTotal').textContent = C.money(T.spend);
+})();
+});
+
+CX.define('appeals', function(document){
+  var host = document.getElementById('apMount');
+  var sb = window.clipencySupabase || window.supabaseClient || window.sbClient || null;
+  var demo = false; try{ demo = sessionStorage.getItem('clipency-demo') === '1'; }catch(e){}
+  if(demo || !sb || !window.CXAppeals){
+    host.innerHTML = '<div class="panel" style="padding:40px;text-align:center;color:var(--ink-55)">Appeals appear here once your campaign is live and creators start posting.</div>';
+    return;
+  }
+  window.CX_APPEALS = CXAppeals.mount(host, { sb: sb, role: 'client', onUnread: cxAppealBadge,
+    /* approving from an appeal changes the clip: drop the 90s data cache so the next view is fresh */
+    onResolved: function(){ try{ sessionStorage.removeItem('clipency-live-v2'); }catch(e){} } });
+});
+/* Sidebar count on Appeals: unread messages from creators. */
+function cxAppealBadge(n) {
+  var a = document.querySelector('.snav a[data-nav="appeals"]'); if(!a) return;
+  var old = a.querySelector('.navcount'); if(old) old.remove();
+  if(n){ var sp = document.createElement('span'); sp.className = 'navcount'; sp.title = n + ' unread appeal message' + (n === 1 ? '' : 's'); sp.textContent = n; a.appendChild(sp); }
+}
+(function pollAppealBadge(){
+  function tick(){
+    var sb = window.clipencySupabase || window.supabaseClient || window.sbClient;
+    if(sb && window.CXAppeals) CXAppeals.unread(sb).then(cxAppealBadge);
+  }
+  setTimeout(tick, 1500); setInterval(tick, 30000);
+})();
+
+CX.define('chat', function(document){
+  var host = document.getElementById('gcMount');
+  var sb = window.clipencySupabase || window.supabaseClient || window.sbClient || null;
+  var demo = false; try{ demo = sessionStorage.getItem('clipency-demo') === '1'; }catch(e){}
+  var act = (window.CLIPDB && CLIPDB.active && CLIPDB.active()) || null;
+  var cid = act ? String(act.baseId || act.id) : '';
+  if(demo || !sb || !window.CXGroupChat || !cid){
+    host.innerHTML = '<div class="panel" style="padding:40px;text-align:center;color:var(--ink-55)">The group chat opens once your campaign is live.</div>';
+    return;
+  }
+  CXGroupChat.mount(host, { sb: sb, campaignId: cid, role: 'client' });
+});
+
+CX.define('creators', function(document){
+(function(){
+  if(CLIPSHELL.emptyState()) return;
+  var C = CLIPENCY;
+  document.getElementById('footNote').textContent = 'CLIPENCY — ' + C.campaign.label;
+
+  var roster = C.byCreator();
+  var totalViews = roster.reduce(function(a,r){ return a+r.views; },0);
+
+  CLIPSHELL.count(document.getElementById('stN'), roster.length, function(v){ return Math.round(v); }, 1000);
+  document.getElementById('stTop').textContent = roster[0].creator;
+  document.getElementById('stTopFoot').textContent = C.fmtFull(roster[0].views) + ' views delivered';
+  CLIPSHELL.count(document.getElementById('stAvg'), totalViews/roster.length, function(v){ return C.fmtFull(Math.round(v)); });
+  CLIPSHELL.count(document.getElementById('stEng'), C.engagement(), function(v){ return v.toFixed(1)+'%'; });
+
+  /* shades of black / charcoal */
+  var palette = ['#0B0B0B','#242220','#37332E','#1A1A1A','#2E2A26','#141210','#413B34','#201E1B','#2A2724','#171514'];
+  function initials(h){ return h.replace('@','').slice(0,2).toUpperCase(); }
+  var profile = {
+    tiktok: function(h){ return 'https://www.tiktok.com/'+h; },
+    instagram: function(h){ return 'https://www.instagram.com/'+h.replace('@','')+'/'; },
+    youtube: function(h){ return 'https://youtube.com/'+h; }
+  };
+
+  document.querySelector('#crTbl tbody').innerHTML = roster.map(function(r, i){
+    var eng = r.views ? (r.likes + r.comments)/r.views*100 : 0;
+    return '<tr>' +
+      '<td><span class="rank-num">'+ (i+1) +'</span></td>' +
+      '<td><div class="handle-cell">' +
+        '<span class="avatar" style="background:'+palette[i%palette.length]+'">'+initials(r.creator)+'</span>' +
+        '<div><div class="h"><a href="'+profile[r.platform](r.creator)+'" target="_blank" rel="noopener">'+r.creator+'</a></div>' +
+        '<div class="p"><span class="plat '+r.platform+'"><i></i>'+r.platform+'</span></div></div>' +
+      '</div></td>' +
+      '<td class="num"><a class="cr-clips" href="?view=clips&amp;creator='+encodeURIComponent(r.creator)+'" title="Show only '+r.creator+'\'s clips">'+r.clips+' &#8599;</a></td>' +
+      '<td class="num">'+C.fmtFull(r.views)+'</td>' +
+      '<td class="num">'+C.fmtFull(Math.round(r.views/r.clips))+'</td>' +
+      '<td class="num">'+C.fmtFull(r.likes)+'</td>' +
+      '<td class="num">'+eng.toFixed(1)+'%</td>' +
+      '<td class="num">'+C.money(r.spend)+'</td>' +
+    '</tr>';
+  }).join('');
+  document.getElementById('rosterCount').textContent = roster.length + ' creators · ranked by views';
+})();
+});
+
+/* ---- first paint -------------------------------------------------------- */
+/* emptyState() replaces .content wholesale, which would delete every section,
+   so it runs ONCE here rather than inside each section. When a campaign has no
+   clips there is nothing to show in any section anyway. */
+if (!CLIPSHELL.emptyState()) {
+  /* Keep the section's own parameters (?creator=, ?tab= on the Clips Feed),
+     so a shared or reloaded filtered link opens filtered. */
+  (function(){
+    var q = new URLSearchParams(location.search);
+    q.set('view', wanted());
+    history.replaceState({ view: wanted() }, '', '?' + q.toString());
+  })();
+  CX.go(wanted(), { replace: true, noAnim: true, force: true, keepScroll: true });
+}
+
+/* Review count in the sidebar and on Overview, whatever section opened first. */
+cxSyncPendingBadge();
+document.querySelectorAll('.apr-hours').forEach(function (el) { el.textContent = cxReviewHours(); });
+(function () {
+  var nudge = document.getElementById('ovReview');
+  if (nudge) nudge.addEventListener('click', function (e) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+    e.preventDefault(); CX.go('review');
+  });
+})();
+
+/* refresh the visible section if a background revalidate brings new numbers */
+document.addEventListener('clipency:data-ready', function (e) {
+  if (e.detail && e.detail.refreshed && CX.current) {
+    location.reload();
+  }
+});
+</script>
+</body>
+</html>

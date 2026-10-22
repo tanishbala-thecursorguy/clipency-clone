@@ -1,0 +1,230 @@
+/* =========================================================
+   CLIPENCY FINAL COHESIVE POLISH LAYER
+   Stable, elegant, consistent creator app refinement
+   ========================================================= */
+
+:root {
+  --clip-bg-deep: #080610;
+  --clip-surface: rgba(23, 18, 42, 0.92);
+  --clip-surface-soft: rgba(255,255,255,0.045);
+  --clip-border: rgba(167, 139, 250, 0.18);
+  --clip-border-strong: rgba(167, 139, 250, 0.34);
+  --clip-text: rgba(255,255,255,0.96);
+  --clip-muted: rgba(255,255,255,0.56);
+  --clip-violet: #7c3aed;
+  --clip-violet-soft: #a78bfa;
+  --clip-success: #22c55e;
+  --clip-radius: 24px;
+  --clip-radius-lg: 30px;
+  --clip-shadow: 0 22px 72px rgba(0,0,0,0.26);
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(124,58,237,0.20), transparent 30%),
+    radial-gradient(circle at 88% 6%, rgba(20,184,166,0.10), transparent 26%),
+    linear-gradient(180deg, #090713, #07050e) !important;
+  color: var(--clip-text);
+}
+
+/* consistent page width */
+.main-content,
+.dashboard-main,
+main,
+.content {
+  max-width: 1420px !important;
+  margin: 0 auto !important;
+  padding: clamp(24px, 3vw, 42px) clamp(28px, 4vw, 58px) !important;
+}
+
+/* remove top-right profile only on campaigns page */
+body.route-campaigns .clipency-top-identity,
+body.route-campaigns .top-profile,
+body.route-campaigns .header-profile,
+body.route-campaigns .profile-chip,
+body.route-campaigns .user-pill:not(.sidebar-user):not(.user-footer) {
+  display: none !important;
+}
+
+/* keep sidebar identity visible */
+.sidebar .clipency-top-identity,
+aside .clipency-top-identity,
+.sidebar-user,
+.user-footer {
+  display: flex !important;
+}
+
+/* clean all old oversized dashboard blocks if master dashboard is present */
+body.route-dashboard .dashboard-hero {
+  display: none !important;
+}
+
+body.route-dashboard #section-dashboard {
+  padding-top: 0 !important;
+}
+
+/* headings */
+.section h1,
+#section-campaigns h1,
+#section-stats h1,
+#section-payout h1,
+#section-payment h1,
+#section-profile h1 {
+  font-size: clamp(34px, 3.8vw, 54px) !important;
+  line-height: 0.96 !important;
+  letter-spacing: -0.055em !important;
+  margin-bottom: 24px !important;
+}
+
+/* cards */
+.campaign-card,
+.overview-card,
+.overview-panel,
+.master-panel,
+.master-welcome,
+.premium-profile-hero,
+.premium-profile-panel,
+.profile-edit-card,
+.username-edit-card {
+  border: 1px solid var(--clip-border) !important;
+  background:
+    radial-gradient(circle at top left, rgba(124,58,237,0.14), transparent 34%),
+    linear-gradient(145deg, rgba(28,23,52,0.94), rgba(12,10,24,0.98)) !important;
+  box-shadow: var(--clip-shadow) !important;
+  border-radius: var(--clip-radius) !important;
+}
+
+.campaign-card:hover,
+.overview-card:hover,
+.master-panel:hover,
+.premium-profile-panel:hover,
+.profile-edit-card:hover {
+  transform: translateY(-2px) !important;
+  border-color: var(--clip-border-strong) !important;
+}
+
+/* Campaign page premium spacing */
+body.route-campaigns #section-campaigns {
+  padding-top: 8px !important;
+}
+
+body.route-campaigns #section-campaigns h1 {
+  margin-bottom: 34px !important;
+}
+
+.campaigns-grid,
+.campaign-grid,
+#campaigns-grid {
+  gap: 20px !important;
+}
+
+.campaign-card {
+  min-height: 250px !important;
+  padding: 24px !important;
+}
+
+/* Better campaign tabs */
+.filter-tabs button,
+.category-tabs button,
+.campaign-filters button,
+#section-campaigns button {
+  transition: all 180ms ease !important;
+}
+
+.filter-tabs button:hover,
+.category-tabs button:hover,
+.campaign-filters button:hover {
+  border-color: var(--clip-border-strong) !important;
+}
+
+/* Dashboard compact master layout */
+.master-welcome {
+  padding: clamp(24px, 3vw, 36px) !important;
+  grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.55fr) !important;
+  gap: 22px !important;
+}
+
+.master-welcome h1 {
+  font-size: clamp(38px, 4.8vw, 68px) !important;
+  line-height: 0.93 !important;
+}
+
+.master-helper {
+  max-width: 650px !important;
+  font-size: 15px !important;
+  line-height: 1.65 !important;
+}
+
+/* Dashboard KPI cards */
+.overview-grid {
+  gap: 15px !important;
+}
+
+.hero-card {
+  padding: 20px !important;
+}
+
+.hero-card strong {
+  font-size: clamp(30px, 3vw, 40px) !important;
+}
+
+/* Profile */
+.premium-profile-hero {
+  padding: 28px !important;
+}
+
+.premium-profile-grid {
+  gap: 20px !important;
+}
+
+/* cleaner bottom sidebar identity */
+.sidebar-user,
+.user-footer,
+[class*="footer-user"] {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.025);
+}
+
+/* prevent title truncation too aggressively */
+.campaign-card h3,
+.campaign-card .campaign-title {
+  max-width: 100%;
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+}
+
+/* small screens */
+@media (max-width: 1180px) {
+  .master-welcome,
+  .master-guidance-grid,
+  .premium-profile-hero,
+  .premium-profile-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .overview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .main-content,
+  .dashboard-main,
+  main,
+  .content {
+    padding: 72px 16px 28px !important;
+  }
+
+  .overview-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .master-welcome h1 {
+    font-size: 38px !important;
+  }
+
+  .campaign-card {
+    min-height: 220px !important;
+  }
+}

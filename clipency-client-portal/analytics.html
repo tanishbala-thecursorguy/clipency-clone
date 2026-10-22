@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clipency — Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){try{
+  document.documentElement.setAttribute('data-theme', localStorage.getItem('clipency-theme') || 'light');
+  /* Gate: the portal used to be opened with a 6-digit PIN kept in
+     sessionStorage. It is now a real login, so the gate checks for a
+     Supabase session instead. This is the synchronous, no-dependency
+     version so it can run before anything paints; js/live.js does the
+     authoritative check (getUser) and redirects if the token is stale. */
+  /* Demo mode: ?demo=1 opens the real portal on the sample data in
+     data.js, with no account. The flag is kept in sessionStorage so the
+     other pages stay in demo as you click through the nav, and it dies
+     with the tab so nobody is left stuck in a fake dashboard. */
+  var __d = /[?&]demo=1/.test(location.search);
+  try{
+    if(__d) sessionStorage.setItem('clipency-demo','1');
+    if(/[?&]demo=0/.test(location.search)) sessionStorage.removeItem('clipency-demo');
+    __d = sessionStorage.getItem('clipency-demo') === '1';
+  }catch(e){}
+  if(!__d && !localStorage.getItem('sb-spwtkdgpgeutrhwcjrpy-auth-token')) location.replace('./client-signin.html');
+}catch(e){ document.documentElement.setAttribute('data-theme','light'); }})();
+</script>
+<link rel="stylesheet" href="./dashboard.css">
+<style>
+.platbars{display:flex;flex-direction:column;gap:16px;flex:1;justify-content:center;}
+.pbar .row1{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink-55);margin-bottom:7px;}
+.pbar .row1 b{color:var(--ink-90);font-weight:500;text-transform:capitalize;}
+.pbar .track{height:9px;border-radius:5px;background:var(--hair);overflow:hidden;}
+.pbar .fill{height:100%;border-radius:5px;width:0;transition:width 1.2s var(--ease);}
+.panel.mt{margin-top:16px;}
+.mini-cover{width:34px;height:52px;border-radius:6px;object-fit:cover;background:var(--surface-2);border:1px solid var(--hair);display:block;}
+.clip-cell{display:flex;align-items:center;gap:12px;min-width:0;}
+.clip-cell .t{font-weight:500;color:var(--ink-90);max-width:220px;overflow:hidden;text-overflow:ellipsis;}
+.clip-cell .c{font-size:12px;color:var(--ink-40);}
+.filter-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px;}
+</style>
+</head>
+<body>
+<div class="paper-field" aria-hidden="true"></div>
+<div class="shell">
+  <div id="side"></div>
+  <div class="main">
+    <div id="topbar"></div>
+    <main class="content">
+
+      <div class="page-head">
+        <div>
+          <span class="eyebrow">Analytics</span>
+          <h1>How your campaign is performing.</h1>
+          <p>Every live clip broken down by platform, day and performance — the same numbers we bill against.</p>
+        </div>
+      </div>
+
+      <section class="stats">
+        <div class="stat"><span class="lbl">Engagement Rate</span><div class="num" id="stEng">0%</div><div class="foot">likes + comments vs views</div></div>
+        <div class="stat"><span class="lbl">Avg Views / Clip</span><div class="num" id="stAvg">0</div><div class="foot" id="stAvgFoot"></div></div>
+        <div class="stat"><span class="lbl">Best Day</span><div class="num" id="stBest" style="font-size:28px;">—</div><div class="foot" id="stBestFoot"></div></div>
+        <div class="stat"><span class="lbl">Total Engagement</span><div class="num" id="stLikes">0</div><div class="foot" id="stLikesFoot"></div></div>
+      </section>
+
+      <section class="grid2">
+        <div class="panel">
+          <div class="panel-h"><h2>Views per day</h2><span>Last 30 days</span></div>
+          <div class="chart-wrap" id="barWrap"><div class="chart-tip" id="barTip"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2>Platforms</h2><span>Views by platform</span></div>
+          <div class="platbars" id="platBars"></div>
+        </div>
+      </section>
+
+      <section class="panel mt">
+        <div class="panel-h"><h2>All live clips</h2><span id="tblCount"></span></div>
+        <div class="filter-row">
+          <div class="chips" id="platChips">
+            <button class="chip on" data-plat="all">All platforms</button>
+            <button class="chip" data-plat="instagram">Instagram</button>
+            <button class="chip" data-plat="youtube">YouTube</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+        <table class="tbl" id="subTbl">
+          <thead><tr>
+            <th>Clip</th><th>Platform</th>
+            <th class="sortable" data-k="submitted">Posted<span class="dir"></span></th>
+            <th class="num sortable" data-k="views">Views<span class="dir"></span></th>
+            <th class="num sortable" data-k="likes">Likes<span class="dir"></span></th>
+            <th class="num sortable" data-k="comments">Comments<span class="dir"></span></th>
+            <th class="num sortable" data-k="eng">Eng. Rate<span class="dir"></span></th>
+            <th></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+        </div>
+      </section>
+
+      <p class="foot-note" id="footNote"></p>
+    </main>
+  </div>
+</div>
+
+<script src="./data.js"></script>
+<script src="./db.js"></script>
+<script src="./export.js"></script>
+<script src="./shell.js"></script>
+<script src="./tour.js"></script>
+<!-- live data (read-only production Supabase) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./config.js"></script>
+<script src="./js/live.js"></script>
+
+<script type="module">
+/* wait for live production data before painting; resolves to 'live' or 'mock' */
+if (window.CLIPENCY_LIVE) {
+  try { await window.CLIPENCY_LIVE.ready; }
+  catch (e) { console.error('[clipency] live load threw, painting anyway', e); }
+}
+
+CLIPSHELL.init('analytics');
+(function(){
+  if(CLIPSHELL.emptyState()) return;
+  var C = CLIPENCY, T = C.totals();
+  document.getElementById('footNote').textContent = 'CLIPENCY — ' + C.campaign.label;
+
+  var ap = C.approved();
+  var eng = C.engagement();
+  var best = C.bestDay();
+  var totalEng = ap.reduce(function(a,r){ return a + r.likes + r.comments; }, 0);
+  var totalLikes = ap.reduce(function(a,r){ return a + r.likes; }, 0);
+  var totalComments = ap.reduce(function(a,r){ return a + r.comments; }, 0);
+  CLIPSHELL.count(document.getElementById('stEng'), eng, function(v){ return v.toFixed(1)+'%'; });
+  CLIPSHELL.count(document.getElementById('stAvg'), T.approvedViews/T.approvedCount, function(v){ return C.fmtFull(Math.round(v)); });
+  document.getElementById('stAvgFoot').textContent = 'across ' + T.approvedCount + ' live clips';
+  document.getElementById('stBest').textContent = best.date.slice(5).replace('-','/');
+  document.getElementById('stBestFoot').textContent = C.fmtFull(best.views) + ' views in one day';
+  CLIPSHELL.count(document.getElementById('stLikes'), totalEng, function(v){ return C.fmtFull(Math.round(v)); });
+  document.getElementById('stLikesFoot').textContent = C.fmtFull(totalLikes) + ' likes · ' + C.fmtFull(totalComments) + ' comments';
+
+  /* ---------- views per day bars ---------- */
+  var days = C.daily();
+  var wrap = document.getElementById('barWrap'), tip = document.getElementById('barTip');
+  function drawBars(){
+    var W = wrap.clientWidth || 600, H = Math.max(wrap.clientHeight, 230);
+    var P = {l:44, r:10, t:12, b:26};
+    /* An empty series drew an empty framed box with no explanation. */
+    if(!days.length){
+      wrap.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+      if(!wrap.querySelector('.chart-empty')){
+        var e = document.createElement('p');
+        e.className = 'chart-empty';
+        e.style.cssText = 'margin:auto;font-size:13px;color:var(--ink-40);text-align:center;';
+        e.textContent = 'No view data yet. This fills in as the network posts.';
+        wrap.appendChild(e);
+      }
+      return;
+    }
+    var ce = wrap.querySelector('.chart-empty'); if(ce) ce.remove();
+    var max = Math.max.apply(null, days.map(function(d){ return d.views; })) * 1.12 || 1;
+    var bw = (W-P.l-P.r)/days.length;
+    var gold = CLIPSHELL.css('--gold'), hair = CLIPSHELL.css('--hair'), axis = CLIPSHELL.css('--ink-40');
+    var g = [0,.5,1].map(function(f){
+      var y = H-P.b - f*(H-P.t-P.b);
+      return '<line x1="'+P.l+'" y1="'+y+'" x2="'+(W-P.r)+'" y2="'+y+'" stroke="'+hair+'"/>' +
+             '<text x="'+(P.l-8)+'" y="'+(y+3.5)+'" text-anchor="end" font-size="10" fill="'+axis+'" font-family="Inter">'+C.fmt(Math.round(max*f))+'</text>';
+    }).join('');
+    var bars = days.map(function(d,i){
+      var h = d.views/max*(H-P.t-P.b);
+      return '<rect data-i="'+i+'" x="'+(P.l+i*bw+bw*.18)+'" y="'+(H-P.b-h)+'" width="'+(bw*.64)+'" height="'+Math.max(h,1)+'" rx="2.5" fill="'+gold+'" opacity="'+(d.views? .85 : .18)+'"/>';
+    }).join('');
+    /* Tick positions used to be the literals [0, 10, 20, days.length-1]. A
+       campaign younger than 21 days has no days[10] or days[20], so this threw
+       a TypeError - and because the whole page is one IIFE, the throw took out
+       everything after it: the chart never got appended, and the platform bars
+       and the clips table below never rendered either. The KPI row above it
+       kept working, which is exactly what it looked like on screen.
+       Now the ticks are derived from the length, deduped, and never index
+       past the end. */
+    var ticks = (function(){
+      if(!days.length) return '';
+      var want = Math.min(4, days.length), idx = [], seen = {};
+      for(var k = 0; k < want; k++){
+        var i = want === 1 ? 0 : Math.round(k * (days.length - 1) / (want - 1));
+        if(i >= 0 && i < days.length && !seen[i]){ seen[i] = 1; idx.push(i); }
+      }
+      return idx.map(function(i){
+        return '<text x="'+(P.l+i*bw+bw/2)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="'+axis+'" font-family="Inter">'+days[i].date.slice(5).replace('-','/')+'</text>';
+      }).join('');
+    })();
+    wrap.querySelectorAll('svg').forEach(function(s){ s.remove(); });
+    var svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    svg.innerHTML = g + bars + ticks;
+    wrap.appendChild(svg);
+    svg.addEventListener('mousemove', function(e){
+      var t = e.target;
+      if(t.tagName === 'rect'){
+        var d = days[+t.dataset.i];
+        tip.style.left = (parseFloat(t.getAttribute('x')) + parseFloat(t.getAttribute('width'))/2) + 'px';
+        tip.style.top = t.getAttribute('y') + 'px';
+        tip.style.opacity = '1';
+        tip.innerHTML = d.date.slice(5).replace('-','/') + ' &middot; <b>' + C.fmtFull(d.views) + '</b> views';
+      } else tip.style.opacity = '0';
+    });
+    svg.addEventListener('mouseleave', function(){ tip.style.opacity='0'; });
+  }
+  drawBars();
+  addEventListener('resize', drawBars);
+  document.getElementById('themeToggle').addEventListener('click', function(){ setTimeout(drawBars, 650); });
+
+  /* ---------- platform bars ---------- */
+  var plats = C.byPlatform(), maxV = plats[0] ? plats[0].views : 1;
+  var colors = {tiktok:'#7A6CD8', instagram:'#C86A8A', youtube:'#C4553C'};
+  document.getElementById('platBars').innerHTML = plats.map(function(p){
+    return '<div class="pbar"><div class="row1"><b>'+p.platform+'</b><span>'+C.fmtFull(p.views)+' views · '+p.clips+' clips</span></div>' +
+      '<div class="track"><div class="fill" data-w="'+(p.views/maxV*100)+'" style="background:'+colors[p.platform]+'"></div></div></div>';
+  }).join('');
+  setTimeout(function(){
+    document.querySelectorAll('.pbar .fill').forEach(function(f){ f.style.width = f.dataset.w + '%'; });
+  }, 150);
+
+  /* ---------- sortable, filterable table (live clips) ---------- */
+  var rows = ap.map(function(r){
+    var o = Object.assign({}, r);
+    o.eng = r.views ? (r.likes + r.comments) / r.views * 100 : 0;
+    return o;
+  });
+  var sortK = 'views', sortDir = -1, platF = 'all';
+  function render(){
+    var list = rows.filter(function(r){ return platF==='all' || r.platform===platF; });
+    list.sort(function(a,b){
+      var va=a[sortK], vb=b[sortK];
+      return (typeof va === 'string' ? va.localeCompare(vb) : va - vb) * sortDir;
+    });
+    document.querySelector('#subTbl tbody').innerHTML = list.map(function(r){
+      return '<tr>' +
+        '<td><div class="clip-cell"><img class="mini-cover" loading="lazy" src="'+r.cover+'" alt="">' +
+          '<div><div class="t">'+r.title+'</div><div class="c">'+r.creator+'</div></div></div></td>' +
+        '<td><span class="plat '+r.platform+'"><i></i>'+r.platform+'</span></td>' +
+        '<td>'+r.submitted.slice(5).replace('-','/')+'</td>' +
+        '<td class="num">'+C.fmtFull(r.views)+'</td>' +
+        '<td class="num">'+C.fmtFull(r.likes)+'</td>' +
+        '<td class="num">'+C.fmtFull(r.comments)+'</td>' +
+        '<td class="num">'+r.eng.toFixed(1)+'%</td>' +
+        '<td><a href="'+r.url+'" target="_blank" rel="noopener">Open &#8599;</a></td>' +
+      '</tr>';
+    }).join('');
+    document.getElementById('tblCount').textContent = list.length + ' live clips';
+    document.querySelectorAll('#subTbl th.sortable').forEach(function(th){
+      th.querySelector('.dir').textContent = th.dataset.k === sortK ? (sortDir<0 ? ' ↓' : ' ↑') : '';
+    });
+  }
+  document.querySelectorAll('#subTbl th.sortable').forEach(function(th){
+    th.addEventListener('click', function(){
+      if(sortK === th.dataset.k) sortDir *= -1;
+      else { sortK = th.dataset.k; sortDir = -1; }
+      render();
+    });
+  });
+  document.querySelectorAll('#platChips .chip').forEach(function(ch){
+    ch.addEventListener('click', function(){
+      document.querySelectorAll('#platChips .chip').forEach(function(x){ x.classList.remove('on'); });
+      ch.classList.add('on'); platF = ch.dataset.plat; render();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>

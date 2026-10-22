@@ -1,0 +1,20 @@
+<svg width="620" height="150" viewBox="0 0 620 150" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g transform="translate(26 24)" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="30" cy="20" r="13"/>
+    <circle cx="70" cy="20" r="13"/>
+    <path d="M40 31L86 98"/>
+    <path d="M60 31L14 98"/>
+    <path d="M50 51L50 104"/>
+    <path d="M50 51C40 40 34 29 30 20"/>
+    <path d="M50 51C60 40 67 29 70 20"/>
+  </g>
+
+  <text x="125" y="91"
+        fill="white"
+        font-family="Inter, Montserrat, Arial, Helvetica, sans-serif"
+        font-size="58"
+        font-weight="800"
+        letter-spacing="-4">
+    CLIPENCY
+  </text>
+</svg>

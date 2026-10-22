@@ -1,0 +1,132 @@
+/* =========================================================
+   CLIPENCY DESKTOP STABLE PATCH
+   Purpose: restore laptop layout, stop overflow, keep old UI intact.
+   No mobile redesign. No heavy overrides.
+   ========================================================= */
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Keep dashboard as a proper sidebar + content layout */
+body:has(.sidebar),
+body:has(.dashboard-sidebar) {
+  background: #07050e;
+}
+
+.sidebar,
+.dashboard-sidebar {
+  flex: 0 0 300px;
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
+}
+
+/* Sidebar logo should never be hidden */
+.sidebar img,
+.dashboard-sidebar img {
+  max-width: 180px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Main dashboard content */
+main,
+.main-content,
+.dashboard-main,
+.dashboard-content,
+.page-content {
+  min-width: 0;
+  max-width: calc(100vw - 300px);
+  overflow-x: hidden;
+}
+
+/* Keep main sections aligned like before */
+.dashboard-content,
+.main-content,
+.page-content {
+  padding-left: clamp(32px, 4vw, 72px);
+  padding-right: clamp(32px, 4vw, 72px);
+}
+
+/* Do not let cards force horizontal scroll */
+.card,
+.campaign-card,
+.stat-card,
+.metric-card,
+.profile-card,
+.wallet-card,
+.payout-card,
+.dashboard-card,
+[class*="card"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Dashboard hero should fit inside laptop width */
+.dashboard-hero,
+.creator-hero,
+.welcome-card,
+.hero-card {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Campaign grid should use available laptop space cleanly */
+.campaign-grid,
+.campaigns-grid,
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+/* Stats grid should not stretch outside viewport */
+.stats-grid,
+.metrics-grid,
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+/* Chart/card areas should not create bottom horizontal bar */
+svg,
+canvas {
+  max-width: 100%;
+}
+
+/* Remove accidental injected admin link clutter */
+.admin-return-link {
+  display: none !important;
+}
+
+/* Cursor should stay premium but not visually dominate */
+.cx-universal-cursor-ring {
+  width: 34px !important;
+  height: 34px !important;
+  opacity: 0.72 !important;
+}
+
+.cx-universal-cursor-glow {
+  width: 280px !important;
+  height: 280px !important;
+  opacity: 0.45 !important;
+}
+
+/* Laptop safety */
+@media (max-width: 1280px) {
+  .campaign-grid,
+  .campaigns-grid,
+  .cards-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .stats-grid,
+  .metrics-grid,
+  .dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

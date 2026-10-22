@@ -1,0 +1,930 @@
+/* =========================================================
+   CLIPENCY SURGICAL LAYOUT FIX
+   Restores previous feel, removes squeeze, keeps premium UI
+   ========================================================= */
+
+:root {
+  --sidebar-width: 300px;
+  --content-max: 1600px;
+  --panel-radius: 24px;
+}
+
+/* Base safety */
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+img, svg, video, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ---------------------------------------------------------
+   CREATOR / CLIPPER DASHBOARD
+--------------------------------------------------------- */
+body.cx-creator-route {
+  overflow-x: hidden;
+}
+
+/* Restore stable shell */
+body.cx-creator-route .dashboard-shell,
+body.cx-creator-route .app-shell,
+body.cx-creator-route .dashboard-layout,
+body.cx-creator-route .layout,
+body.cx-creator-route .page-shell {
+  display: grid !important;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr) !important;
+  min-height: 100vh;
+}
+
+/* Sidebar restored */
+body.cx-creator-route .sidebar,
+body.cx-creator-route .dashboard-sidebar,
+body.cx-creator-route aside.sidebar {
+  width: var(--sidebar-width) !important;
+  min-width: var(--sidebar-width) !important;
+  max-width: var(--sidebar-width) !important;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 20;
+}
+
+/* Top-left logo area fix */
+body.cx-creator-route .sidebar .brand,
+body.cx-creator-route .sidebar .logo-wrap,
+body.cx-creator-route .dashboard-sidebar .brand,
+body.cx-creator-route .dashboard-sidebar .logo-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-height: 76px !important;
+  padding: 20px 24px !important;
+  overflow: visible !important;
+}
+
+body.cx-creator-route .sidebar .brand img,
+body.cx-creator-route .sidebar .logo-wrap img,
+body.cx-creator-route .dashboard-sidebar .brand img,
+body.cx-creator-route .dashboard-sidebar .logo-wrap img {
+  height: 34px !important;
+  width: auto !important;
+  max-width: 180px !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+/* Main content */
+body.cx-creator-route main,
+body.cx-creator-route .main-content,
+body.cx-creator-route .dashboard-content,
+body.cx-creator-route .page-content {
+  min-width: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 28px 32px 36px !important;
+}
+
+/* Content inner alignment */
+body.cx-creator-route .dashboard-inner,
+body.cx-creator-route .content-inner,
+body.cx-creator-route .page-inner {
+  width: 100%;
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+/* Restore hero balance */
+body.cx-creator-route .dashboard-hero,
+body.cx-creator-route .welcome-card,
+body.cx-creator-route .hero-card,
+body.cx-creator-route .creator-hero {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 420px) !important;
+  gap: 28px !important;
+  align-items: stretch !important;
+  padding: 32px !important;
+  border-radius: var(--panel-radius) !important;
+  min-height: unset !important;
+}
+
+/* Big heading reduced, not squeezed */
+body.cx-creator-route .dashboard-hero h1,
+body.cx-creator-route .welcome-card h1,
+body.cx-creator-route .hero-card h1,
+body.cx-creator-route .creator-hero h1 {
+  font-size: clamp(54px, 6vw, 88px) !important;
+  line-height: 0.94 !important;
+  letter-spacing: -0.05em !important;
+  margin-bottom: 18px !important;
+  max-width: 760px !important;
+}
+
+/* Supporting text */
+body.cx-creator-route .dashboard-hero p,
+body.cx-creator-route .welcome-card p,
+body.cx-creator-route .hero-card p,
+body.cx-creator-route .creator-hero p {
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+  max-width: 720px !important;
+}
+
+/* User profile card inside hero */
+body.cx-creator-route .creator-summary,
+body.cx-creator-route .profile-summary-card,
+body.cx-creator-route .hero-side-card {
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+/* Stats grid */
+body.cx-creator-route .stats-grid,
+body.cx-creator-route .metrics-grid,
+body.cx-creator-route .dashboard-stats {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+}
+
+body.cx-creator-route .stats-grid > *,
+body.cx-creator-route .metrics-grid > *,
+body.cx-creator-route .dashboard-stats > * {
+  min-width: 0 !important;
+  border-radius: 22px !important;
+  padding: 24px !important;
+}
+
+/* Recommendation area */
+body.cx-creator-route .dashboard-panels,
+body.cx-creator-route .insights-grid,
+body.cx-creator-route .recommendation-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+}
+
+body.cx-creator-route .dashboard-panels > *,
+body.cx-creator-route .insights-grid > *,
+body.cx-creator-route .recommendation-grid > * {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  border-radius: 24px !important;
+}
+
+/* Prevent giant panel text */
+body.cx-creator-route .dashboard-panels h2,
+body.cx-creator-route .insights-grid h2,
+body.cx-creator-route .recommendation-grid h2 {
+  font-size: clamp(40px, 4.2vw, 72px) !important;
+  line-height: 0.95 !important;
+  letter-spacing: -0.045em !important;
+}
+
+/* Quick switch smaller */
+body.cx-creator-route .cx-command-trigger,
+body.cx-creator-route .quick-switch,
+body.cx-creator-route .command-trigger {
+  transform: scale(0.88);
+  transform-origin: left bottom;
+}
+
+/* Desktop sidebar toggle hidden by default */
+.cx-sidebar-toggle {
+  display: none !important;
+}
+
+/* ---------------------------------------------------------
+   LANDING PAGE
+--------------------------------------------------------- */
+.landing-page,
+.home-page,
+body.cx-landing-route {
+  overflow-x: hidden !important;
+}
+
+.landing-nav,
+.navbar {
+  padding: 18px 32px !important;
+}
+
+.landing-nav .brand img,
+.navbar .brand img {
+  height: 34px !important;
+  width: auto !important;
+  max-width: 180px !important;
+  object-fit: contain !important;
+}
+
+/* Hero area */
+.hero-section,
+.home-hero {
+  padding: 80px 32px 72px !important;
+  min-height: auto !important;
+}
+
+.hero-inner,
+.home-hero-inner {
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+}
+
+.hero-copy h1,
+.home-hero-copy h1 {
+  font-size: clamp(64px, 8vw, 112px) !important;
+  line-height: 0.92 !important;
+  letter-spacing: -0.055em !important;
+  max-width: 900px !important;
+}
+
+.hero-copy p,
+.home-hero-copy p {
+  font-size: 18px !important;
+  line-height: 1.7 !important;
+  max-width: 720px !important;
+}
+
+/* Section consistency */
+.section,
+.home-section {
+  padding: 84px 32px !important;
+}
+
+.section-inner,
+.home-section-inner {
+  max-width: 1440px !important;
+  margin: 0 auto !important;
+}
+
+/* ---------------------------------------------------------
+   ADMIN / REVIEWER / WORKSPACE
+--------------------------------------------------------- */
+.staff-layout,
+.admin-layout,
+.review-layout,
+.workspace-layout {
+  display: grid !important;
+  grid-template-columns: 280px minmax(0, 1fr) !important;
+  min-height: 100vh;
+}
+
+.staff-sidebar,
+.admin-sidebar,
+.review-sidebar,
+.workspace-sidebar {
+  min-width: 280px !important;
+  max-width: 280px !important;
+}
+
+.staff-main,
+.admin-main,
+.review-main,
+.workspace-main {
+  min-width: 0 !important;
+  padding: 28px 32px !important;
+}
+
+.staff-topbar h1,
+.admin-header h1,
+.review-header h1,
+.workspace-header h1 {
+  font-size: clamp(44px, 5vw, 72px) !important;
+  line-height: 0.96 !important;
+  letter-spacing: -0.05em !important;
+}
+
+/* ---------------------------------------------------------
+   MOBILE
+--------------------------------------------------------- */
+@media (max-width: 1100px) {
+  body.cx-creator-route .dashboard-hero,
+  body.cx-creator-route .welcome-card,
+  body.cx-creator-route .hero-card,
+  body.cx-creator-route .creator-hero {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.cx-creator-route .stats-grid,
+  body.cx-creator-route .metrics-grid,
+  body.cx-creator-route .dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  body.cx-creator-route .dashboard-panels,
+  body.cx-creator-route .insights-grid,
+  body.cx-creator-route .recommendation-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .staff-layout,
+  .admin-layout,
+  .review-layout,
+  .workspace-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --sidebar-width: 84vw;
+  }
+
+  .cx-sidebar-toggle {
+    display: grid !important;
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 999px;
+    z-index: 9999;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(8,8,14,0.86);
+    color: white;
+    backdrop-filter: blur(16px);
+    font-size: 20px;
+  }
+
+  body.cx-creator-route .dashboard-shell,
+  body.cx-creator-route .app-shell,
+  body.cx-creator-route .dashboard-layout,
+  body.cx-creator-route .layout,
+  body.cx-creator-route .page-shell {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.cx-creator-route .sidebar,
+  body.cx-creator-route .dashboard-sidebar,
+  body.cx-creator-route aside.sidebar {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    width: min(84vw, 320px) !important;
+    min-width: 0 !important;
+    max-width: min(84vw, 320px) !important;
+    height: 100vh !important;
+    transform: translateX(-104%) !important;
+    transition: transform 0.24s ease !important;
+    z-index: 9998 !important;
+    pointer-events: none;
+  }
+
+  body.cx-mobile-sidebar-open .sidebar,
+  body.cx-mobile-sidebar-open .dashboard-sidebar,
+  body.cx-mobile-sidebar-open aside.sidebar {
+    transform: translateX(0) !important;
+    pointer-events: auto;
+  }
+
+  body.cx-mobile-sidebar-open::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 9997;
+  }
+
+  body.cx-creator-route main,
+  body.cx-creator-route .main-content,
+  body.cx-creator-route .dashboard-content,
+  body.cx-creator-route .page-content {
+    padding: 76px 16px 28px !important;
+  }
+
+  body.cx-creator-route .dashboard-hero h1,
+  body.cx-creator-route .welcome-card h1,
+  body.cx-creator-route .hero-card h1,
+  body.cx-creator-route .creator-hero h1 {
+    font-size: clamp(42px, 13vw, 62px) !important;
+  }
+
+  body.cx-creator-route .stats-grid,
+  body.cx-creator-route .metrics-grid,
+  body.cx-creator-route .dashboard-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hero-section,
+  .home-hero,
+  .section,
+  .home-section,
+  .staff-main,
+  .admin-main,
+  .review-main,
+  .workspace-main {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .hero-copy h1,
+  .home-hero-copy h1 {
+    font-size: clamp(44px, 13vw, 68px) !important;
+  }
+}
+
+/* =========================================================
+   PHASE 2 — STRUCTURE + HARMONY FIX
+   ========================================================= */
+
+/* -----------------------------------------
+   GLOBAL CONTENT RHYTHM
+----------------------------------------- */
+body.cx-creator-route .main-content,
+body.cx-creator-route .dashboard-content,
+body.cx-creator-route .page-content,
+body.cx-creator-route main {
+  padding-top: 26px !important;
+  padding-bottom: 30px !important;
+}
+
+body.cx-creator-route .dashboard-inner,
+body.cx-creator-route .content-inner,
+body.cx-creator-route .page-inner {
+  max-width: 1480px !important;
+}
+
+/* Page header rhythm */
+body.cx-creator-route .page-header,
+body.cx-creator-route .page-topbar,
+body.cx-creator-route .dashboard-topbar,
+body.cx-creator-route .content-topbar {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 24px !important;
+  margin-bottom: 28px !important;
+}
+
+body.cx-creator-route .page-header h1,
+body.cx-creator-route .page-topbar h1,
+body.cx-creator-route .dashboard-topbar h1,
+body.cx-creator-route .content-topbar h1 {
+  font-size: clamp(54px, 5vw, 82px) !important;
+  line-height: 0.96 !important;
+  letter-spacing: -0.05em !important;
+  margin: 0 !important;
+}
+
+body.cx-creator-route .page-header p,
+body.cx-creator-route .page-topbar p,
+body.cx-creator-route .dashboard-topbar p,
+body.cx-creator-route .content-topbar p {
+  margin-top: 10px !important;
+  max-width: 720px !important;
+  opacity: 0.86 !important;
+}
+
+/* -----------------------------------------
+   SIDEBAR CLEANUP
+----------------------------------------- */
+
+/* Make sidebar a real vertical system */
+body.cx-creator-route .sidebar,
+body.cx-creator-route .dashboard-sidebar,
+body.cx-creator-route aside.sidebar {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Middle nav should flex */
+body.cx-creator-route .sidebar .sidebar-nav,
+body.cx-creator-route .dashboard-sidebar .sidebar-nav,
+body.cx-creator-route .sidebar nav,
+body.cx-creator-route .dashboard-sidebar nav {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+/* Footer stays at bottom and looks intentional */
+body.cx-creator-route .sidebar-footer,
+body.cx-creator-route .dashboard-sidebar-footer,
+body.cx-creator-route .sidebar .bottom-area,
+body.cx-creator-route .dashboard-sidebar .bottom-area {
+  margin-top: auto !important;
+  padding: 16px 16px 18px !important;
+  border-top: 1px solid rgba(255,255,255,0.06) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.00), rgba(255,255,255,0.02)) !important;
+}
+
+/* Bottom profile row */
+body.cx-creator-route .sidebar-user,
+body.cx-creator-route .sidebar-profile,
+body.cx-creator-route .bottom-profile-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,0.02) !important;
+  border: 1px solid rgba(255,255,255,0.05) !important;
+}
+
+/* User info on bottom left */
+body.cx-creator-route .sidebar-user .user-meta,
+body.cx-creator-route .sidebar-profile .user-meta,
+body.cx-creator-route .bottom-profile-card .user-meta {
+  min-width: 0 !important;
+}
+
+body.cx-creator-route .sidebar-user .user-name,
+body.cx-creator-route .sidebar-profile .user-name,
+body.cx-creator-route .bottom-profile-card .user-name {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+body.cx-creator-route .sidebar-user .user-role,
+body.cx-creator-route .sidebar-profile .user-role,
+body.cx-creator-route .bottom-profile-card .user-role {
+  font-size: 12px !important;
+  opacity: 0.72 !important;
+}
+
+/* Quick switch should not float weirdly */
+body.cx-creator-route .cx-command-trigger,
+body.cx-creator-route .quick-switch,
+body.cx-creator-route .command-trigger {
+  position: static !important;
+  width: 100% !important;
+  margin-top: 10px !important;
+  transform: none !important;
+  border-radius: 16px !important;
+}
+
+/* Admin workspace link shouldn't hang below the sidebar */
+body.cx-creator-route .sidebar a[href*="admin"],
+body.cx-creator-route .dashboard-sidebar a[href*="admin"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-top: 10px !important;
+  font-size: 13px !important;
+  opacity: 0.84 !important;
+  text-decoration: none !important;
+}
+
+/* -----------------------------------------
+   UNIVERSAL TOP-RIGHT USER PILL
+----------------------------------------- */
+
+.cx-user-pill,
+.page-user-pill,
+.top-user-pill,
+.page-identity-pill {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 16px !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03)) !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18) !important;
+  text-decoration: none !important;
+  color: inherit !important;
+  min-width: 230px !important;
+  justify-content: flex-start !important;
+}
+
+.cx-user-pill img,
+.page-user-pill img,
+.top-user-pill img,
+.page-identity-pill img {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  flex: 0 0 auto !important;
+}
+
+.cx-user-pill .pill-name,
+.page-user-pill .pill-name,
+.top-user-pill .pill-name,
+.page-identity-pill .pill-name {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+.cx-user-pill .pill-sub,
+.page-user-pill .pill-sub,
+.top-user-pill .pill-sub,
+.page-identity-pill .pill-sub {
+  font-size: 12px !important;
+  opacity: 0.7 !important;
+  line-height: 1.2 !important;
+}
+
+/* -----------------------------------------
+   DASHBOARD HERO REFINEMENT
+----------------------------------------- */
+body.cx-creator-route .dashboard-hero,
+body.cx-creator-route .welcome-card,
+body.cx-creator-route .hero-card,
+body.cx-creator-route .creator-hero {
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 430px) !important;
+  gap: 26px !important;
+  padding: 34px 38px !important;
+  border-radius: 28px !important;
+}
+
+body.cx-creator-route .dashboard-hero h1,
+body.cx-creator-route .welcome-card h1,
+body.cx-creator-route .hero-card h1,
+body.cx-creator-route .creator-hero h1 {
+  font-size: clamp(58px, 5vw, 88px) !important;
+  max-width: 760px !important;
+  margin-bottom: 18px !important;
+}
+
+body.cx-creator-route .dashboard-hero .eyebrow,
+body.cx-creator-route .welcome-card .eyebrow,
+body.cx-creator-route .hero-card .eyebrow,
+body.cx-creator-route .creator-hero .eyebrow {
+  margin-bottom: 16px !important;
+  letter-spacing: 0.16em !important;
+}
+
+body.cx-creator-route .dashboard-hero .hero-actions,
+body.cx-creator-route .welcome-card .hero-actions,
+body.cx-creator-route .hero-card .hero-actions,
+body.cx-creator-route .creator-hero .hero-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 14px !important;
+  margin-top: 24px !important;
+}
+
+body.cx-creator-route .dashboard-hero .hero-actions > *,
+body.cx-creator-route .welcome-card .hero-actions > *,
+body.cx-creator-route .hero-card .hero-actions > *,
+body.cx-creator-route .creator-hero .hero-actions > * {
+  min-height: 56px !important;
+  padding: 0 24px !important;
+  border-radius: 18px !important;
+}
+
+body.cx-creator-route .creator-summary,
+body.cx-creator-route .profile-summary-card,
+body.cx-creator-route .hero-side-card {
+  padding: 20px !important;
+  border-radius: 24px !important;
+  align-self: center !important;
+}
+
+/* Right summary card small tiles */
+body.cx-creator-route .creator-summary .mini-grid,
+body.cx-creator-route .profile-summary-card .mini-grid,
+body.cx-creator-route .hero-side-card .mini-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+body.cx-creator-route .creator-summary .mini-grid > *,
+body.cx-creator-route .profile-summary-card .mini-grid > *,
+body.cx-creator-route .hero-side-card .mini-grid > * {
+  min-width: 0 !important;
+  padding: 18px !important;
+  border-radius: 18px !important;
+}
+
+/* -----------------------------------------
+   DASHBOARD METRICS
+----------------------------------------- */
+body.cx-creator-route .stats-grid,
+body.cx-creator-route .metrics-grid,
+body.cx-creator-route .dashboard-stats {
+  gap: 18px !important;
+  margin-top: 22px !important;
+}
+
+body.cx-creator-route .stats-grid > *,
+body.cx-creator-route .metrics-grid > *,
+body.cx-creator-route .dashboard-stats > * {
+  min-height: 190px !important;
+  padding: 26px !important;
+}
+
+body.cx-creator-route .stats-grid h3,
+body.cx-creator-route .metrics-grid h3,
+body.cx-creator-route .dashboard-stats h3 {
+  font-size: 14px !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  opacity: 0.85 !important;
+}
+
+body.cx-creator-route .stats-grid .metric-value,
+body.cx-creator-route .metrics-grid .metric-value,
+body.cx-creator-route .dashboard-stats .metric-value {
+  font-size: clamp(44px, 4vw, 60px) !important;
+  line-height: 1 !important;
+  margin-top: 18px !important;
+}
+
+body.cx-creator-route .stats-grid .metric-sub,
+body.cx-creator-route .metrics-grid .metric-sub,
+body.cx-creator-route .dashboard-stats .metric-sub {
+  margin-top: 16px !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+  opacity: 0.78 !important;
+}
+
+/* -----------------------------------------
+   DASHBOARD FEATURE PANELS
+----------------------------------------- */
+body.cx-creator-route .dashboard-panels,
+body.cx-creator-route .insights-grid,
+body.cx-creator-route .recommendation-grid {
+  margin-top: 26px !important;
+  align-items: stretch !important;
+}
+
+body.cx-creator-route .dashboard-panels > *,
+body.cx-creator-route .insights-grid > *,
+body.cx-creator-route .recommendation-grid > * {
+  padding: 26px !important;
+}
+
+body.cx-creator-route .dashboard-panels h2,
+body.cx-creator-route .insights-grid h2,
+body.cx-creator-route .recommendation-grid h2 {
+  font-size: clamp(46px, 4.6vw, 76px) !important;
+  max-width: 560px !important;
+}
+
+body.cx-creator-route .dashboard-panels .panel-top,
+body.cx-creator-route .insights-grid .panel-top,
+body.cx-creator-route .recommendation-grid .panel-top {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+  margin-bottom: 16px !important;
+}
+
+/* -----------------------------------------
+   CAMPAIGNS PAGE FIX
+----------------------------------------- */
+body.cx-creator-route .campaigns-header,
+body.cx-creator-route .campaigns-topbar,
+body.cx-creator-route .campaigns-page-header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 20px !important;
+  align-items: start !important;
+  margin-bottom: 28px !important;
+}
+
+body.cx-creator-route .campaigns-header .header-left,
+body.cx-creator-route .campaigns-topbar .header-left,
+body.cx-creator-route .campaigns-page-header .header-left {
+  min-width: 0 !important;
+}
+
+body.cx-creator-route .campaigns-header .header-right,
+body.cx-creator-route .campaigns-topbar .header-right,
+body.cx-creator-route .campaigns-page-header .header-right {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  gap: 14px !important;
+}
+
+/* Campaign chips */
+body.cx-creator-route .campaign-filters,
+body.cx-creator-route .campaign-categories,
+body.cx-creator-route .filter-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  margin-bottom: 26px !important;
+}
+
+body.cx-creator-route .campaign-filters > *,
+body.cx-creator-route .campaign-categories > *,
+body.cx-creator-route .filter-row > * {
+  min-height: 52px !important;
+  padding: 0 22px !important;
+  border-radius: 999px !important;
+}
+
+/* Campaign card grid */
+body.cx-creator-route .campaign-grid,
+body.cx-creator-route .campaigns-grid,
+body.cx-creator-route .campaign-list-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+}
+
+body.cx-creator-route .campaign-grid > *,
+body.cx-creator-route .campaigns-grid > *,
+body.cx-creator-route .campaign-list-grid > * {
+  min-width: 0 !important;
+  border-radius: 26px !important;
+  padding: 28px !important;
+  min-height: 320px !important;
+}
+
+body.cx-creator-route .campaign-grid h3,
+body.cx-creator-route .campaigns-grid h3,
+body.cx-creator-route .campaign-list-grid h3 {
+  font-size: 20px !important;
+  line-height: 1.2 !important;
+  max-width: 92% !important;
+}
+
+/* -----------------------------------------
+   MOBILE PHASE 2
+----------------------------------------- */
+@media (max-width: 1280px) {
+  body.cx-creator-route .campaign-grid,
+  body.cx-creator-route .campaigns-grid,
+  body.cx-creator-route .campaign-list-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  body.cx-creator-route .campaigns-header,
+  body.cx-creator-route .campaigns-topbar,
+  body.cx-creator-route .campaigns-page-header {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.cx-creator-route .campaigns-header .header-right,
+  body.cx-creator-route .campaigns-topbar .header-right,
+  body.cx-creator-route .campaigns-page-header .header-right {
+    align-items: flex-start !important;
+  }
+
+  body.cx-creator-route .dashboard-hero,
+  body.cx-creator-route .welcome-card,
+  body.cx-creator-route .hero-card,
+  body.cx-creator-route .creator-hero {
+    grid-template-columns: 1fr !important;
+    padding: 28px !important;
+  }
+
+  body.cx-creator-route .creator-summary,
+  body.cx-creator-route .profile-summary-card,
+  body.cx-creator-route .hero-side-card {
+    max-width: 520px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  body.cx-creator-route .page-header,
+  body.cx-creator-route .page-topbar,
+  body.cx-creator-route .dashboard-topbar,
+  body.cx-creator-route .content-topbar {
+    display: block !important;
+  }
+
+  .cx-user-pill,
+  .page-user-pill,
+  .top-user-pill,
+  .page-identity-pill {
+    min-width: 0 !important;
+    width: 100% !important;
+    margin-top: 16px !important;
+  }
+
+  body.cx-creator-route .campaign-grid,
+  body.cx-creator-route .campaigns-grid,
+  body.cx-creator-route .campaign-list-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.cx-creator-route .dashboard-hero h1,
+  body.cx-creator-route .welcome-card h1,
+  body.cx-creator-route .hero-card h1,
+  body.cx-creator-route .creator-hero h1 {
+    font-size: clamp(42px, 12vw, 62px) !important;
+    max-width: 100% !important;
+  }
+
+  body.cx-creator-route .stats-grid > *,
+  body.cx-creator-route .metrics-grid > *,
+  body.cx-creator-route .dashboard-stats > * {
+    min-height: auto !important;
+  }
+
+  body.cx-creator-route .sidebar-footer,
+  body.cx-creator-route .dashboard-sidebar-footer,
+  body.cx-creator-route .sidebar .bottom-area,
+  body.cx-creator-route .dashboard-sidebar .bottom-area {
+    padding-bottom: 22px !important;
+  }
+}
+

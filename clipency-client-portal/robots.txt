@@ -1,0 +1,36 @@
+# Clipency — https://clipency.in/
+#
+# NOTE: while vercel.json sends `X-Robots-Tag: noindex, nofollow` on /(.*)
+# that HTTP header overrides everything below and the whole site stays out
+# of the index. Remove that header when you cut the domain over; this file
+# is what should apply from then on.
+
+User-agent: *
+Allow: /$
+Allow: /og-image.png
+Allow: /favicon.ico
+
+# The client portal is private — a 6-digit gate, real client campaign data.
+# Keep it out of search results entirely.
+Disallow: /client
+Disallow: /landing
+Disallow: /login
+Disallow: /client-login
+Disallow: /home
+Disallow: /campaign
+Disallow: /dashboard
+Disallow: /clips
+Disallow: /analytics
+Disallow: /billing
+Disallow: /creators
+Disallow: /budget
+Disallow: /profile
+Disallow: /diagnostics
+
+# No config or data files
+Disallow: /config.js
+Disallow: /site-config.js
+Disallow: /data.js
+Disallow: /db.js
+
+Sitemap: https://clipency.in/sitemap.xml

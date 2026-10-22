@@ -1,0 +1,46 @@
+.cx-admin-return-link {
+  position: relative;
+  z-index: 9999;
+  width: calc(100% - 32px);
+  min-height: 54px;
+  margin: 12px 16px 18px;
+  padding: 0 16px;
+  box-sizing: border-box;
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(167,139,250,0.22);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at left, rgba(124,58,237,0.20), transparent 60%),
+    rgba(124,58,237,0.13);
+  color: white !important;
+  text-decoration: none !important;
+  font-size: 15px;
+  font-weight: 950;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    background 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cx-admin-return-link:hover {
+  transform: translateX(2px);
+  border-color: rgba(167,139,250,0.38);
+  background:
+    radial-gradient(circle at left, rgba(124,58,237,0.30), transparent 60%),
+    rgba(124,58,237,0.20);
+}
+
+.cx-admin-return-icon {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(167,139,250,0.22);
+  color: #ddd6fe;
+  flex: 0 0 auto;
+}

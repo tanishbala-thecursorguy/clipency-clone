@@ -1,0 +1,37 @@
+-- =============================================================
+-- CLIPENCY · 007 · scope the 006 views to their owner
+-- =============================================================
+-- Found by probing the 006 views as the actual creator rather than as
+-- postgres, which is the only way this shows up.
+--
+-- 1. clip_submissions RLS is
+--      (user_id = auth.uid() OR status = 'approved' OR cx_is_staff())
+--    so ANY signed-in user can read EVERY approved row. Fine for a clip
+--    list. Not fine once rows are grouped by user_id and carry money:
+--    one clipper could read another clipper's earnings by querying
+--    v_cx_creator_campaign_earnings with no filter.
+--
+-- 2. Worse, the creator got all 12 rows of v_cx_client_campaign_spend,
+--    including client_rate_per_video. On an agency campaign that is the
+--    BRAND's rate. A creator who can see their own 2.00 and the brand's
+--    2.50 reads the margin straight off the screen. Migration 004 exists
+--    to prevent exactly that, and 006 handed it back.
+--
+-- Both guards go in the views, not in the pages. A filter the front end
+-- is trusted to remember is a filter somebody eventually forgets.
+--
+--   v_cx_creator_campaign_earnings   where s.user_id = auth.uid()
+--                                      or public.cx_is_staff()
+--   v_cx_client_campaign_spend       where c.client_user_id = auth.uid()
+--                                      or public.cx_is_staff()
+--
+-- Verified by setting request.jwt.claims to each real user id:
+--   the creator      1 earnings row (their own), 0 client spend rows
+--   the brand        its own campaign, pending 7.50 at its own 2.50
+--
+-- ALREADY APPLIED to the live project. The full statements are in the
+-- Supabase migration history under the names
+-- creator_earnings_view_own_rows_only and
+-- client_spend_view_own_campaigns_only. 006 in this folder carries the
+-- unguarded bodies, so read this file alongside it.
+-- =============================================================

@@ -1,0 +1,516 @@
+/* =========================================================
+   CLIPENCY CAMPAIGNS — FIRST VERSION RESTORE
+   ========================================================= */
+
+.classic-campaigns-shell {
+  width: min(1320px, 100%);
+  margin: 0 auto;
+  padding: 18px 0 48px;
+}
+
+.classic-campaigns-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 34px;
+}
+
+.classic-eyebrow {
+  color: #a78bfa;
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.classic-campaigns-header h1 {
+  margin: 8px 0 0;
+  color: white;
+  font-size: clamp(56px, 6vw, 86px);
+  line-height: 0.9;
+  letter-spacing: -0.065em;
+}
+
+.classic-campaign-count {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.045);
+  color: rgba(255,255,255,0.58);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.classic-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.classic-filter-row button {
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.045);
+  color: rgba(255,255,255,0.58);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.classic-filter-row button.active {
+  color: white;
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  border-color: rgba(167,139,250,0.45);
+}
+
+.classic-campaign-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 26px;
+}
+
+.classic-campaign-card {
+  min-height: 294px;
+  border: 1px solid rgba(167,139,250,0.17);
+  border-radius: 26px;
+  padding: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(124,58,237,0.13), transparent 38%),
+    rgba(255,255,255,0.038);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.classic-campaign-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(167,139,250,0.36);
+  box-shadow: 0 26px 86px rgba(0,0,0,0.36);
+}
+
+.classic-card-top {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.classic-music-box {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 19px;
+  background: rgba(167,139,250,0.14);
+  border: 1px solid rgba(167,139,250,0.26);
+  color: #a78bfa;
+  font-size: 30px;
+}
+
+.classic-card-title h3 {
+  margin: 4px 0 10px;
+  color: white;
+  font-size: 20px;
+  line-height: 1.17;
+  letter-spacing: -0.035em;
+}
+
+.classic-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.classic-tags span {
+  min-height: 25px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(167,139,250,0.14);
+  color: #d8ccff;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.classic-tags span.new {
+  background: rgba(34,197,94,0.14);
+  color: #86efac;
+}
+
+.classic-sparkline {
+  height: 100px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  color: #8b5cf6;
+  margin: 18px 0 12px;
+}
+
+.classic-campaign-card:nth-child(2n) .classic-sparkline {
+  color: #14b8a6;
+}
+
+.classic-campaign-card:nth-child(3n) .classic-sparkline {
+  color: #facc15;
+}
+
+.classic-campaign-card:nth-child(4n) .classic-sparkline {
+  color: #ec4899;
+}
+
+.classic-sparkline svg {
+  width: 146px;
+  height: 82px;
+}
+
+.classic-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.classic-card-bottom span {
+  display: block;
+  margin-bottom: 7px;
+  color: rgba(255,255,255,0.48);
+  font-size: 13px;
+  font-weight: 760;
+}
+
+.classic-card-bottom strong {
+  display: block;
+  color: white;
+  font-size: 30px;
+  line-height: 1;
+  letter-spacing: -0.055em;
+  font-weight: 950;
+}
+
+.classic-creators {
+  text-align: right;
+}
+
+.classic-creators strong {
+  color: #a78bfa;
+  font-size: 22px;
+}
+
+/* Hover budget reveal */
+.classic-budget-hover {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(8px);
+  transition:
+    max-height 220ms ease,
+    opacity 180ms ease,
+    transform 180ms ease,
+    margin 180ms ease;
+  margin-top: 0;
+  pointer-events: none;
+}
+
+.classic-campaign-card:hover .classic-budget-hover {
+  max-height: 120px;
+  opacity: 1;
+  transform: translateY(0);
+  margin-top: 16px;
+}
+
+.classic-budget-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.classic-budget-row span {
+  color: rgba(255,255,255,0.52);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.classic-budget-row strong {
+  color: white;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.classic-budget-track {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+
+.classic-budget-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+}
+
+.classic-budget-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  color: rgba(255,255,255,0.42);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Modal */
+.classic-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: none;
+  place-items: center;
+  padding: 22px;
+  background: rgba(0,0,0,0.66);
+  backdrop-filter: blur(14px);
+}
+
+.classic-modal.open {
+  display: grid;
+}
+
+.classic-details-card {
+  position: relative;
+  width: min(760px, 100%);
+  max-height: min(86vh, 760px);
+  overflow: auto;
+  border-radius: 28px;
+  border: 1px solid rgba(167,139,250,0.24);
+  background:
+    radial-gradient(circle at top left, rgba(124,58,237,0.18), transparent 36%),
+    #100c1f;
+  box-shadow: 0 34px 120px rgba(0,0,0,0.55);
+  padding: 30px;
+}
+
+.classic-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.classic-detail-head {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 18px;
+  padding-right: 44px;
+  margin-bottom: 24px;
+}
+
+.classic-detail-head h2 {
+  margin: 10px 0 12px;
+  color: white;
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.classic-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 14px;
+  margin: 22px 0;
+}
+
+.classic-detail-grid > div {
+  padding: 20px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.045);
+}
+
+.classic-detail-grid span,
+.classic-section span {
+  display: block;
+  color: rgba(255,255,255,0.46);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.classic-detail-grid strong {
+  display: block;
+  margin-top: 10px;
+  color: white;
+  font-size: 34px;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+
+.classic-detail-budget {
+  margin: 18px 0 24px;
+}
+
+.classic-section {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.classic-section p,
+.classic-muted {
+  margin: 10px 0 0;
+  color: rgba(255,255,255,0.66);
+  line-height: 1.65;
+}
+
+.classic-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.classic-primary,
+.classic-secondary {
+  min-height: 46px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 0 18px;
+  color: white;
+  font: inherit;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.classic-primary {
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  border-color: rgba(167,139,250,0.48);
+}
+
+.classic-secondary {
+  background: rgba(255,255,255,0.06);
+}
+
+.classic-form {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.classic-form label {
+  display: grid;
+  gap: 8px;
+  color: rgba(255,255,255,0.52);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.classic-form input,
+.classic-form select,
+.classic-form textarea {
+  min-height: 46px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 15px;
+  background: rgba(255,255,255,0.055);
+  color: white;
+  padding: 0 13px;
+  font: inherit;
+}
+
+.classic-form textarea {
+  min-height: 90px;
+  padding: 12px 13px;
+  resize: vertical;
+}
+
+.classic-loading,
+.classic-error {
+  padding: 28px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.045);
+  color: rgba(255,255,255,0.72);
+}
+
+@media (max-width: 1280px) {
+  .classic-campaign-grid {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+}
+
+/* =========================================================
+   CLASSIC CAMPAIGNS SCALE FIX
+   Smaller heading + 3 cards per row on laptop
+   ========================================================= */
+
+.classic-campaigns-header {
+  margin-bottom: 28px !important;
+}
+
+.classic-campaigns-header h1 {
+  font-size: clamp(46px, 4.8vw, 68px) !important;
+  line-height: 0.92 !important;
+  letter-spacing: -0.06em !important;
+}
+
+.classic-campaigns-shell {
+  width: min(1280px, 100%) !important;
+}
+
+.classic-campaign-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 24px !important;
+}
+
+.classic-campaign-card {
+  min-height: 292px !important;
+}
+
+.classic-card-title h3 {
+  font-size: 19px !important;
+}
+
+.classic-card-bottom strong {
+  font-size: 28px !important;
+}
+
+/* Keep 3 cards on normal laptop widths, only collapse below tablet size */
+@media (max-width: 1050px) {
+  .classic-campaign-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .classic-campaign-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .classic-campaigns-header h1 {
+    font-size: clamp(38px, 12vw, 52px) !important;
+  }
+}
+

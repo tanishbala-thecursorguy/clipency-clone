@@ -1,0 +1,11 @@
+-- ============================================================
+-- 027b · Roster award without temp tables
+-- ============================================================
+-- The first cut used `create temp table ... on commit drop`. That drop only
+-- happens at commit, so ops pasting a second brand's member list in the same
+-- request hit "relation _roster already exists". The whole thing is one
+-- statement now, which also means the counts and the insert see one snapshot.
+--
+-- The body that shipped is in 027_roster_award.sql. This file records why it
+-- looks the way it does.
+-- ============================================================
