@@ -41,7 +41,7 @@ try{ var nc = navigator.connection || {};
 try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
 if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavior:'instant'}); });
 </script>
-<link rel="stylesheet" href="/assets/site.css?v=1792705818">
+<link rel="stylesheet" href="/assets/site.css?v=1792783195">
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -684,44 +684,55 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
         <span class="eyebrow">Ready to Launch?</span>
         <h2 class="h-section">Let&rsquo;s make them<br>see you <em class="gold">seven times.</em></h2>
         <div class="divider"><span class="dmk"></span></div>
-        <p>Tell us what you&rsquo;re launching. A Clipency strategist will map your launch and come back with a plan within 24 hours.</p>
+        <p>Pick a time that suits you. You&rsquo;ll talk to Tanish, co-founder of Clipency, about what you&rsquo;re launching and how we&rsquo;d take it to market.</p>
       </div>
       <div class="start-right">
+        <!-- Step 1: who you are. Step 2: pick a time (Calendly, synced to Tanish's Google Calendar). Step 3: booked. -->
+        <div class="bk-steps" aria-hidden="true"><span class="on" data-s="1"><i>1</i>Your details</span><b></b><span data-s="2"><i>2</i>Pick a time</span></div>
         <form id="startForm" novalidate>
-          <div class="f-row">
-            <div class="f-field"><label class="f-label" for="fName">Name <span class="req">*</span></label><input class="f-input" id="fName" name="name" required autocomplete="name" placeholder="Your name"></div>
-            <div class="f-field"><label class="f-label" for="fEmail">Work Email <span class="req">*</span></label><input class="f-input" id="fEmail" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
-          </div>
-          <div class="f-row">
-            <div class="f-field"><label class="f-label" for="fCo">Company <span class="req">*</span></label><input class="f-input" id="fCo" name="company" required autocomplete="organization" placeholder="Company name"></div>
-            <div class="f-field"><label class="f-label" for="fSite">Website <span class="opt">(optional)</span></label><input class="f-input" id="fSite" name="site" autocomplete="url" placeholder="company.com"></div>
-          </div>
-          <div class="f-row">
-            <div class="f-field"><label class="f-label" for="fPhone">WhatsApp number <span class="opt">(optional)</span></label><input class="f-input" id="fPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" placeholder="+91 98765 43210"></div>
-            <div class="f-field f-consent"><label class="f-check"><input type="checkbox" id="fWa" checked> <span>Message me on WhatsApp about my launch</span></label></div>
-          </div>
-          <div class="f-field"><label class="f-label" for="fStage">You are <span class="req">*</span></label>
-            <select class="f-select" id="fStage" name="stage" required>
-              <option value="">Select one</option>
-              <option value="startup">A startup launching for the first time</option>
-              <option value="company">An established company launching a new product</option>
-              <option value="unsure">Not sure yet</option>
-            </select></div>
-          <div class="f-field"><span class="f-label">Services <span class="req">*</span></span>
-            <div class="chips" id="fChips" role="group" aria-label="Services">
-              <button class="chip" type="button" data-svc="films" aria-pressed="false">Launch Films</button>
-              <button class="chip" type="button" data-svc="dist" aria-pressed="false">Distribution &amp; Clipping</button>
-              <button class="chip" type="button" data-svc="ugc" aria-pressed="false">UGC Creators</button>
+          <div class="f-field"><label class="f-label" for="fName">Name <span class="req">*</span></label><input class="f-input" id="fName" name="name" required autocomplete="name" placeholder="Your name"></div>
+          <div class="f-field"><label class="f-label" for="fEmail">Email <span class="req">*</span></label><input class="f-input" id="fEmail" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
+          <div class="f-field"><label class="f-label" for="fPhone">WhatsApp number <span class="req">*</span></label>
+            <div class="f-phone">
+              <select class="f-select" id="fCc" aria-label="Country code">
+                <option value="91" selected>🇮🇳 +91</option><option value="1">🇺🇸 +1</option><option value="44">🇬🇧 +44</option>
+                <option value="971">🇦🇪 +971</option><option value="65">🇸🇬 +65</option><option value="61">🇦🇺 +61</option>
+                <option value="49">🇩🇪 +49</option><option value="33">🇫🇷 +33</option><option value="31">🇳🇱 +31</option>
+                <option value="966">🇸🇦 +966</option><option value="974">🇶🇦 +974</option><option value="81">🇯🇵 +81</option>
+                <option value="82">🇰🇷 +82</option><option value="86">🇨🇳 +86</option><option value="852">🇭🇰 +852</option>
+                <option value="60">🇲🇾 +60</option><option value="62">🇮🇩 +62</option><option value="63">🇵🇭 +63</option>
+                <option value="27">🇿🇦 +27</option><option value="234">🇳🇬 +234</option><option value="55">🇧🇷 +55</option>
+                <option value="52">🇲🇽 +52</option><option value="7">🇷🇺 +7</option><option value="90">🇹🇷 +90</option>
+                <option value="972">🇮🇱 +972</option><option value="353">🇮🇪 +353</option><option value="46">🇸🇪 +46</option>
+                <option value="41">🇨🇭 +41</option><option value="34">🇪🇸 +34</option><option value="39">🇮🇹 +39</option>
+                <option value="64">🇳🇿 +64</option><option value="92">🇵🇰 +92</option><option value="880">🇧🇩 +880</option>
+                <option value="94">🇱🇰 +94</option><option value="977">🇳🇵 +977</option>
+              </select>
+              <input class="f-input" id="fPhone" name="phone" type="tel" required autocomplete="tel-national" inputmode="tel" placeholder="98765 43210">
             </div></div>
-          <div class="f-field"><label class="f-label" for="fMsg">What are you launching? <span class="opt">(optional)</span></label><textarea class="f-area" id="fMsg" name="msg" placeholder="The product, who it's for, and when you want to launch."></textarea></div>
+          <div class="f-row">
+            <div class="f-field"><label class="f-label" for="fSite">Website <span class="req">*</span></label><input class="f-input" id="fSite" name="site" required autocomplete="url" inputmode="url" placeholder="company.com"></div>
+            <div class="f-field"><label class="f-label" for="fBudget">Budget <span class="req">*</span></label>
+              <select class="f-select" id="fBudget" name="budget" required>
+                <option value="">Select a range</option>
+                <option>$700 – $1,500</option>
+                <option>$1,500 – $3,000</option>
+                <option>$3,000 – $7,500</option>
+                <option>$7,500 – $15,000</option>
+                <option>$15,000+</option>
+              </select></div>
+          </div>
           <div class="f-error" id="fErr" hidden></div>
-          <button class="btn btn-ink f-submit" type="submit">Book My Launch Call <span class="arr">&#8594;</span></button>
-          <p class="f-note">We reply within 24 hours. No spam, ever.</p>
+          <button class="btn btn-ink f-submit" type="submit">Pick a time <span class="arr">&#8594;</span></button>
         </form>
+        <div class="bk-cal" id="bkCal" hidden>
+          <button class="bk-back" type="button" id="bkBack">&#8592; Edit my details</button>
+          <div id="bkWidget" class="bk-widget"><div class="bk-loading">Loading calendar&hellip;</div></div>
+        </div>
         <div class="f-success" id="fOk" tabindex="-1">
           <div class="fs-mark"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>
-          <h3>Your launch is on our desk.</h3>
-          <p>A Clipency strategist will reach out within 24 hours with a first plan for your launch.</p>
+          <h3>You&rsquo;re booked.</h3>
+          <p id="fOkMsg">Your call with Tanish is in the calendar. The confirmation with the time is on its way to your email.</p>
         </div>
       </div>
     </div>
@@ -747,6 +758,6 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
   <div class="footer-bottom"><p>&copy; 2026 Clipency. The launch &amp; distribution firm for tech products.</p></div>
 </footer>
 
-<script src="/assets/site.js?v=1792705818"></script>
+<script src="/assets/site.js?v=1792783195"></script>
 </body>
 </html>

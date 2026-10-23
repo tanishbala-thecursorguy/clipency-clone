@@ -154,40 +154,61 @@
   }));
   paintPlan();
 
-  /* ---- book-a-call form: saved as a lead (submit_landing_lead, the same function the
-     old site used). A welcome email, and WhatsApp once it's set up, follow automatically. ---- */
+  /* ---- book a call: details -> Calendly (synced to Tanish's Google Calendar) -> booked.
+     The booking is saved as a lead (submit_landing_lead); lead-welcome then emails the
+     booked time (and WhatsApps it once the WhatsApp Business Platform is connected). ---- */
   const form = $('#startForm');
   if(form){
     const SB = 'https://spwtkdgpgeutrhwcjrpy.supabase.co', KEY = 'sb_publishable_IInNrDBLK3dINHSyWaUDzg_UWF63j0B';
+    const CAL = 'https://calendly.com/tanish-clipency/30min';
     const val = id => (($('#' + id) || {}).value || '').trim();
+    const cal = $('#bkCal'), ok = $('#fOk'), err = $('#fErr');
+    let who = null, saved = false;
+    const step = n => $$('.bk-steps [data-s]').forEach(e => e.classList.toggle('on', +e.dataset.s <= n));
+    const loadCalendly = () => new Promise((res, rej) => {
+      if(window.Calendly) return res();
+      const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'https://assets.calendly.com/assets/external/widget.css'; document.head.appendChild(css);
+      const sc = document.createElement('script'); sc.src = 'https://assets.calendly.com/assets/external/widget.js'; sc.async = true;
+      sc.onload = () => res(); sc.onerror = () => rej(new Error('calendar')); document.head.appendChild(sc);
+    });
+    async function save(booking){
+      if(saved) return; saved = true;
+      const payload = { full_name: who.name, email: who.email, phone: who.phone, website: who.website, budget: who.budget, source_page: location.pathname || '/',
+                        whatsapp_ok: true, form: 'book-call', booking };
+      try{
+        await fetch(SB + '/rest/v1/rpc/submit_landing_lead', { method: 'POST',
+          headers: { 'Content-Type': 'application/json', apikey: KEY, Authorization: 'Bearer ' + KEY },
+          body: JSON.stringify({ payload }), keepalive: true });
+      }catch(e){ /* Calendly already has the booking and emails its own invite */ }
+    }
     form.addEventListener('submit', async e => {
       e.preventDefault();
-      if(!form.checkValidity()){ form.reportValidity(); return; }
-      const err = $('#fErr'), btn = $('.f-submit', form);
       err.hidden = true;
-      if(!picked.size){ err.textContent = 'Pick at least one service. One is fine.'; err.hidden = false; return; }
-      const phone = val('fPhone');
-      if(phone && phone.replace(/\D/g, '').length < 8){ err.textContent = 'Check your WhatsApp number (include the country code).'; err.hidden = false; return; }
-      const stage = $('#fStage'), services = [...picked].map(k => ({films:'Launch Films', dist:'Distribution & Clipping', ugc:'UGC Creators'})[k] || k);
-      const payload = {
-        full_name: val('fName'), email: val('fEmail'), phone, company: val('fCo'), brand_name: val('fCo'),
-        campaign_type: services.join(', '), message: val('fMsg'), source_page: location.pathname || '/',
-        website: val('fSite'), stage: stage ? stage.options[stage.selectedIndex].text : '', services,
-        whatsapp_ok: !!(phone && ($('#fWa') || {}).checked), form: 'launch-call'
-      };
-      if(btn){ btn.disabled = true; btn.style.opacity = .6; }
-      try{
-        const r = await fetch(SB + '/rest/v1/rpc/submit_landing_lead', { method: 'POST',
-          headers: { 'Content-Type': 'application/json', apikey: KEY, Authorization: 'Bearer ' + KEY },
-          body: JSON.stringify({ payload }) });
-        if(!r.ok) throw new Error(String(r.status));
-      }catch(ex){
-        err.textContent = 'Something went wrong sending this. Please try again, or email hello@clipency.in.'; err.hidden = false;
-        if(btn){ btn.disabled = false; btn.style.opacity = ''; }
-        return;
+      if(!form.checkValidity()){ form.reportValidity(); return; }
+      const digits = val('fPhone').replace(/\D/g, '').replace(/^0+/, '');
+      if(digits.length < 6 || digits.length > 13){ err.textContent = 'Enter your WhatsApp number without the country code (pick that on the left).'; err.hidden = false; return; }
+      if(!/^(https?:\/\/)?[\w-]+(\.[\w-]+)+(\/\S*)?$/i.test(val('fSite'))){ err.textContent = 'Enter your website, like company.com.'; err.hidden = false; return; }
+      who = { name: val('fName'), email: val('fEmail'), phone: '+' + val('fCc') + ' ' + digits, website: val('fSite'), budget: val('fBudget') };
+      form.hidden = true; cal.hidden = false; step(2);
+      cal.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      try{ await loadCalendly(); }
+      catch(ex){ $('#bkWidget').innerHTML = '<div class="bk-loading">The calendar didn’t load. <a href="' + CAL + '" target="_blank" rel="noopener">Open it here</a>.</div>'; return; }
+      const box = $('#bkWidget'); box.innerHTML = '';
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      window.Calendly.initInlineWidget({
+        url: CAL + '?hide_gdpr_banner=1&hide_landing_page_details=1' + (dark ? '&background_color=1c1916&text_color=efebe3&primary_color=d8aa74' : '&primary_color=8c6a45'),
+        parentElement: box,
+        prefill: { name: who.name, email: who.email, customAnswers: { a1: who.phone } }
+      });
+    });
+    $('#bkBack').addEventListener('click', () => { cal.hidden = true; form.hidden = false; step(1); $('#fName').focus(); });
+    window.addEventListener('message', e => {
+      if(!e.data || typeof e.data.event !== 'string' || e.origin.indexOf('calendly.com') === -1) return;
+      if(e.data.event === 'calendly.event_scheduled'){
+        const p = e.data.payload || {};
+        save({ event_uri: p.event && p.event.uri, invitee_uri: p.invitee && p.invitee.uri, booked_at: new Date().toISOString() });
+        setTimeout(() => { cal.hidden = true; $('.bk-steps').hidden = true; ok.classList.add('show'); ok.focus({ preventScroll: true }); }, 2600);
       }
-      form.style.display = 'none';
-      const ok = $('#fOk'); ok.classList.add('show'); ok.focus({preventScroll:true});
     });
   }
 

@@ -28,6 +28,14 @@ Approval usually takes minutes to a day.
 
 **Voice notes:** once the person replies, you can send them voice notes freely for 24 hours, from the app on your phone (with coexistence) or later from the console.
 
+### Second template: the booking confirmation
+
+The homepage now books calls directly, so this is the one most people get:
+- **Name:** `clipency_booked` (Utility)
+- **Body:**
+  > Hi {{1}}, this is Tanish from Clipency. Your call with us is booked for {{2}}. Looking forward to speaking with you! If you need another time, use the link in your confirmation email.
+- **Samples:** `{{1}}` = Asha, `{{2}}` = Friday, 24 October at 4:00 pm IST
+
 ## 3. A permanent access token
 
 In Business settings → **System users**:
@@ -43,11 +51,16 @@ Supabase → Edge Functions → **Secrets**:
 
 | Name | Value |
 |---|---|
-| `BOOKING_URL` | Your booking link. **Required: nothing is sent without it** |
+| `BOOKING_URL` | Optional: only to change the booking link (built in: calendly.com/tanish-clipency/30min) |
 | `WHATSAPP_TOKEN` | The permanent token from step 3 |
 | `WHATSAPP_PHONE_NUMBER_ID` | The Phone number ID from step 3 |
+| `CALENDLY_TOKEN` | Calendly → Integrations → **API and webhooks** → Personal access tokens → Generate. This lets the email and WhatsApp say the exact booked time and include the joining link. Without it, the email still goes out and points to Calendly's invite. |
 
 Optional: `WHATSAPP_TEMPLATE` (default `clipency_welcome`) and `LEAD_EMAIL_FROM` (default `Tanish from Clipency <tanish@clipency.in>`).
+
+## Calendly: let the phone number show up in your bookings
+
+In Calendly, open the 30-min event → **Invitee questions** → make the **first** question "WhatsApp number" (one line). The site fills it in automatically from the form.
 
 ## Who gets what
 
