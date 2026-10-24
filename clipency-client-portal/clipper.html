@@ -1159,7 +1159,7 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
 <section class="view" id="v-chats">
   <div class="head">
     <div><div class="crumb">Clipency</div><h1 class="pg">Group chats</h1>
-      <p class="pg-sub">Every campaign you’re in that has a group chat: the brand’s instructions, links and inspo, and the other creators. Messages disappear after 12 hours.</p></div>
+      <p class="pg-sub">Every campaign you’re in that has a group chat: the brand’s instructions, links and inspo, and the other creators. Messages disappear after 1 hour.</p></div>
   </div>
   <div id="gcInbox"></div>
 </section>
@@ -3522,9 +3522,9 @@ function showChats(focusId){
   else if(focusId)GCX.open(focusId); else GCX.refresh();
 }
 function pollGcBadge(){if(window.CXGroupChat&&!DEMO&&ME)CXGroupChat.unread(sb).then(setGcBadge);}
-setInterval(pollGcBadge,30000);
+setInterval(pollGcBadge,60000);
 function pollApBadge(){if(window.CXAppeals&&!DEMO&&ME)CXAppeals.unread(sb).then(setApBadge);}
-setInterval(pollApBadge,30000);
+setInterval(pollApBadge,60000);
 var CN_PLAT='instagram',CN_CODE='';
 function openCodeVerify(p){CN_PLAT=p;
   var l=CN_PLAT[0].toUpperCase()+CN_PLAT.slice(1);

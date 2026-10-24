@@ -22,7 +22,8 @@
   'use strict';
   if(window.CXAppeals)return;
 
-  var POLL_MS=8000, IMG_MAX=1280, BUCKET='appeal-attachments';
+  /* Load-friendly refresh: the open thread every 10s, the list every 60s, nothing while hidden. No Realtime. */
+  var POLL_MS=10000, LIST_POLL_MS=60000, IMG_MAX=1280, BUCKET='appeal-attachments';
 
   /* Keep everyone on-platform: no contact details, no outside chat. Mirrors the server. */
   var RULES=[
@@ -413,7 +414,7 @@
     /* Realtime: on the real backend a new message or a settled appeal arrives instantly (row-level
        security decides who receives what). Polling stays as the fallback; while live it slows to 30s. */
     var lv={ok:false,off:function(){}}, lastPoll=Date.now();
-    if(opt.sb&&typeof opt.sb.channel==='function'){
+    if(false&&opt.sb&&typeof opt.sb.channel==='function'){   /* Realtime off for now (database load) */
       var lt=null,fire=function(){clearTimeout(lt);lt=setTimeout(async function(){
         if(!document.body.contains(root)||S.busy)return;
         await loadList(); if(S.cur)await loadThread(S.cur,true);
@@ -426,15 +427,14 @@
         lv.off=function(){lv.ok=false;try{opt.sb.removeChannel(ch);}catch(e){}};
       }catch(e){}
     }
+    var lastList=Date.now();
     function poll(){
       clearInterval(S.timer);
       S.timer=setInterval(async function(){
         if(!document.body.contains(root)){clearInterval(S.timer);lv.off();return;}
         if(document.hidden||!root.offsetParent||S.busy)return;
-        if(lv.ok&&Date.now()-lastPoll<30000)return;
-        lastPoll=Date.now();
-        await loadList();
-        if(S.cur)await loadThread(S.cur,true);
+        if(S.cur)await loadThread(S.cur,true);                       /* the open conversation: every 10s */
+        if(Date.now()-lastList>=LIST_POLL_MS){lastList=Date.now();await loadList();}   /* the list: every 60s */
       },POLL_MS);
     }
     paintEmptyMain();

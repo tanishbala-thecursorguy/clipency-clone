@@ -17,7 +17,9 @@
 (function(){
   'use strict';
   if(window.CXGroupChat)return;
-  var POLL_MS=3000;
+  /* Load-friendly refresh (the project runs on a small database): an open chat every 10s,
+     lists and badges every 60s, nothing while the tab is hidden. No Realtime. */
+  var POLL_MS=10000, LIST_POLL_MS=60000;
   var U=function(){return (window.CXAppeals&&CXAppeals._util)||{};};
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function errText(e){return (e&&(e.message||e.error_description||e.msg))||String(e||'Something went wrong');}
@@ -144,6 +146,7 @@
      the polling below keeps working; while the live connection is healthy it only polls every 30s. */
   function live(sb,table,filter,cb){
     var st={ok:false,off:function(){}};
+    return st;   /* Realtime is off for now to keep database load down; polling below does the work */
     if(!sb||typeof sb.channel!=='function')return st;
     var t=null,fire=function(){clearTimeout(t);t=setTimeout(cb,150);};
     var cfg={event:'*',schema:'public',table:table}; if(filter)cfg.filter=filter;
@@ -162,7 +165,7 @@
     style();
     var sb=opt.sb,cid=opt.campaignId,timer=null,last=-1,shot=null,busy=false,role=opt.role||'creator',dead=false;
     host.innerHTML='<div class="cxg cxg-room">'+(opt.head||'')+
-      '<div class="cxg-note">🕒<span><b>Messages disappear 12 hours after they’re sent</b> and are deleted for good. There is no backup, so save anything you need.</span></div>'+
+      '<div class="cxg-note">🕒<span><b>Messages disappear 1 hour after they’re sent</b> and are deleted for good. There is no backup, so save anything you need.</span></div>'+
       (role==='admin'?'<div class="cxg-bans" data-bans hidden></div>':'')+
       '<div class="cxg-msgs" data-msgs><div class="cxg-empty">Loading…</div></div>'+
       '<div class="cxg-paused" data-paused hidden>Clipency has paused this chat. You can read it, but not post right now.</div>'+
@@ -289,7 +292,7 @@
           '<b>Group chat is off</b>Turn it on to message every creator posting for <b style="display:inline;font-size:inherit">'+esc(s.title)+'</b> in one place: daily instructions, Drive links to assets, inspo. '+
           'Creators see it inside the campaign; contact details are blocked and Clipency can read along.'+
           '<div style="margin:14px auto 0;max-width:340px;padding:10px 12px;border:1px solid var(--g-line);border-radius:10px;background:var(--g-bg2);font-size:12.5px;color:var(--g-ink2)">'+
-            '<b style="display:inline;font-size:inherit;color:var(--g-ink)">Free</b> for every campaign. Messages are deleted after '+(s.ttl_hours||12)+' hours; turn it off any time.</div>'+
+            '<b style="display:inline;font-size:inherit;color:var(--g-ink)">Free</b> for every campaign. Messages are deleted after '+((s.ttl_hours||1)===1?'1 hour':(s.ttl_hours+' hours'))+'; turn it off any time.</div>'+
           '<div style="margin-top:14px"><button class="cxg-btn pri" data-on>Turn on group chat</button></div></div></div>';
         el.querySelector('[data-on]').onclick=function(){toggle(true);};
         return;
@@ -374,7 +377,7 @@
     }
     refresh().then(function(){ if(opt.focus)open(opt.focus); else if(list[0]&&window.innerWidth>820)open(list[0].campaign_id); });
     var lvI=live(sb,'campaign_chat_messages',null,function(){if(document.body.contains(L))refresh();}), lastI=Date.now();
-    var t=setInterval(function(){if(!document.body.contains(L)){clearInterval(t);lvI.off();return;} if(lvI.ok&&Date.now()-lastI<LIVE_POLL_MS)return; lastI=Date.now(); if(!document.hidden&&L.offsetParent)refresh();},6000);
+    var t=setInterval(function(){if(!document.body.contains(L)){clearInterval(t);lvI.off();return;} if(lvI.ok&&Date.now()-lastI<LIVE_POLL_MS)return; lastI=Date.now(); if(!document.hidden&&L.offsetParent)refresh();},LIST_POLL_MS);
     return {refresh:refresh,open:open};
   }
   async function unread(sb){try{var l=await rpc(sb,'gc_list');return l.reduce(function(n,c){return n+(c.unread||0);},0);}catch(e){return 0;}}
@@ -424,7 +427,7 @@
     }
     refresh().then(function(){var first=list.filter(function(c){return c.enabled;})[0]||(opt.campaignId&&list[0]); if(first)open(first.campaign_id);});
     var lvA=live(sb,'campaign_chat_messages',null,function(){if(document.body.contains(L))refresh();}), lastA=Date.now();
-    var ta=setInterval(function(){if(!document.body.contains(L)){clearInterval(ta);lvA.off();return;} if(lvA.ok&&Date.now()-lastA<LIVE_POLL_MS)return; lastA=Date.now(); if(!document.hidden&&L.offsetParent)refresh();},8000);
+    var ta=setInterval(function(){if(!document.body.contains(L)){clearInterval(ta);lvA.off();return;} if(lvA.ok&&Date.now()-lastA<LIVE_POLL_MS)return; lastA=Date.now(); if(!document.hidden&&L.offsetParent)refresh();},LIST_POLL_MS);
     return {refresh:refresh};
   }
 

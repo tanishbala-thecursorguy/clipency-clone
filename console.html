@@ -3932,7 +3932,7 @@ RENDERERS.groupchats=async function(){
   var camps=rooms.slice().sort(function(a,b){return String(a.title).localeCompare(String(b.title));});
   var cnt=function(id){return clipsAll.filter(function(a){return String(a.campaign_id)===String(id);}).length;};
   return '<div class="head"><div class="eyeb">Supervision</div><h1>Live chat monitor.</h1>'+
-    '<p class="sub">Everything happening between creators and clients, live: campaign group chats and clip appeals. Pick a campaign to see only its conversations. Read along, post as the Clipency team, delete a message, ban a creator, pause a room, or settle an appeal. Group chat messages delete themselves after 12 hours; appeals once settled.</p></div>'+
+    '<p class="sub">Everything happening between creators and clients, live: campaign group chats and clip appeals. Pick a campaign to see only its conversations. Read along, post as the Clipency team, delete a message, ban a creator, pause a room, or settle an appeal. Group chat messages delete themselves after 1 hour; appeals once settled.</p></div>'+
     '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">'+
       '<label class="mono" style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40)">Campaign</label>'+
       '<select class="inp" id="monCamp" style="max-width:340px;padding:8px 11px;font-size:13px"><option value="">All campaigns</option>'+
