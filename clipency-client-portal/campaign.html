@@ -568,28 +568,6 @@
       <p class="foot-note" id="footNote"></p>
       </section>
 
-      <section class="cx-view" data-view="appeals" role="tabpanel" aria-label="Appeals" hidden>
-      <div class="page-head">
-        <div>
-          <span class="eyebrow">Appeals</span>
-          <h1>Questions about your decisions.</h1>
-          <p>When a creator appeals a clip you rejected, it lands here with the clip attached. Explain what to change, share a screenshot, or approve it after all. Clipency can see these conversations.</p>
-        </div>
-      </div>
-      <div id="apMount" style="margin-top:28px"></div>
-      </section>
-
-      <section class="cx-view" data-view="chat" role="tabpanel" aria-label="Group chat" hidden>
-      <div class="page-head">
-        <div>
-          <span class="eyebrow">Group chat</span>
-          <h1>Talk to every creator at once.</h1>
-          <p>One room for this campaign: post the day’s brief, Drive links to assets, inspo and answers. Every creator posting for the campaign sees it. Turn it on or off any time.</p>
-        </div>
-      </div>
-      <div id="gcMount" style="margin-top:28px"></div>
-      </section>
-
       <section class="cx-view" data-view="creators" role="tabpanel" aria-label="Creators" hidden>
 
 
@@ -707,8 +685,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./config.js"></script>
 <script src="./js/live.js"></script>
-<script src="/clipency-appeals.js"></script>
-<script src="/clipency-groupchat.js"></script>
 
 <script type="module">
 /* wait for live production data before painting; resolves to 'live' or 'mock' */
@@ -726,7 +702,7 @@ if (window.CLIPENCY_LIVE) {
    costs one section, not five, and nothing re-binds on later switches
    (which is also what keeps listeners from accumulating).
    ============================================================ */
-const KEYS = ['overview', 'review', 'clips', 'analytics', 'billing', 'creators', 'appeals', 'chat'];
+const KEYS = ['overview', 'review', 'clips', 'analytics', 'billing', 'creators'];
 
 const CX = (function () {
   const defs = {};
@@ -1546,7 +1522,7 @@ CX.define('review', function(document){
       var res = await review(row, false, reason);
       closeReject(); paintCreators(); render();
       toast(res.settled ? 'This clip was already ' + res.settled + '.'
-                        : 'Rejected. The creator sees your reason and can appeal it.');
+                        : 'Rejected. The creator sees your reason and can appeal it to Clipency.');
     }catch(err){
       toast(err.message || 'Could not reject this clip.', true);
     }finally{
@@ -2295,45 +2271,6 @@ CX.define('billing', function(document){
 })();
 });
 
-CX.define('appeals', function(document){
-  var host = document.getElementById('apMount');
-  var sb = window.clipencySupabase || window.supabaseClient || window.sbClient || null;
-  var demo = false; try{ demo = sessionStorage.getItem('clipency-demo') === '1'; }catch(e){}
-  if(demo || !sb || !window.CXAppeals){
-    host.innerHTML = '<div class="panel" style="padding:40px;text-align:center;color:var(--ink-55)">Appeals appear here once your campaign is live and creators start posting.</div>';
-    return;
-  }
-  window.CX_APPEALS = CXAppeals.mount(host, { sb: sb, role: 'client', onUnread: cxAppealBadge,
-    /* approving from an appeal changes the clip: drop the 90s data cache so the next view is fresh */
-    onResolved: function(){ try{ sessionStorage.removeItem('clipency-live-v2'); }catch(e){} } });
-});
-/* Sidebar count on Appeals: unread messages from creators. */
-function cxAppealBadge(n) {
-  var a = document.querySelector('.snav a[data-nav="appeals"]'); if(!a) return;
-  var old = a.querySelector('.navcount'); if(old) old.remove();
-  if(n){ var sp = document.createElement('span'); sp.className = 'navcount'; sp.title = n + ' unread appeal message' + (n === 1 ? '' : 's'); sp.textContent = n; a.appendChild(sp); }
-}
-(function pollAppealBadge(){
-  function tick(){
-    var sb = window.clipencySupabase || window.supabaseClient || window.sbClient;
-    if(sb && window.CXAppeals) CXAppeals.unread(sb).then(cxAppealBadge);
-  }
-  setTimeout(tick, 1500); setInterval(tick, 30000);
-})();
-
-CX.define('chat', function(document){
-  var host = document.getElementById('gcMount');
-  var sb = window.clipencySupabase || window.supabaseClient || window.sbClient || null;
-  var demo = false; try{ demo = sessionStorage.getItem('clipency-demo') === '1'; }catch(e){}
-  var act = (window.CLIPDB && CLIPDB.active && CLIPDB.active()) || null;
-  var cid = act ? String(act.baseId || act.id) : '';
-  if(demo || !sb || !window.CXGroupChat || !cid){
-    host.innerHTML = '<div class="panel" style="padding:40px;text-align:center;color:var(--ink-55)">The group chat opens once your campaign is live.</div>';
-    return;
-  }
-  CXGroupChat.mount(host, { sb: sb, campaignId: cid, role: 'client' });
-});
-
 CX.define('creators', function(document){
 (function(){
   if(CLIPSHELL.emptyState()) return;
@@ -2383,10 +2320,7 @@ CX.define('creators', function(document){
 /* emptyState() replaces .content wholesale, which would delete every section,
    so it runs ONCE here rather than inside each section. When a campaign has no
    clips there is nothing to show in any section anyway. */
-/* Appeals and Group chat work before any clip is approved (a rejected clip can
-   already be appealed, and the chat is for briefing creators), so they skip it. */
-var CX_ALWAYS_OPEN = ['appeals', 'chat'];
-window.__cxEmptyShown = CX_ALWAYS_OPEN.indexOf(wanted()) === -1 && CLIPSHELL.emptyState();
+window.__cxEmptyShown = CLIPSHELL.emptyState();
 if (!window.__cxEmptyShown) {
   /* Keep the section's own parameters (?creator=, ?tab= on the Clips Feed),
      so a shared or reloaded filtered link opens filtered. */

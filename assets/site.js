@@ -236,11 +236,16 @@
   /* performance: lite devices run at ~30fps; nothing animates while the hero is off screen */
   const LITE = document.documentElement.classList.contains('lite');
   const FRAME_MS = LITE ? 33 : 0;
+  /* low-end phones/PCs, slow connections and "reduce motion": a still painting, no animation loops at all */
+  const STILL = reduced || LITE;
+  /* loops park themselves while the hero is off screen and are woken when it comes back */
+  const parked = [];
   let heroOn = true;
   const heroEl = $('.hero');
   if(heroEl && 'IntersectionObserver' in window){
     new IntersectionObserver(es => es.forEach(e => {
       heroOn = e.isIntersecting;
+      if(heroOn) parked.splice(0).forEach(fn => requestAnimationFrame(fn));
       $$('.scene svg').forEach(svg => { try{ heroOn ? svg.unpauseAnimations() : svg.pauseAnimations(); }catch(_){} });
     }), {threshold: 0}).observe(heroEl);
   }
@@ -248,7 +253,7 @@
   if(LITE){ $$('.scene animate').forEach(a => a.remove()); const w = $('.sc-water'); if(w) w.removeAttribute('filter'); }
 
   const field = $('#leafField'), artLeft = $('.hero-art-left'), artMist = $('.hero-art-right');
-  if(!reduced && field && artLeft){
+  if(!STILL && field && artLeft){
     const BLOOMS = [1,2,3,4,5,6,7].map(n => '/art/bloom' + n + '.webp');
     /* where the blossoms sit on the branch painting, as fractions of its width / height */
     const ANCHORS = [[.04,.06],[.13,.04],[.18,.12],[.08,.32],[.16,.28],[.24,.30],[.30,.42],[.33,.40],[.43,.33],[.50,.41],
@@ -301,7 +306,7 @@
     addEventListener('resize', measure); addEventListener('load', measure); setTimeout(measure, 1200);
     let lastDraw = 0;
     (function frame(now){
-      if(!heroOn && !leaves.length){ last = now; requestAnimationFrame(frame); return; }   /* idle while scrolled away */
+      if(!heroOn && !leaves.length){ last = now; parked.push(t => { last = t; frame(t); }); return; }   /* stops while scrolled away */
       if(now - lastDraw < FRAME_MS){ requestAnimationFrame(frame); return; } lastDraw = now;
       const dt = Math.min((now - last)/1000, .05); last = now; T += dt;
       const vw = innerWidth, vh = innerHeight, sc = scrollY, top = sc - vh*.4, bot = sc + vh*1.4;
@@ -390,7 +395,7 @@
       scBoat.setAttribute('opacity', op.toFixed(3));
     }
 
-    if(reduced){
+    if(STILL){
       placeBoat(DOCK, .78, 1, 0, false);
     } else {
       const rings = []; let nextRing = 0;
@@ -398,7 +403,7 @@
 
       let lastDraw = 0, paused = 0, pausedAt = 0;
       (function tick(now){
-        if(!heroOn){ if(!pausedAt) pausedAt = now; requestAnimationFrame(tick); return; }        /* the story waits while you scroll */
+        if(!heroOn){ if(!pausedAt) pausedAt = now; parked.push(tick); return; }        /* the story stops while you scroll */
         if(pausedAt){ paused += now - pausedAt; pausedAt = 0; last = now; }
         if(now - lastDraw < FRAME_MS){ requestAnimationFrame(tick); return; } lastDraw = now;
         const t = (now - start - paused) / 1000, dt = Math.min(.05, (now - last) / 1000); last = now;

@@ -806,3 +806,7 @@ html.lite .paper-field::before{display:none;}
 .bk-loading{padding:80px 20px;text-align:center;font-size:13.5px;color:var(--ink-55);}
 .bk-loading a{color:var(--bronze);}
 @media (max-width:900px){.start-right{padding:40px 22px 36px;}.bk-widget,.bk-widget iframe,.bk-widget .calendly-inline-widget{min-height:760px;height:760px;}}
+
+/* low-end devices and "reduce motion": nothing loops */
+html.lite .live-dot::after,html.lite .sc-lantern-refl,html.lite .sc-torii-refl{animation:none;}
+@media (prefers-reduced-motion:reduce){.live-dot::after,.sc-lantern-refl,.sc-torii-refl{animation:none;}}

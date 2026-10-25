@@ -961,8 +961,6 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
   <div class="nav-lab">Clipper</div>
   <button class="nav-item on" data-v="campaigns"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none"/></svg>Campaigns</button>
   <button class="nav-item" data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V5M4 19h16"/><path d="m7 14 4-4 3 3 5-6"/></svg>Stats</button>
-  <button class="nav-item" data-v="appeals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 10.5h7M8.5 13.5h4.5"/></svg>Appeals<span class="ap-ct" id="apNavCt" hidden></span></button>
-  <button class="nav-item" data-v="chats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8.5h2.5A1.5 1.5 0 0 1 21 10v7.5l-2.5-2H11A1.5 1.5 0 0 1 9.5 14v-1"/><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V11a1.5 1.5 0 0 1-1.5 1.5h-7L4 14.5z"/></svg>Group chats<span class="ap-ct" id="gcNavCt" hidden></span></button>
   <button class="nav-item" data-v="payouts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/></svg>Payouts</button>
   <button class="nav-item" data-v="wallet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 7H5a2 2 0 0 1 0-4h13v4"/><path d="M20 7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/></svg>Wallet</button>
 
@@ -1023,7 +1021,7 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
       <button class="backlink" id="backBtn">← Campaigns</button>
       <span class="det-ico" id="dIco"></span>
       <div><div class="det-title" id="dName"></div><div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap" id="dTags"></div></div>
-      <button class="btn-ghost" style="margin-left:auto;display:none;align-items:center;gap:7px" id="dChat"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 8.5h2.5A1.5 1.5 0 0 1 21 10v7.5l-2.5-2H11A1.5 1.5 0 0 1 9.5 14v-1"/><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V11a1.5 1.5 0 0 1-1.5 1.5h-7L4 14.5z"/></svg>Group chat<span class="ap-ct" id="dChatCt" hidden></span></button>
+      
       <button class="btn" style="margin-left:10px" id="dSubmit1">Submit Your Clip →</button>
     </div>
     <div class="card" id="dAuto" style="margin-bottom:13px;display:none"></div>
@@ -1156,22 +1154,6 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
 </section>
 
 <!-- ===== PAYOUTS ===== -->
-<section class="view" id="v-chats">
-  <div class="head">
-    <div><div class="crumb">Clipency</div><h1 class="pg">Group chats</h1>
-      <p class="pg-sub">Every campaign you’re in that has a group chat: the brand’s instructions, links and inspo, and the other creators. Messages disappear after 1 hour.</p></div>
-  </div>
-  <div id="gcInbox"></div>
-</section>
-
-<section class="view" id="v-appeals">
-  <div class="head">
-    <div><div class="crumb">Clipency</div><h1 class="pg">Appeals</h1>
-      <p class="pg-sub">Talk to the client about a rejected clip: ask what to change, or explain why it should count. Replies also reach you by email.</p></div>
-  </div>
-  <div id="apMount"></div>
-</section>
-
 <section class="view" id="v-payouts">
   <div class="head">
     <div><div class="crumb">Clipency</div><h1 class="pg">Payouts</h1>
@@ -1224,7 +1206,7 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
       <div class="kv"><span class="k">Total earned</span><span class="v gold money" id="piEarned" data-usd="0">-</span></div>
       <div class="kv"><span class="k">Username</span><span class="v" style="font-family:var(--mono);font-size:12.5px"><span id="piUser">-</span> <button class="edit-mini" id="editUserBtn">Edit</button></span></div>
       <div class="kv"><span class="k">Member since</span><span class="v" style="font-size:12.5px" id="piSince">-</span></div>
-      <div class="kv"><span class="k">Account type</span><span class="v" style="font-size:12.5px"><span id="piType">-</span> <button class="edit-mini" id="piTypeBtn">Change</button></span></div>
+      
       <p class="sub-t" style="margin-top:9px">Usernames are unique and can be changed once every 30 days.</p>
     </div>
     <div class="card" id="connCard">
@@ -1287,8 +1269,8 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
   <button class="m-x" data-close="rejModal">✕</button>
   <div class="eyeb">Rejection Notice</div><h3>Why this clip was rejected</h3>
   <p class="m-sub" style="margin-bottom:12px" id="rejReason">-</p>
-  <div class="field"><label>Appeal to the client</label><textarea id="appealText" placeholder="Explain why this clip should count, or ask what exactly to change…"></textarea><div style="font-size:11.5px;color:var(--ink-40);margin-top:6px">Opens a chat with the client, with this clip attached. No phone numbers, emails or outside chat apps.</div></div>
-  <div class="m-actions"><button class="btn-ghost" data-close="rejModal">Close</button><button class="btn" id="appealSave">Open appeal</button></div>
+  <div class="field"><label>Appeal to admin for re-review</label><textarea id="appealText" placeholder="Explain why this clip should be re-reviewed…"></textarea></div></div>
+  <div class="m-actions"><button class="btn-ghost" data-close="rejModal">Close</button><button class="btn" id="appealSave">Send Appeal</button></div>
   <div class="modal-msg" id="rejMsg"></div>
 </div></div>
 
@@ -1363,14 +1345,8 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
     <span class="cm"><b>Email</b><span id="chEmailD">…</span></span><span class="ar">↗</span></a>
   <a class="chan" id="chDc" href="#" target="_blank" rel="noopener"><span class="ci"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.3 5.4A17 17 0 0 0 15 4l-.2.4a15.7 15.7 0 0 1 3.8 1.5 13.4 13.4 0 0 0-11.3 0A15.7 15.7 0 0 1 9.2 4.4L9 4a17 17 0 0 0-4.3 1.4C2 9.5 1.3 13.5 1.7 17.4A17 17 0 0 0 6.9 20l.9-1.4a11 11 0 0 1-1.8-.9l.4-.3a12.2 12.2 0 0 0 11.2 0l.4.3a11 11 0 0 1-1.8.9l.9 1.4a17 17 0 0 0 5.2-2.6c.5-4.5-.6-8.5-3-12zM8.9 15c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1S9.9 15 8.9 15zm6.2 0c-1 0-1.9-.9-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1z"/></svg></span>
     <span class="cm"><b>Discord</b><span>Open a ticket on our server</span></span><span class="ar">↗</span></a>
-  <button class="chan" id="chAppeal" type="button" style="width:100%;text-align:left;font:inherit;cursor:pointer"><span class="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 10.5h7M8.5 13.5h4.5"/></svg></span>
-    <span class="cm"><b>Appeal</b><span>If you need immediate support: chat with the Clipency team here</span></span><span class="ar">→</span></button>
-  <div id="supAsk" hidden style="margin-top:10px">
-    <div class="field"><label>Topic</label><select id="supTopic"><option>Tech issue</option><option>Payments &amp; payouts</option><option>Running a campaign</option><option>My account</option><option>Something else</option></select></div>
-    <div class="field"><label>Your question</label><textarea id="supText" placeholder="Describe the issue or question. The Clipency team replies here and by email."></textarea></div>
-    <div class="m-actions"><button class="btn-ghost" id="supBack" type="button">Back</button><button class="btn" id="supSend" type="button">Send to Clipency</button></div>
-    <div class="modal-msg" id="supMsg"></div>
-  </div>
+  
+  
   <div class="note-strip" style="margin-top:14px">ⓘ&nbsp;Rejected clip? Check the <b>rejection note</b> under Stats → Rejected first. You can appeal from there.</div>
   <div style="text-align:center;margin-top:12px"><button class="onb-skip" id="replayTour">↻ Replay the dashboard tour</button></div>
 </div></div>
@@ -1444,8 +1420,6 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/clipency-appeals.js"></script>
-<script src="/clipency-groupchat.js"></script>
 <script src="/clipency-route-switch.js"></script>
 <script>
 /* ============================================================
@@ -1830,26 +1804,14 @@ function swapMoney(){
 }
 
 /* ---------- nav ---------- */
-function go(v){if(v==='appeals')setTimeout(function(){showAppeals();},0);
-  if(v==='chats')setTimeout(function(){showChats();},0);
+function go(v){
   if(v==='profile')setTimeout(renderAutoSubmit,0);
   $$('.nav-item[data-v]').forEach(function(n){n.classList.toggle('on',n.dataset.v===v);});
   $$('.view').forEach(function(p){p.classList.toggle('on',p.id==='v-'+v);});window.scrollTo({top:0});}
 $$('.nav-item[data-v]').forEach(function(n){n.onclick=function(){go(n.dataset.v);};});
 
 /* support - opens a contact card instead of a page */
-$('#navSupport').onclick=function(){$('#supAsk').hidden=true;$('#supMsg').textContent='';open_('supModal');};
-$('#chAppeal').onclick=function(){$('#supAsk').hidden=false;setTimeout(function(){$('#supText').focus();},30);};
-$('#supBack').onclick=function(){$('#supAsk').hidden=true;};
-$('#supSend').onclick=async function(){
-  var m=$('#supMsg'),b=$('#supSend'),t=$('#supText').value.trim();
-  if(DEMO){m.className='modal-msg err';m.textContent='Support chat is not available in demo mode.';return;}
-  if(!t){m.className='modal-msg err';m.textContent='Write your question first.';return;}
-  b.disabled=true;m.className='modal-msg';m.textContent='Sending…';
-  try{var r=await CXAppeals.support(sb,t,$('#supTopic').value);$('#supText').value='';close_('supModal');go('appeals');showAppeals(r&&r.id);toast('Sent \u2014 the Clipency team will reply here and by email');}
-  catch(e){m.className='modal-msg err';m.textContent=e.message||String(e);}
-  b.disabled=false;
-};
+$('#navSupport').onclick=function(){open_('supModal');};
 $('#chEmail').href='mailto:'+SUPPORT_EMAIL;$('#chEmailD').textContent=SUPPORT_EMAIL;
 /* Number intentionally not rendered - the link still carries it, so the row
    opens the right chat without publishing the number on screen. */
@@ -1975,7 +1937,6 @@ async function loadAll(){
   PROFILE=r[0].data||{id:uid,email:ME.email};CAMPAIGNS=r[1].data||[];SUBS=r[2].data||[];
   ACCOUNTS=r[3].data||[];METHODS=r[4].data||[];PAYOUTS=r[5].data||[];
   /* UGC creator / clipper lives in its own table on the live backend (036) */
-  if(PROFILE&&!PROFILE.creator_type){try{var ct=await sb.rpc('creator_get_type');if(!ct.error&&ct.data)PROFILE.creator_type=ct.data;}catch(e){}}
   /* Unpaid-platform clips: left off entirely for the creators the campaign
      names (see loadUnpaid); the full list is kept for the campaign page's note. */
   await loadUnpaid(SUBS.map(function(s){return s.campaign_id;}));
@@ -2180,10 +2141,8 @@ function renderShell(){
   $('#uName').textContent=name;$('#uAva').textContent=ini;$('#tName').textContent=name;$('#tAva').textContent=ini;
   $('#uRole').textContent=(PROFILE.role||'clipper').replace(/^\w/,function(c){return c.toUpperCase();});
   $('#pfAva').textContent=ini;$('#pfName').textContent=name;$('#pfEmail').textContent=PROFILE.email||ME.email||'';
-  $('#pfChips').innerHTML='<span class="chip ok">✓ Account Verified</span><span class="chip gold" id="pfTypeChip">Clipper</span>'+
-    (PROFILE.country?'<span class="chip">'+esc(PROFILE.country)+'</span>':'')+
-    '<button class="edit-mini" id="pfSwitch" style="margin-left:4px">⇄ Switch</button>';
-  $('#pfSwitch').onclick=switchType;
+  $('#pfChips').innerHTML='<span class="chip ok">✓ Account Verified</span>'+
+    (PROFILE.country?'<span class="chip">'+esc(PROFILE.country)+'</span>':'');
   $('#piName').textContent=name;$('#piUser').textContent='@'+(PROFILE.username||'-');
   $('#efFirst').value=PROFILE.first_name||'';$('#efLast').value=PROFILE.last_name||'';$('#efDisplay').value=PROFILE.display_name||'';
 }
@@ -2693,7 +2652,7 @@ $$('#campFilters .f-chip').forEach(function(b){b.onclick=function(){
 /* ---------- campaign detail (full page) ---------- */
 var DET=null,detDays=7;
 async function openDetail(c){
-  DET=c; paintChatBtn(c); renderDetAuto(c);
+  DET=c; renderDetAuto(c);
   $('#campList').style.display='none';$('#campDetail').style.display='block';
   $('#detFilters').innerHTML=$('#campFilters').innerHTML;
   $$('#detFilters .f-chip').forEach(function(b){b.onclick=function(){
@@ -2824,15 +2783,6 @@ async function openDetail(c){
     :'<div class="sub-t">No approved clips yet. Be first.</div>';
 }
 /* ---- campaign group chat: shown when the client has turned it on ---- */
-async function paintChatBtn(c){
-  var b=$('#dChat'); b.style.display='none';
-  if(DEMO||!window.CXGroupChat||!c)return;
-  var s=await CXGroupChat.status(sb,c.id);
-  if(DET!==c||!s||!s.enabled||!s.role)return;
-  b.style.display='inline-flex';
-  var n=$('#dChatCt'); n.hidden=!s.unread; n.textContent=s.unread||'';
-  b.onclick=function(){n.hidden=true;CXGroupChat.drawer(sb,c.id,{title:c.title,onClose:function(){paintChatBtn(c);}});};
-}
 $('#backBtn').onclick=function(){$('#campDetail').style.display='none';$('#campList').style.display='block';DET=null;};
 $('#dSubmit1').onclick=$('#dSubmit2').onclick=function(){
   if(!DET)return;
@@ -3248,17 +3198,12 @@ function openReject(id){REJ_ID=id;var s=SUBS.find(function(x){return x.id===id;}
   if(hint) hint.style.display = flagged ? 'block' : 'none';
   $('#appealText').value=(s&&s.appeal_note)||'';$('#rejMsg').textContent='';open_('rejModal');}
 $('#appealSave').onclick=async function(){
-  var m=$('#rejMsg'),btn=$('#appealSave'),text=$('#appealText').value.trim();
-  if(DEMO){m.className='modal-msg err';m.textContent='Appeals are not available in demo mode.';return;}
-  var bad=window.CXAppeals&&CXAppeals.check(text);
-  if(bad){m.className='modal-msg err';m.textContent='Appeals can\u2019t include '+bad+'.';return;}
-  m.className='modal-msg';m.textContent='Opening…';btn.disabled=true;
-  try{
-    var r=await CXAppeals.open(sb,REJ_ID,text);
-    close_('rejModal');go('appeals');showAppeals(r&&r.id);
-    toast(r&&r.existing?'Added to your appeal':'Appeal opened \u2014 the client was notified');
-  }catch(e){m.className='modal-msg err';m.textContent=e.message||String(e);}
-  btn.disabled=false;
+  var m=$('#rejMsg');m.className='modal-msg';m.textContent='Sending…';
+  if(DEMO){var s=SUBS.find(function(x){return x.id===REJ_ID;});if(s)s.appeal_note=$('#appealText').value;}
+  else{var r=await sb.from('clip_submissions').update({appeal_note:$('#appealText').value}).eq('id',REJ_ID);
+    if(r.error){m.className='modal-msg err';m.textContent=r.error.message;return;}}
+  m.className='modal-msg ok';m.textContent='Appeal sent.';
+  setTimeout(function(){close_('rejModal');toast('Appeal submitted, reviewed within 48 hrs');},650);
 };
 /* ---- auto-submit, right inside a campaign: "Continue with Instagram" and you're done ---- */
 var AUTO_LETTER={instagram:'IG',tiktok:'TT',youtube:'YT'};
@@ -3443,7 +3388,7 @@ async function switchType(){
     toast('You’re a UGC creator now. Showing UGC campaigns.'); renderAutoSubmit();
   }else toast('You’re a clipper now. Showing clipping campaigns.');
 }
-$('#piTypeBtn').onclick=switchType;
+
 
 /* ---- auto-submit: linked accounts post straight into a campaign ---- */
 /* Off until Meta approves Instagram Login: everyone (UGC creators included) adds
@@ -3504,27 +3449,6 @@ $('#autoSyncBtn').onclick=async function(){
   renderAutoSubmit();
 };
 
-/* ---- appeals: chat with the client about a rejected clip ---- */
-var APX=null;
-function setApBadge(n){var c=$('#apNavCt');if(!c)return;c.hidden=!n;c.textContent=n>99?'99+':String(n);}
-function showAppeals(focusId){
-  if(!window.CXAppeals||DEMO)return;
-  if(!APX)APX=CXAppeals.mount($('#apMount'),{sb:sb,role:'creator',onUnread:setApBadge,focus:focusId});
-  else if(focusId)APX.focus(focusId);
-  else APX.refresh();
-}
-/* ---- group chats: WhatsApp-style list of every campaign room you're in ---- */
-var GCX=null;
-function setGcBadge(n){var c=$('#gcNavCt');if(!c)return;c.hidden=!n;c.textContent=n>99?'99+':String(n);}
-function showChats(focusId){
-  if(!window.CXGroupChat||DEMO)return;
-  if(!GCX)GCX=CXGroupChat.inbox($('#gcInbox'),{sb:sb,onUnread:setGcBadge,focus:focusId});
-  else if(focusId)GCX.open(focusId); else GCX.refresh();
-}
-function pollGcBadge(){if(window.CXGroupChat&&!DEMO&&ME)CXGroupChat.unread(sb).then(setGcBadge);}
-setInterval(pollGcBadge,60000);
-function pollApBadge(){if(window.CXAppeals&&!DEMO&&ME)CXAppeals.unread(sb).then(setApBadge);}
-setInterval(pollApBadge,60000);
 var CN_PLAT='instagram',CN_CODE='';
 function openCodeVerify(p){CN_PLAT=p;
   var l=CN_PLAT[0].toUpperCase()+CN_PLAT.slice(1);
@@ -4276,7 +4200,6 @@ async function boot(){
     paintRoutes();
   }catch(e){ console.error('[cx] a panel failed to render', e); }
   $('#splash').classList.add('hide');$('#app').classList.remove('hide');
-  pollApBadge(); pollGcBadge();
   /* Rates come in after the dashboard is up, never before it. A slow or dead
      FX host costs the creator a slightly stale conversion, not the app. */
   fxRefresh().then(function(moved){if(moved){fxNote();repaintMoney();}},function(){});
@@ -4284,7 +4207,6 @@ async function boot(){
     b.textContent='Demo data';document.body.appendChild(b);}
   /* first open → onboarding + tour (replay from Support, or force with ?tour) */
   paintType();
-  if(!DEMO&&PROFILE&&!PROFILE.creator_type){setTimeout(showTypePicker,500);return;}   /* first login: UGC creator or clipper */
   var seen=false;try{seen=localStorage.getItem('cx-onb')==='1';}catch(e){seen=true;}
   if(!seen||/[?&]tour/.test(location.search))setTimeout(startOnb,700);
 }

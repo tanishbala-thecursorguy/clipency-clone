@@ -39,10 +39,6 @@ window.CLIPSHELL = (function(){
      icon:'<path d="M9 11.5l2.2 2.2L15.5 9.4"/><rect x="3.5" y="3.5" width="17" height="17" rx="4"/>'},
     {key:'clips',     href:'clips.html',     label:'Clips Feed',      group:'Campaign',
      icon:'<path d="M15.6 8.4 21 3M21 3h-4.5M21 3v4.5"/><path d="M20 13v5a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h5"/>'},
-    {key:'appeals',   href:'campaign.html?view=appeals', label:'Appeals', group:'Campaign',
-     icon:'<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 10.5h7M8.5 13.5h4.5"/>'},
-    {key:'chat',      href:'campaign.html?view=chat', label:'Group chat', group:'Campaign',
-     icon:'<path d="M17 8.5h2.5A1.5 1.5 0 0 1 21 10v7.5l-2.5-2H11A1.5 1.5 0 0 1 9.5 14v-1"/><path d="M3 4.5A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V11a1.5 1.5 0 0 1-1.5 1.5h-7L4 14.5z"/>'},
     {key:'analytics', href:'analytics.html', label:'Analytics',       group:'Campaign',
      icon:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'},
     {key:'billing',   href:'billing.html',   label:'Spend & Billing', group:'Campaign',
@@ -393,42 +389,10 @@ window.CLIPSHELL = (function(){
               '<span class="con-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8.5 17.5c-2.1-.6-3.5-1.8-3.5-1.8.3-4 1.4-7.1 2.4-8.6 0 0 1.7-.9 3.6-1.1l.4.9a12 12 0 0 1 1.2-.1c.4 0 .8 0 1.2.1l.4-.9c1.9.2 3.6 1.1 3.6 1.1 1 1.5 2.1 4.6 2.4 8.6 0 0-1.4 1.2-3.5 1.8l-.9-1.4c.6-.2 1.6-.7 1.6-.7-2.3 1.4-7.3 1.4-9.6 0 0 0 1 .5 1.6.7z"/><circle cx="9.6" cy="12.3" r="1" fill="currentColor" stroke="none"/><circle cx="14.4" cy="12.3" r="1" fill="currentColor" stroke="none"/></svg></span>' +
               '<span class="con-main"><b>Discord</b><span>Open a ticket on our server</span></span>' +
               '<span class="con-arr">&#8599;</span></a>' +
-            '<a class="con-row" href="#" data-appeal>' +
-              '<span class="con-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 10.5h7M8.5 13.5h4.5"/></svg></span>' +
-              '<span class="con-main"><b>Appeal</b><span>If you need immediate support: chat with the Clipency team here</span></span>' +
-              '<span class="con-arr">&rarr;</span></a>' +
-          '</div>' +
-          '<div data-ask hidden style="margin-top:14px">' +
-            '<label style="display:block;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin-bottom:7px">Topic</label>' +
-            '<select data-topic style="width:100%;padding:10px 12px;border:1px solid var(--hair);border-radius:11px;background:var(--surface-2);color:var(--ink);font:inherit;font-size:13.5px;margin-bottom:12px"><option>Tech issue</option><option>Billing &amp; invoices</option><option>Running a campaign</option><option>My account</option><option>Something else</option></select>' +
-            '<label style="display:block;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin-bottom:7px">Your question</label>' +
-            '<textarea data-q style="width:100%;min-height:96px;padding:11px 12px;border:1px solid var(--hair);border-radius:11px;background:var(--surface-2);color:var(--ink);font:inherit;font-size:13.5px;resize:vertical" placeholder="What do you need help with? Your campaign, billing, a creator…"></textarea>' +
-            '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px"><button class="btn btn-line" type="button" data-back>Back</button><button class="btn" type="button" data-send>Send to Clipency</button></div>' +
-            '<div data-msg style="font-size:12.5px;margin-top:8px;color:var(--bad)"></div>' +
           '</div>' +
         '</div>';
       document.body.appendChild(v);
       v.querySelector('.m-x').addEventListener('click', function(){ v.classList.remove('show'); });
-      var ask = v.querySelector('[data-ask]'), q = v.querySelector('[data-q]'), msg = v.querySelector('[data-msg]');
-      v.querySelector('[data-appeal]').addEventListener('click', function(e){ e.preventDefault(); ask.hidden = false; msg.textContent = ''; setTimeout(function(){ q.focus(); }, 30); });
-      v.querySelector('[data-back]').addEventListener('click', function(){ ask.hidden = true; });
-      v.querySelector('[data-send]').addEventListener('click', function(){
-        var btn = this, text = q.value.trim();
-        var sb = window.clipencySupabase || window.supabaseClient || window.sbClient;
-        if(!text){ msg.textContent = 'Write your question first.'; return; }
-        if(!sb){ msg.textContent = 'Support chat needs a signed-in account.'; return; }
-        btn.disabled = true; msg.textContent = '';
-        /* the chat component lives in /clipency-appeals.js; load it if this page did not */
-        (window.CXAppeals ? Promise.resolve() : new Promise(function(res, rej){
-          var sc = document.createElement('script'); sc.src = '/clipency-appeals.js'; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc);
-        })).then(function(){ return CXAppeals.support(sb, text, v.querySelector('[data-topic]').value); }).then(function(r){
-          q.value = ''; ask.hidden = true; v.classList.remove('show');
-          toast('Sent. The Clipency team will reply in Appeals and by email.');
-          if(window.CX && CX.go){ CX.go('appeals'); setTimeout(function(){ if(window.CX_APPEALS && r) CX_APPEALS.focus(r.id); }, 200); }
-          else location.href = 'campaign.html?view=appeals';
-        }).catch(function(err){ msg.textContent = (err && err.message) || 'Could not send. Try again.'; })
-          .then(function(){ btn.disabled = false; });
-      });
       v.addEventListener('click', function(e){ if(e.target === v) v.classList.remove('show'); });
     }
     requestAnimationFrame(function(){ v.classList.add('show'); });

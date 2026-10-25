@@ -9,8 +9,6 @@
 <title>Clipency | Console</title>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/clipency-appeals.js"></script>
-<script src="/clipency-groupchat.js"></script>
 <script src="/clipency-route-switch.js"></script>
 <style>
 /* ============================================================
@@ -3866,95 +3864,6 @@ RENDERERS.easyupload.after=function(){
   var q=$('#euQ'); if(q)q.oninput=function(){EU.q=q.value; euPaint();};
   $('#euAdd').onclick=function(e){e.stopPropagation(); euAddRow();};
   $('#euAll').onclick=function(){euSubmit(EU.rows.slice());};
-};
-
-/* ============================================================
-   APPEALS (live chat reviewer)
-   Every creator <-> client appeal conversation in one place. Admins can
-   read any thread, step in as "Clipency team", and close an appeal either
-   way. The chat itself is the shared clipency-appeals.js component.
-   ============================================================ */
-(function(){
-  if(!PAGES.some(function(p){return p.id==='appeals';})){
-    var at=PAGES.findIndex(function(p){return p.id==='easyupload';});
-    PAGES.splice(at<0?PAGES.length:at+1,0,{id:'appeals',label:'Appeals',ic:'❝',staff:true});
-  }
-})();
-RENDERERS.appeals=async function(){
-  var r=await sb.rpc('appeal_list');
-  if(r.error)throw new Error(r.error.message);
-  var everything=Array.isArray(r.data)?r.data:[];
-  var all=everything.filter(function(a){return a.kind==='support';});
-  var clipAp=everything.filter(function(a){return a.kind!=='support';});
-  var fromClients=all.filter(function(a){return a.requester_role==='client';}).length;
-  var unread=all.reduce(function(n,a){return n+(a.unread||0);},0);
-  COUNTS.appeals=everything.length||0;
-  var mails=0; try{var o=await sb.rpc('appeal_outbox_count'); mails=Number(o.data)||0;}catch(e){}
-  return '<div class="head"><div class="eyeb">Support</div><h1>Appeals.</h1>'+
-    '<p class="sub">Every open conversation that needs Clipency: <b>clip appeals</b> (a creator asking the client about a rejected clip; read along, reply, or settle it) and <b>support requests</b> (creators and clients writing to Clipency: tech issues, payouts, running a campaign). Settled or resolved conversations are deleted for good. You are emailed for every new one. Clip appeals are also in the Live chat monitor, filtered by campaign.</p></div>'+
-    '<div class="kpis">'+
-      '<div class="kpi"><span class="lab">Clip appeals</span><div class="big"'+(clipAp.length?' style="color:var(--warn)"':'')+'>'+fmt(clipAp.length)+'</div><div class="sub-t">creator ↔ client, open</div></div>'+
-      '<div class="kpi"><span class="lab">Support requests</span><div class="big"'+(all.length?' style="color:var(--warn)"':'')+'>'+fmt(all.length)+'</div><div class="sub-t">'+(unread?fmt(unread)+' unread':'all caught up')+'</div></div>'+
-      '<div class="kpi"><span class="lab">Support from clients</span><div class="big">'+fmt(fromClients)+'</div><div class="sub-t">brands · '+fmt(all.length-fromClients)+' from creators</div></div>'+
-      '<div class="kpi"><span class="lab">Email alerts</span><div class="big">'+fmt(mails)+'</div><div class="sub-t">sent for new messages</div></div>'+
-    '</div>'+
-    '<div id="apMount"></div>';
-};
-RENDERERS.appeals.after=function(){
-  if(!window.CXAppeals)return;
-  /* everything in one place: clip appeals (creator ↔ client) and support requests to Clipency */
-  CXAppeals.mount($('#apMount'),{sb:sb,role:'admin',kinds:'all',onUnread:function(){},onResolved:function(){render(true);}});
-};
-
-/* ============================================================
-   GROUP CHATS (supervision)
-   Every campaign's group chat: who is in it, whether the client has it
-   on, and the conversation. Admins can read, post as Clipency, and
-   switch a room on or off. Component: /clipency-groupchat.js.
-   ============================================================ */
-(function(){
-  if(!PAGES.some(function(p){return p.id==='groupchats';})){
-    var at=PAGES.findIndex(function(p){return p.id==='appeals';});
-    PAGES.splice(at<0?PAGES.length:at+1,0,{id:'groupchats',label:'Live chat monitor',ic:'☷',staff:true});
-  }
-})();
-var MON={tab:'chats',camp:''};
-RENDERERS.groupchats=async function(){
-  var r=await sb.rpc('gc_list');
-  if(r.error)throw new Error(r.error.message);
-  var rooms=Array.isArray(r.data)?r.data:[];
-  var ap=await sb.rpc('appeal_list');
-  var clipsAll=(Array.isArray(ap.data)?ap.data:[]).filter(function(a){return a.kind!=='support';});
-  /* one picker scopes the whole page to a campaign */
-  var pick=function(x){return !MON.camp||String(x.campaign_id)===String(MON.camp);};
-  var all=rooms.filter(pick), on=all.filter(function(c){return c.enabled;}), clips=clipsAll.filter(pick);
-  var unread=all.reduce(function(n,c){return n+(c.unread||0);},0);
-  var camps=rooms.slice().sort(function(a,b){return String(a.title).localeCompare(String(b.title));});
-  var cnt=function(id){return clipsAll.filter(function(a){return String(a.campaign_id)===String(id);}).length;};
-  return '<div class="head"><div class="eyeb">Supervision</div><h1>Live chat monitor.</h1>'+
-    '<p class="sub">Everything happening between creators and clients, live: campaign group chats and clip appeals. Pick a campaign to see only its conversations. Read along, post as the Clipency team, delete a message, ban a creator, pause a room, or settle an appeal. Group chat messages delete themselves after 1 hour; appeals once settled.</p></div>'+
-    '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">'+
-      '<label class="mono" style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40)">Campaign</label>'+
-      '<select class="inp" id="monCamp" style="max-width:340px;padding:8px 11px;font-size:13px"><option value="">All campaigns</option>'+
-        camps.map(function(c){var n=cnt(c.campaign_id);
-          return '<option value="'+esc(c.campaign_id)+'"'+(String(MON.camp)===String(c.campaign_id)?' selected':'')+'>'+esc(c.title)+' · '+esc(c.client_name)+
-            (c.enabled?' · chat on':'')+(n?' · '+n+' appeal'+(n===1?'':'s'):'')+'</option>';}).join('')+
-      '</select></div>'+
-    '<div class="kpis">'+
-      '<div class="kpi"><span class="lab">Group chats on</span><div class="big">'+fmt(on.length)+'</div><div class="sub-t">of '+fmt(all.length)+' campaign'+(all.length===1?'':'s')+'</div></div>'+
-      '<div class="kpi"><span class="lab">Clip appeals open</span><div class="big"'+(clips.length?' style="color:var(--warn)"':'')+'>'+fmt(clips.length)+'</div><div class="sub-t">creator ↔ client</div></div>'+
-      '<div class="kpi"><span class="lab">Unread in rooms</span><div class="big">'+fmt(unread)+'</div><div class="sub-t">group chat messages</div></div>'+
-    '</div>'+
-    '<div class="seg" id="monTabs" style="margin-bottom:14px">'+
-      '<button class="'+(MON.tab==='chats'?'on':'')+'" data-t="chats">Group chats<span class="n">'+fmt(on.length)+'</span></button>'+
-      '<button class="'+(MON.tab==='clips'?'on':'')+'" data-t="clips">Clip appeals<span class="n">'+fmt(clips.length)+'</span></button>'+
-    '</div><div id="monMount"></div>';
-};
-RENDERERS.groupchats.after=function(){
-  $('#monCamp').onchange=function(){MON.camp=this.value;render();};
-  $$('#monTabs button').forEach(function(b){b.onclick=function(){MON.tab=b.dataset.t;render();};});
-  if(MON.tab==='clips'){ if(window.CXAppeals)CXAppeals.mount($('#monMount'),{sb:sb,role:'admin',kinds:'clip',campaignId:MON.camp||null,groupByCampaign:!MON.camp,onUnread:function(){},onResolved:function(){render(true);}}); }
-  else if(window.CXGroupChat)CXGroupChat.admin($('#monMount'),{sb:sb,campaignId:MON.camp||null});
 };
 
 /* ============================================================
