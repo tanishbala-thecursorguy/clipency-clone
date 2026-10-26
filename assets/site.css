@@ -810,3 +810,6 @@ html.lite .paper-field::before{display:none;}
 /* low-end devices and "reduce motion": nothing loops */
 html.lite .live-dot::after,html.lite .sc-lantern-refl,html.lite .sc-torii-refl{animation:none;}
 @media (prefers-reduced-motion:reduce){.live-dot::after,.sc-lantern-refl,.sc-torii-refl{animation:none;}}
+
+/* header button: a touch smaller */
+.nav-cta .nav-book{padding:8px 16px;font-size:12.5px;gap:8px;}
