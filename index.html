@@ -2,6 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+/* Signed in on this device? Opening clipency.in goes straight back to the dashboard you last used
+   (clipper, client or admin), like an app. Each dashboard saves its address in cx-last-portal, and
+   signing out clears it. Clicking through to the site from inside a dashboard still shows the site. */
+(function(){try{
+  var p = localStorage.getItem('cx-last-portal');
+  if(!p || p.charAt(0) !== '/' || p.charAt(1) === '/' || /[?&](eye|site)\b/.test(location.search)) return;
+  if(document.referrer && new URL(document.referrer).origin === location.origin) return;
+  var k = 'sb-spwtkdgpgeutrhwcjrpy-auth-token', t = JSON.parse(localStorage.getItem(k) || sessionStorage.getItem(k) || 'null');
+  if(!t || !t.refresh_token) return;
+  window.__cxResume = true;
+  location.replace(p);
+}catch(e){}})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clipency | Launch Videos, Clipping &amp; UGC Agency for Startups and Tech Products</title>
 <meta name="description" content="Clipency launches tech products end to end: 5–6 launch films, 1,000–10,000 reposts across theme pages and 1,000–5,000 UGC videos a month. One team for startup launch videos, clipping and UGC. Book a launch call.">
@@ -41,7 +55,7 @@ try{ var nc = navigator.connection || {};
 try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
 if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavior:'instant'}); });
 </script>
-<link rel="stylesheet" href="/assets/site.css?v=1792992127">
+<link rel="stylesheet" href="/assets/site.css?v=1793191931">
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -187,6 +201,21 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
   }
  ]
 }
+</script>
+<style>html.eye-on,html.eye-on body{overflow:hidden}html.eye-on body::after{content:'';position:fixed;inset:0;background:#050505;z-index:9998}</style>
+<script>
+/* The Eye of Marketing: the intro film on a first visit (again after 7 days), or any time with /?eye.
+   Skipped for crawlers, for links to a section, and when it ran recently. */
+(function(){try{
+  if(window.__cxResume) return;
+  var q = location.search, force = /[?&]eye\b/.test(q), seen = +localStorage.getItem('cx-eye-seen') || 0;
+  if(!force && (location.hash || /bot|crawl|spider|lighthouse|headless/i.test(navigator.userAgent) || navigator.webdriver || Date.now() - seen < 7*864e5)) return;
+  document.documentElement.classList.add('eye-on');
+  var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/eye/eye.css?v=1792995170'; document.head.appendChild(l);
+  var im = document.createElement('link'); im.rel = 'preload'; im.as = 'image'; im.href = '/eye/eye-plate.webp'; document.head.appendChild(im);
+  ['eye-data','eye'].forEach(function(f){ var s = document.createElement('script'); s.src = '/eye/' + f + '.js?v=1792995170'; s.async = false; document.head.appendChild(s); });
+  setTimeout(function(){ if(!window.CXEye) document.documentElement.classList.remove('eye-on'); }, 9000);
+}catch(e){}})();
 </script>
 </head>
 <body>
@@ -751,13 +780,13 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
       </div>
       <div><div class="f-col-title">Pages</div><ul class="f-links"><li><a href="/">Home</a></li><li><a href="/secret-method/">Secret Method</a></li><li><a href="/why-us/">Why Us</a></li><li><a href="/hustlers/">Hustlers</a></li></ul></div>
       <div><div class="f-col-title">Services</div><ul class="f-links"><li><a href="/#films">Launch Films</a></li><li><a href="/#services">Distribution &amp; Clipping</a></li><li><a href="/#services">UGC Creators</a></li><li><a href="/#paths">For Startups</a></li><li><a href="/#paths">For Companies</a></li></ul></div>
-      <div><div class="f-col-title">Company</div><ul class="f-links"><li><a href="/#start">Book a Call</a></li><li><a data-app="/client-signin" href="https://www.clipency.in/client-signin">Client Dashboard</a></li><li><a href="mailto:hello@clipency.in">hello@clipency.in</a></li></ul></div>
+      <div><div class="f-col-title">Company</div><ul class="f-links"><li><a href="/#start">Book a Call</a></li><li><a data-app="/client-signin" href="https://www.clipency.in/client-signin">Client Dashboard</a></li><li><a href="mailto:hello@clipency.in">hello@clipency.in</a></li><li><a href="/?eye">The Eye of Marketing</a></li></ul></div>
       <div><div class="f-col-title">Sign in / Sign up</div><ul class="f-links"><li><a data-app="/client-signin" href="https://www.clipency.in/client-signin">For Brands</a></li><li><a data-app="/client/clipper-signin" href="https://www.clipency.in/client/clipper-signin">For Creators</a></li><li><a data-app="/client/clipper-signin" href="https://www.clipency.in/client/clipper-signin">For Clippers</a></li><li><a data-app="/admin-signin" href="https://www.clipency.in/admin-signin">Admin</a></li></ul></div>
     </div>
   </div>
   <div class="footer-bottom"><p>&copy; 2026 Clipency. The launch &amp; distribution firm for tech products.</p></div>
 </footer>
 
-<script src="/assets/site.js?v=1792992127"></script>
+<script src="/assets/site.js?v=1793191931"></script>
 </body>
 </html>

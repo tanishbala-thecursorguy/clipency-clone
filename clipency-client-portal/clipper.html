@@ -2,6 +2,8 @@
 <!-- clipency-clipper build 2026-08-05a — fee-inclusive budget bar -->
 <html lang="en">
 <head>
+<script>/* remember this dashboard so opening clipency.in comes straight back here (see launch-site build.py RESUME) */
+try{ localStorage.setItem('cx-last-portal', location.pathname + location.search); }catch(e){}</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Clipency · Clipper Dashboard</title>
@@ -3723,7 +3725,7 @@ $('#unSave').onclick=async function(){
     if(r.error){m.className='modal-msg err';m.textContent=r.error.message.indexOf('duplicate')>=0?'That username is taken.':r.error.message;return;}}
   PROFILE.username=v;$('#piUser').textContent='@'+v;m.className='modal-msg ok';m.textContent='Saved.';
   setTimeout(function(){close_('unModal');toast('Username updated');},600);};
-$('#signOut').onclick=async function(){if(!DEMO)await sb.auth.signOut();location.href=LOGIN_URL;};
+$('#signOut').onclick=async function(){try{localStorage.removeItem('cx-last-portal');}catch(e){} if(!DEMO)await sb.auth.signOut();location.href=LOGIN_URL;};
 
 /* ============================================================
    ONBOARDING WIZARD + DASHBOARD TOUR

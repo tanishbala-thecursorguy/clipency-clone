@@ -9,6 +9,9 @@
        </div>
      </div>
    ============================================================ */
+/* remember this dashboard so opening clipency.in comes straight back here (see launch-site build.py RESUME) */
+try{ localStorage.setItem('cx-last-portal', location.pathname + location.search); }catch(e){}
+
 window.CLIPSHELL = (function(){
 
   /* ---------- icons shared between contexts ---------- */
@@ -324,6 +327,7 @@ window.CLIPSHELL = (function(){
        revisiting — put the client straight back into the dashboard with
        another client's cached rows still in sessionStorage. */
     document.getElementById('logoutBtn').addEventListener('click', async function(){
+      try{ localStorage.removeItem('cx-last-portal'); }catch(e){}
       try{ sessionStorage.removeItem('clipency-access'); }catch(e){}
       try{ sessionStorage.removeItem('clipency-live-v2'); }catch(e){}
       try{ localStorage.removeItem('clipency-store-v2'); }catch(e){}

@@ -155,8 +155,7 @@
   paintPlan();
 
   /* ---- book a call: details -> Calendly (synced to Tanish's Google Calendar) -> booked.
-     The booking is saved as a lead (submit_landing_lead); lead-welcome then emails the
-     booked time (and WhatsApps it once the WhatsApp Business Platform is connected). ---- */
+     The booking is saved as a lead (submit_landing_lead). ---- */
   const form = $('#startForm');
   if(form){
     const SB = 'https://spwtkdgpgeutrhwcjrpy.supabase.co', KEY = 'sb_publishable_IInNrDBLK3dINHSyWaUDzg_UWF63j0B';
