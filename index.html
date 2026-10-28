@@ -204,12 +204,12 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
 </script>
 <style>html.eye-on,html.eye-on body{overflow:hidden}html.eye-on body::after{content:'';position:fixed;inset:0;background:#050505;z-index:9998}</style>
 <script>
-/* The Eye of Marketing: the intro film on a first visit (again after 7 days), or any time with /?eye.
-   Skipped for crawlers, for links to a section, and when it ran recently. */
+/* The Eye of Marketing intro film. Off by default (owner's call, 2026-10-28): visitors land straight on the
+   website. It only plays when the address has ?eye. */
 (function(){try{
   if(window.__cxResume) return;
-  var q = location.search, force = /[?&]eye\b/.test(q), seen = +localStorage.getItem('cx-eye-seen') || 0;
-  if(!force && (location.hash || /bot|crawl|spider|lighthouse|headless/i.test(navigator.userAgent) || navigator.webdriver || Date.now() - seen < 7*864e5)) return;
+  var q = location.search, force = /[?&]eye\b/.test(q);
+  if(!force) return;
   document.documentElement.classList.add('eye-on');
   var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/eye/eye.css?v=1792995170'; document.head.appendChild(l);
   var im = document.createElement('link'); im.rel = 'preload'; im.as = 'image'; im.href = '/eye/eye-plate.webp'; document.head.appendChild(im);
@@ -780,7 +780,7 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
       </div>
       <div><div class="f-col-title">Pages</div><ul class="f-links"><li><a href="/">Home</a></li><li><a href="/secret-method/">Secret Method</a></li><li><a href="/why-us/">Why Us</a></li><li><a href="/hustlers/">Hustlers</a></li></ul></div>
       <div><div class="f-col-title">Services</div><ul class="f-links"><li><a href="/#films">Launch Films</a></li><li><a href="/#services">Distribution &amp; Clipping</a></li><li><a href="/#services">UGC Creators</a></li><li><a href="/#paths">For Startups</a></li><li><a href="/#paths">For Companies</a></li></ul></div>
-      <div><div class="f-col-title">Company</div><ul class="f-links"><li><a href="/#start">Book a Call</a></li><li><a data-app="/client-signin" href="https://www.clipency.in/client-signin">Client Dashboard</a></li><li><a href="mailto:hello@clipency.in">hello@clipency.in</a></li><li><a href="/?eye">The Eye of Marketing</a></li></ul></div>
+      <div><div class="f-col-title">Company</div><ul class="f-links"><li><a href="/#start">Book a Call</a></li><li><a data-app="/client-signin" href="https://www.clipency.in/client-signin">Client Dashboard</a></li><li><a href="mailto:hello@clipency.in">hello@clipency.in</a></li></ul></div>
       <div><div class="f-col-title">Sign in / Sign up</div><ul class="f-links"><li><a data-app="/client-signin" href="https://www.clipency.in/client-signin">For Brands</a></li><li><a data-app="/client/clipper-signin" href="https://www.clipency.in/client/clipper-signin">For Creators</a></li><li><a data-app="/client/clipper-signin" href="https://www.clipency.in/client/clipper-signin">For Clippers</a></li><li><a data-app="/admin-signin" href="https://www.clipency.in/admin-signin">Admin</a></li></ul></div>
     </div>
   </div>
