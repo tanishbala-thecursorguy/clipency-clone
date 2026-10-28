@@ -228,8 +228,23 @@ window.CXCUR = (function () {
     '<circle cx="60" cy="90" r="21" fill="none" stroke="#BCB2A4" stroke-width="2"/>' +
     '<path d="M54 80l16 10-16 10z" fill="#BCB2A4"/></svg>');
 
+  /* Clip fields come from creators, and the portal pages build their HTML with
+     innerHTML. Clean them here, once, so nothing a creator types can become markup:
+     links must be real http(s) URLs, handles keep only handle characters, and text
+     loses the characters that could open a tag or close an attribute. */
+  function safeUrl(u) {
+    try {
+      var x = new URL(String(u || '').trim());
+      if (x.protocol !== 'https:' && x.protocol !== 'http:') return '';
+      return x.href.replace(/'/g, '%27').replace(/"/g, '%22').replace(/</g, '%3C').replace(/>/g, '%3E');
+    } catch (e) { return ''; }
+  }
+  function safeText(t) {
+    return String(t == null ? '' : t).replace(/[<>"`]/g, '').replace(/'/g, '\u2019');
+  }
+
   function coverFor(row) {
-    if (row.cover_url) return row.cover_url;
+    if (row.cover_url) return safeUrl(row.cover_url) || NO_COVER;
     var yid = youtubeId(row.clip_url);
     return yid ? 'https://i.ytimg.com/vi/' + yid + '/hqdefault.jpg' : NO_COVER;
   }
@@ -241,15 +256,16 @@ window.CXCUR = (function () {
       var parts = s.replace(/\/+$/, '').split('/');
       s = parts[parts.length - 1] || 'unknown';
     }
-    return '@' + s.replace(/^@+/, '');
+    s = s.replace(/^@+/, '').replace(/[^\w.\-]/g, '');
+    return s ? '@' + s : '@unknown';
   }
 
   /* Clip titles are not stored anywhere. The cards show a title, so
      fall back to something readable instead of blank tiles. */
   function titleFor(r) {
-    if (r.title) return r.title;
+    if (r.title) return safeText(r.title);
     var h = cleanHandle(r.handle);
-    return h === '@unknown' ? (r.campaign_title || 'Clip') : h + ' clip';
+    return h === '@unknown' ? (safeText(r.campaign_title) || 'Clip') : h + ' clip';
   }
 
   /* ---------------------------------------------------------
@@ -320,10 +336,10 @@ window.CXCUR = (function () {
       likes: Number(r.likes || 0),
       comments: Number(r.comments || 0),
       submitted: String(r.created_at || '').slice(0, 10),
-      url: r.clip_url,
+      url: safeUrl(r.clip_url),
       cover: coverFor(r),
       campaignId: r.campaign_id,
-      campaignTitle: r.campaign_title || (camp && camp.title) || '',
+      campaignTitle: safeText(r.campaign_title || (camp && camp.title) || ''),
       /* Flag state, so the portal can show what has been pulled, who pulled it
          and what Clipency decided. A campaign can be shared, so the client
          looking at this may not be the one who raised it. */

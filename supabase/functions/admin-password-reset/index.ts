@@ -19,7 +19,19 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const FROM = Deno.env.get("EMAIL_FROM") ?? "Clipency <review@clipency.in>";
-const SITES = ["https://clipency-site.vercel.app", "https://www.clipency.in", "https://clipency.in", "http://localhost:9000", "http://localhost:5173"];
+// Reset links only ever point at the live sites (never localhost: anyone could ask for a link aimed at the victim's own machine).
+const SITES = ["https://clipency-site.vercel.app", "https://www.clipency.in", "https://clipency.in"];
+
+// Rate limit, per function instance: at most 5 requests per IP per 15 minutes and 3 emails per address per hour.
+// Over the limit, the caller gets the same answer as everyone else, but no email is sent.
+const hits = new Map<string, number[]>();
+function allowed(key: string, max: number, windowMs: number) {
+  const now = Date.now(), recent = (hits.get(key) ?? []).filter((t) => now - t < windowMs);
+  if (recent.length >= max) { hits.set(key, recent); return false; }
+  recent.push(now); hits.set(key, recent);
+  if (hits.size > 5000) for (const [k, v] of hits) if (!v.some((t) => now - t < 3_600_000)) hits.delete(k);
+  return true;
+}
 const LOGO = "https://kszlfvsplkkmsgxqnakj.supabase.co/storage/v1/object/public/assets/clipency-logo-chip.png";
 
 const admin = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -79,9 +91,11 @@ Deno.serve(async (req) => {
   const same = { ok: true, message: kind === "admin" ? "If that email belongs to a Clipency admin, a reset link is on its way."
                                                      : "If that email has an account, a reset link is on its way." };
   const started = Date.now();
+  const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "unknown";
+  const ok = allowed("ip:" + ip, 5, 15 * 60_000) && allowed("em:" + email, 3, 60 * 60_000);
 
   try {
-    if (kind !== "admin" || await isAdminEmail(email)) {
+    if (ok && (kind !== "admin" || await isAdminEmail(email))) {
       // a one-time recovery token for this account (fails quietly when there is no account)
       const { data, error } = await admin.auth.admin.generateLink({ type: "recovery", email });
       const hash = data?.properties?.hashed_token;

@@ -41,7 +41,7 @@
     }
 
     try{
-      await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2");
+      await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0");
       await loadScript("/supabaseClient.js?v=leads-engine");
     }catch(e){}
 

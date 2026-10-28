@@ -238,7 +238,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://*.supabase.co https://www.googletagmanager.com https://assets.calendly.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com; frame-src 'self' https://calendly.com https://*.calendly.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co https://calendly.com https://*.calendly.com wss://*.supabase.co https://api.frankfurter.app https://cdn.jsdelivr.net https://www.google-analytics.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://*.supabase.co https://www.googletagmanager.com https://assets.calendly.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com; frame-src 'self' https://calendly.com https://*.calendly.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://*.supabase.co https://calendly.com https://*.calendly.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com wss://*.supabase.co https://api.frankfurter.app https://cdn.jsdelivr.net https://www.google-analytics.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
         }
       ]
     },

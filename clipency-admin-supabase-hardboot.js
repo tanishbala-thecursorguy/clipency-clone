@@ -24,7 +24,7 @@
   if (createClientNow()) return;
 
   var script = document.createElement("script");
-  script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+  script.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0";
   script.async = false;
 
   script.onload = function () {

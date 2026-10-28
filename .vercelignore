@@ -34,6 +34,17 @@ supabase/
 _to_delete/
 _clipathon-port-backup/
 
+# Internal notes, email templates and debug/demo pages (security audit 2026-10-28)
+*.md
+clipency-db/
+clipency-emails/
+clipency-client-portal/vercel.json
+clipency-client-portal/diagnostics.html
+clipency-client-portal/client-demo.html
+clipency-client-portal/client-login.html
+landing-mobile/
+/admin.html
+
 # local tools
 .claude/
 .vercel/

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page not found | Clipency</title>
+<meta name="description" content="This page does not exist. Go to the Clipency homepage.">
+<meta name="robots" content="noindex, follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Clipency">
+<meta property="og:url" content="https://www.clipency.in/">
+<meta property="og:title" content="Page not found">
+<meta property="og:description" content="This page does not exist. Go to the Clipency homepage.">
+<meta property="og:image" content="https://www.clipency.in/og-image.jpg">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Page not found">
+<meta name="twitter:description" content="This page does not exist. Go to the Clipency homepage.">
+<meta name="twitter:image" content="https://www.clipency.in/og-image.jpg">
+<meta name="theme-color" content="#EEE9E1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0B0B" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/icon.png" sizes="64x64">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){try{
+  /* Light is the default, same as clipency.in. */
+  var t = localStorage.getItem('clipency-theme');
+  if(t !== 'dark' && t !== 'light') t = 'light';
+  document.documentElement.setAttribute('data-theme', t);
+}catch(e){document.documentElement.setAttribute('data-theme','light');}})();
+/* lite mode: same scene, less work, for phones, data saver, slow networks and modest hardware */
+try{ var nc = navigator.connection || {};
+  if(nc.saveData || /2g|3g/.test(nc.effectiveType || '') || (navigator.deviceMemory && navigator.deviceMemory <= 4) ||
+     (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || matchMedia('(max-width: 900px)').matches)
+    document.documentElement.classList.add('lite'); }catch(e){}
+/* A refresh starts at the top, not wherever the last visit was scrolled to.
+   Links to a section (/#start) still land on that section. */
+try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
+if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavior:'instant'}); });
+</script>
+<link rel="stylesheet" href="/assets/site.css?v=1793220525">
+</head>
+<body>
+
+<div class="paper-field" aria-hidden="true"></div>
+<div class="wash wash-tr" aria-hidden="true"></div>
+<div class="wash wash-bl" aria-hidden="true"></div>
+<div class="leaf-field" id="leafField" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="/" aria-label="Clipency home"><img class="cx-logo" src="/logo.webp" width="114" height="26" alt="Clipency"></a>
+    <nav class="nav-links" aria-label="Pages"><a href="/">Home</a><a href="/secret-method">Secret Method</a><a href="/why-us">Why Us</a><a href="/hustlers">Hustlers</a></nav>
+    <div class="nav-cta">
+      <button class="theme-switch" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Switch to dark mode">
+        <span class="ts-label">Dark Mode</span>
+        <span class="ts-track" aria-hidden="true">
+          <span class="ts-knob">
+            <svg class="ts-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.4" fill="currentColor" stroke="none"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M18.7 5.3L17 7M7 17l-1.7 1.7"/></svg>
+            <svg class="ts-moon" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          </span>
+        </span>
+      </button>
+      <a class="btn btn-ink btn-sm nav-book" href="/hustlers"><span>For Creators<span class="lg"> / Clippers</span></span><span class="arr">&#8594;</span></a>
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menuPanel"><span></span></button>
+    </div>
+  </div>
+  <div class="menu-panel" id="menuPanel"><a href="/" data-page>Home</a><a href="/secret-method" data-page>Secret Method</a><a href="/why-us" data-page>Why Us</a><a href="/hustlers" data-page>Hustlers</a><a class="btn btn-ink" href="/hustlers">For Creators / Clippers</a></div>
+</header>
+
+<nav class="page-guide" id="pageGuide" aria-label="On this page"></nav>
+
+<main>
+<section class="hero sub" id="top">
+  <div class="hero-inner">
+    <span class="eyebrow">404</span>
+    <h1 class="h-display">This page <em class="gold">isn&rsquo;t here.</em></h1>
+    <div class="divider hero-divider"><span class="dmk"></span></div>
+    <p class="lede">The link may be old, or the address may have a typo. Everything Clipency does is one click away.</p>
+    <div class="hero-actions">
+      <a class="btn btn-ink" href="/">Go to the homepage <span class="arr">&#8594;</span></a>
+      <a class="btn btn-line" href="/#start">Book a Launch Call <span class="arr">&#8594;</span></a>
+    </div>
+    <p class="nf-links"><a href="/launch-videos">Launch videos</a> · <a href="/clipping-agency">Clipping</a> · <a href="/ugc-agency">UGC videos</a> · <a href="/why-us">Why us</a> · <a href="/hustlers">For creators</a></p>
+  </div>
+</section>
+</main>
+
+<footer class="footer" id="footer">
+  <img decoding="async" class="ink footer-art" data-src="/art/footer-art.webp" alt="" aria-hidden="true">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="/" aria-label="Clipency home"><img class="cx-logo" src="/logo.webp" width="114" height="26" alt="Clipency" loading="lazy"></a>
+        <p class="footer-tag">Don&rsquo;t be another ad.<br>Become part of their life.</p>
+      </div>
+      <div><div class="f-col-title">Pages</div><ul class="f-links"><li><a href="/">Home</a></li><li><a href="/secret-method">Secret Method</a></li><li><a href="/why-us">Why Us</a></li><li><a href="/hustlers">Hustlers</a></li></ul></div>
+      <div><div class="f-col-title">Services</div><ul class="f-links"><li><a href="/launch-videos">Launch Videos</a></li><li><a href="/clipping-agency">Clipping Agency</a></li><li><a href="/ugc-agency">UGC Agency</a></li><li><a href="/performance-marketing">Performance Marketing</a></li><li><a href="/startup-marketing-agency">For Startups</a></li></ul></div>
+      <div><div class="f-col-title">Company</div><ul class="f-links"><li><a href="/#start">Book a Call</a></li><li><a data-app="/client-signin" href="https://www.clipency.in/client-signin">Client Dashboard</a></li><li><a href="mailto:hello@clipency.in">hello@clipency.in</a></li><li><a href="/privacy">Privacy Policy</a></li></ul></div>
+      <div><div class="f-col-title">Sign in / Sign up</div><ul class="f-links"><li><a data-app="/client-signin" href="https://www.clipency.in/client-signin">For Brands</a></li><li><a data-app="/client/clipper-signin" href="https://www.clipency.in/client/clipper-signin">For Creators</a></li><li><a data-app="/client/clipper-signin" href="https://www.clipency.in/client/clipper-signin">For Clippers</a></li><li><a data-app="/admin-signin" href="https://www.clipency.in/admin-signin">Admin</a></li></ul></div>
+    </div>
+  </div>
+  <div class="footer-bottom"><p>&copy; 2026 Clipency. The launch &amp; distribution firm for tech products.</p></div>
+</footer>
+
+<script src="/assets/site.js?v=1793220525"></script>
+</body>
+</html>
