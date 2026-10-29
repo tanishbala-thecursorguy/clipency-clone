@@ -2533,11 +2533,60 @@ RENDERERS.leads.after=function(){
    queues the audience and the promo-emails function sends it from
    the team mailboxes. Recipients who unsubscribe are never queued.
    ============================================================ */
-var PR={rows:[], open:null, tab:'draft'};
+var PR={rows:[], open:null, tab:'draft', view:'campaigns', out:null, q:''};
 var PR_AUD={non_clients:'All users except clients', list:'Hand-picked list'};
 var PR_KIND={weekly_article:'Weekly article', ugc_recruit:'UGC recruiting', one_off:'Announcement'};
 
+function prHead(){
+  var v=PR.view;
+  return '<div class="head"><div class="eyeb">Marketing</div><h1>Promotions.</h1>'+
+    '<p class="sub">Emails to creators. Each draft waits here until an admin approves it; then it goes out from the team mailboxes (jake@, ayush@, tanish@, hello@, contact@). Unsubscribed people are always skipped.</p></div>'+
+    '<div class="seg" id="prViews" style="margin-bottom:16px">'+
+      [['campaigns','Campaigns'],['outbound','Outbound'],['inbound','Inbound']].map(function(x){
+        return '<button class="'+(v===x[0]?'on':'')+'" data-v="'+x[0]+'">'+x[1]+'</button>';}).join('')+
+    '</div>';
+}
+var PR_ST={queued:'Queued',sent:'Sent',failed:'Failed'};
+async function prOutbound(force){
+  if(force||!PR.out){
+    var r=await sb.from('promo_sends').select('id,email,from_email,status,error,sent_at,promo_id,promo_emails(subject,kind)')
+      .order('id',{ascending:false}).limit(1000);
+    if(r.error)throw new Error(r.error.message);
+    PR.out=r.data||[];
+  }
+  var q=PR.q.trim().toLowerCase();
+  var rows=PR.out.filter(function(x){
+    return !q||(x.email+' '+x.from_email+' '+((x.promo_emails||{}).subject||'')).toLowerCase().indexOf(q)>-1;});
+  var c=function(st){return PR.out.filter(function(x){return x.status===st;}).length;};
+  return prHead()+
+    '<div class="kpis">'+
+      '<div class="kpi"><span class="lab">sent</span><div class="big">'+fmt(c('sent'))+'</div><div class="sub-t">delivered to the provider</div></div>'+
+      '<div class="kpi"><span class="lab">queued</span><div class="big">'+fmt(c('queued'))+'</div><div class="sub-t">going out within 2 minutes</div></div>'+
+      '<div class="kpi"><span class="lab">failed</span><div class="big"'+(c('failed')?' style="color:var(--warn)"':'')+'>'+fmt(c('failed'))+'</div><div class="sub-t">see the reason per row</div></div>'+
+    '</div>'+
+    '<div class="card"><div class="ch"><input class="inp" id="prQ" placeholder="Search email, sender or subject" value="'+esc(PR.q)+'" style="max-width:340px"></div>'+
+    (rows.length
+      ? '<table><thead><tr><th>To</th><th>From</th><th>Email</th><th>Status</th><th>When</th></tr></thead><tbody>'+
+        rows.slice(0,500).map(function(x){
+          var p=x.promo_emails||{};
+          return '<tr><td class="mono" style="font-size:12px">'+esc(x.email)+'</td>'+
+            '<td class="mono" style="font-size:12px">'+esc(x.from_email)+'</td>'+
+            '<td>'+esc(p.subject||'·')+'<div class="mono" style="font-size:10.5px;color:var(--ink-40)">'+esc(PR_KIND[p.kind]||p.kind||'')+'</div></td>'+
+            '<td'+(x.status==='failed'?' style="color:var(--warn)" title="'+esc(x.error||'')+'"':'')+'>'+esc(PR_ST[x.status]||x.status)+'</td>'+
+            '<td class="mono">'+(x.sent_at?new Date(x.sent_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'·')+'</td></tr>';
+        }).join('')+'</tbody></table>'
+      : '<div class="empty"><div class="ei">↗</div><b>No emails</b><p>'+(q?'Nothing matches that search.':'Nothing has been sent yet.')+'</p></div>')+
+    '</div>';
+}
+function prInbound(){
+  return prHead()+
+    '<div class="card"><div class="empty"><div class="ei">↙</div><b>Replies are not connected yet</b>'+
+    '<p>Replies to these emails land in each team Gmail inbox (jake@, ayush@, tanish@, hello@, contact@). To show them here too, replies need to pass through Clipency first; once that is set up, every reply appears in this list with who sent it, to which mailbox, and the message.</p></div></div>';
+}
+
 RENDERERS.promotions=async function(force){
+  if(PR.view==='outbound')return prOutbound(force);
+  if(PR.view==='inbound')return prInbound();
   if(force||!PR.rows.length){
     var r=await sb.from('promo_emails').select('id,kind,audience,subject,html,status,send_at,note,approved_at,queued,sent,failed,created_at')
       .order('created_at',{ascending:false}).limit(100);
@@ -2552,8 +2601,7 @@ RENDERERS.promotions=async function(force){
   var isAdmin=ROLE==='admin';
   var label={draft:'Waiting for approval',sent:'Approved',rejected:'Rejected'};
 
-  return '<div class="head"><div class="eyeb">Marketing</div><h1>Promotions.</h1>'+
-    '<p class="sub">Emails to creators. Each draft waits here until an admin approves it; then it goes out from the team mailboxes (jake@, ayush@, tanish@, hello@, contact@). Unsubscribed people are always skipped.</p></div>'+
+  return prHead()+
     '<div class="card"><div class="ch"><div class="seg" id="prTabs">'+
       ['draft','sent','rejected'].map(function(t){
         return '<button class="'+(PR.tab===t?'on':'')+'" data-t="'+t+'">'+label[t]+'<span class="n">'+n(t)+'</span></button>';}).join('')+
@@ -2589,6 +2637,8 @@ RENDERERS.promotions=async function(force){
     '</div>';
 };
 RENDERERS.promotions.after=function(){
+  $$('#prViews button').forEach(function(b){b.onclick=function(){PR.view=b.dataset.v;PR.open=null;render();};});
+  var q=$('#prQ'); if(q){q.oninput=function(){PR.q=q.value;var pos=q.selectionStart;render().then(function(){var n=$('#prQ');if(n){n.focus();n.setSelectionRange(pos,pos);}});};}
   $$('#prTabs button').forEach(function(b){b.onclick=function(){PR.tab=b.dataset.t;PR.open=null;render();};});
   $$('[data-prview]').forEach(function(b){b.onclick=function(){var id=+b.dataset.prview;PR.open=PR.open===id?null:id;render();};});
   $$('[data-prtest]').forEach(function(b){b.onclick=async function(){
