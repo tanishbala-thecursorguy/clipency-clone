@@ -418,6 +418,8 @@ form{margin-top:22px;}
 .msg{min-height:20px;margin-top:12px;font-size:12.5px;letter-spacing:.04em;text-align:center;}
 .msg.err{color:#B4543C;}
 .msg.ok{color:var(--bronze);}
+.msg .resend-link{margin-top:8px;background:none;border:0;padding:2px 0;font:inherit;letter-spacing:.04em;color:var(--bronze);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+.msg .resend-link:disabled{opacity:.6;cursor:default;}
 @keyframes shake{
   10%,90%{transform:translateX(-1px);} 20%,80%{transform:translateX(2px);}
   30%,50%,70%{transform:translateX(-4px);} 40%,60%{transform:translateX(4px);}
@@ -935,6 +937,31 @@ document.querySelectorAll('.peek').forEach(function(b){
   function err(m, text){ say(m, 'err', text); shake(); }
   function ok(m, text){ say(m, 'ok', text); }
 
+  /* Message plus a "Resend confirmation email" button, for sign-ups whose email
+     went to spam or never arrived, and for unconfirmed accounts trying to sign in. */
+  function offerResend(m, cls, text, em){
+    say(m, cls, text);
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'resend-link'; b.textContent = 'Resend confirmation email';
+    b.addEventListener('click', async function(){
+      b.disabled = true; b.textContent = 'Sending…';
+      try{
+        var c = client();
+        if(c){
+          var r = await c.auth.resend({ type:'signup', email: em, options:{ emailRedirectTo: afterAuthURL() } });
+          if(r.error) throw r.error;
+        } else {
+          await rest('resend?redirect_to=' + encodeURIComponent(afterAuthURL()), { type:'signup', email: em });
+        }
+        offerResend(m, 'ok', 'Sent again to ' + em + '. It can take a minute; check Spam and Promotions too.', em);
+      }catch(ex){
+        offerResend(m, 'err', friendly(ex && ex.message), em);
+      }
+    });
+    m.appendChild(document.createElement('br'));
+    m.appendChild(b);
+  }
+
   function configured(m){
     if(!URL_ || !KEY){ err(m, 'Login is not configured. Contact support.'); return false; }
     return true;
@@ -1009,7 +1036,12 @@ document.querySelectorAll('.peek').forEach(function(b){
         session = await rest('token?grant_type=password', { email: em, password: pw });
       }
       done(m, session, 'Signed in. Taking you to your dashboard…');
-    }catch(ex){ err(m, friendly(ex && ex.message)); }
+    }catch(ex){
+      if(/email not confirmed/i.test(ex && ex.message || '')){
+        shake();
+        offerResend(m, 'err', 'Please confirm your email first. We sent the link to ' + em + ' when you signed up (check Spam and Promotions).', em);
+      } else err(m, friendly(ex && ex.message));
+    }
   });
 
   /* ---- create account ---- */
@@ -1026,17 +1058,24 @@ document.querySelectorAll('.peek').forEach(function(b){
     try{
       var c = client(), data;
       if(c){
-        var r = await c.auth.signUp({ email: em, password: pw });
+        var r = await c.auth.signUp({ email: em, password: pw, options:{ emailRedirectTo: afterAuthURL() } });
         if(r.error) throw r.error;
         data = r.data;
       } else {
-        data = await rest('signup', { email: em, password: pw });
+        data = await rest('signup?redirect_to=' + encodeURIComponent(afterAuthURL()), { email: em, password: pw });
       }
       var session = data && (data.session || (data.access_token ? data : null));
       if(session && session.access_token){
         done(m, session, 'Account created. Taking you to your dashboard…');
       } else {
-        ok(m, 'Account created. Check your email to confirm, then sign in.');
+        var u = data && (data.user || data);
+        /* Supabase answers a sign-up for an already confirmed email with a user that
+           has no identities and sends nothing; say so instead of "check your email". */
+        if(u && u.identities && u.identities.length === 0){
+          err(m, 'That email already has an account. Sign in instead, or use "Forgot password?".');
+        } else {
+          offerResend(m, 'ok', 'Account created. We sent a confirmation link to ' + em + '. Open it, then sign in. Not there in a minute? Check Spam and Promotions.', em);
+        }
       }
     }catch(ex){ err(m, friendly(ex && ex.message)); }
   });
