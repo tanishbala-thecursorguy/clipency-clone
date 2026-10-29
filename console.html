@@ -458,6 +458,7 @@ var PAGES=[
   {id:'payouts',  label:'Payouts',        ic:'▤', staff:true},
   {id:'users',    label:'Users',          ic:'⚯', staff:true},
   {id:'leads',    label:'Leads',          ic:'✉', staff:true},
+  {id:'promotions',label:'Promotions',   ic:'✦', staff:true},
   {id:'logs',     label:'Logs',           ic:'≡', staff:true},
   {id:'analytics',label:'Analytics',      ic:'↗', staff:true}
 ];
@@ -2522,6 +2523,103 @@ RENDERERS.leads.after=function(){
       render();
     }catch(e){alert(e.message);}
     sel.disabled=false;
+  };});
+};
+
+/* ============================================================
+   PROMOTIONS
+   Marketing emails (the weekly article, one-off announcements).
+   Nothing goes out until an admin approves it here; promo_approve
+   queues the audience and the promo-emails function sends it from
+   the team mailboxes. Recipients who unsubscribe are never queued.
+   ============================================================ */
+var PR={rows:[], open:null, tab:'draft'};
+var PR_AUD={non_clients:'All users except clients', list:'Hand-picked list'};
+var PR_KIND={weekly_article:'Weekly article', ugc_recruit:'UGC recruiting', one_off:'Announcement'};
+
+RENDERERS.promotions=async function(force){
+  if(force||!PR.rows.length){
+    var r=await sb.from('promo_emails').select('id,kind,audience,subject,html,status,send_at,note,approved_at,queued,sent,failed,created_at')
+      .order('created_at',{ascending:false}).limit(100);
+    if(r.error)throw new Error(r.error.message);
+    PR.rows=r.data||[];
+  }
+  var all=PR.rows;
+  var grp=function(p){return p.status==='draft'?'draft':p.status==='rejected'?'rejected':'sent';};
+  COUNTS.promotions=all.filter(function(p){return p.status==='draft';}).length;
+  var n=function(t){return all.filter(function(p){return grp(p)===t;}).length;};
+  var f=all.filter(function(p){return grp(p)===PR.tab;});
+  var isAdmin=ROLE==='admin';
+  var label={draft:'Waiting for approval',sent:'Approved',rejected:'Rejected'};
+
+  return '<div class="head"><div class="eyeb">Marketing</div><h1>Promotions.</h1>'+
+    '<p class="sub">Emails to creators. Each draft waits here until an admin approves it; then it goes out from the team mailboxes (jake@, ayush@, tanish@, hello@, contact@). Unsubscribed people are always skipped.</p></div>'+
+    '<div class="card"><div class="ch"><div class="seg" id="prTabs">'+
+      ['draft','sent','rejected'].map(function(t){
+        return '<button class="'+(PR.tab===t?'on':'')+'" data-t="'+t+'">'+label[t]+'<span class="n">'+n(t)+'</span></button>';}).join('')+
+      '</div></div>'+
+      (f.length
+       ? '<table><thead><tr><th>Email</th><th>Audience</th><th>Sends</th><th>Status</th><th></th></tr></thead><tbody>'+
+         f.map(function(p){
+           var open=PR.open===p.id;
+           var st=p.status==='sending'?'Sending '+fmt(p.sent)+' / '+fmt(p.queued):
+                  p.status==='sent'?'Sent to '+fmt(p.sent)+(p.failed?' · '+fmt(p.failed)+' failed':''):
+                  p.status==='approved'?'Approved, sends '+day(p.send_at):
+                  p.status==='rejected'?'Rejected':'Draft';
+           return '<tr>'+
+             '<td><b>'+esc(p.subject)+'</b><div class="mono" style="font-size:10.5px;color:var(--ink-40)">'+esc(PR_KIND[p.kind]||p.kind)+' · created '+day(p.created_at)+'</div></td>'+
+             '<td>'+esc(PR_AUD[p.audience]||p.audience)+'</td>'+
+             '<td class="mono">'+(p.send_at?day(p.send_at):'on approval')+'</td>'+
+             '<td>'+esc(st)+'</td>'+
+             '<td style="white-space:nowrap"><button class="btn sm ghost" data-prview="'+p.id+'">'+(open?'Hide':'Preview')+'</button></td>'+
+           '</tr>'+
+           (open?'<tr><td colspan="5" style="padding:0 16px 18px">'+
+             '<iframe sandbox="" title="Email preview" style="width:100%;height:520px;border:1px solid var(--hair-2);border-radius:10px;background:#fff" srcdoc="'+esc(p.html.replace(/\{first_name\}/g,'there'))+'"></iframe>'+
+             '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center">'+
+               '<button class="btn sm ghost" data-prtest="'+p.id+'">Send me a test</button>'+
+               (p.status==='draft'&&isAdmin
+                 ?'<button class="btn sm" data-prok="'+p.id+'">Approve and send'+(p.send_at&&new Date(p.send_at)>new Date()?' on '+esc(day(p.send_at)):' now')+'</button>'+
+                  '<button class="btn sm ghost" data-prno="'+p.id+'">Reject</button>'
+                 :'')+
+               (p.status==='draft'&&!isAdmin?'<span style="font-size:11.5px;color:var(--ink-40)">Only admins can approve.</span>':'')+
+               '<span style="font-size:11.5px;color:var(--ink-40)" id="prMsg'+p.id+'"></span>'+
+             '</div></td></tr>':'');
+         }).join('')+'</tbody></table>'
+       : '<div class="empty"><div class="ei">✦</div><b>Nothing here</b><p>'+(PR.tab==='draft'?'The next weekly article draft lands here on Thursday.':'No emails in this list yet.')+'</p></div>')+
+    '</div>';
+};
+RENDERERS.promotions.after=function(){
+  $$('#prTabs button').forEach(function(b){b.onclick=function(){PR.tab=b.dataset.t;PR.open=null;render();};});
+  $$('[data-prview]').forEach(function(b){b.onclick=function(){var id=+b.dataset.prview;PR.open=PR.open===id?null:id;render();};});
+  $$('[data-prtest]').forEach(function(b){b.onclick=async function(){
+    var id=+b.dataset.prtest, m=$('#prMsg'+id);
+    b.disabled=true; m.textContent='Sending…';
+    try{
+      var r=await sb.functions.invoke('promo-emails',{body:{mode:'test',id:id,to:ME.email}});
+      if(r.error)throw new Error(r.error.message);
+      m.textContent='Test sent to '+ME.email+'.';
+    }catch(e){m.textContent='Test failed: '+e.message;}
+    b.disabled=false;
+  };});
+  $$('[data-prok]').forEach(function(b){b.onclick=async function(){
+    var id=+b.dataset.prok, p=PR.rows.filter(function(x){return x.id===id;})[0];
+    if(!confirm('Approve "'+p.subject+'"?\n\nIt goes to: '+(PR_AUD[p.audience]||p.audience)+'. This cannot be undone once sending starts.'))return;
+    b.disabled=true;
+    try{
+      var r=await sb.rpc('promo_approve',{p_id:id});
+      if(r.error)throw new Error(r.error.message);
+      alert('Approved. '+fmt(r.data)+' people are queued; sending starts within 2 minutes'+(p.send_at&&new Date(p.send_at)>new Date()?' of '+day(p.send_at):'')+'.');
+      PR.open=null; render(true);
+    }catch(e){alert(e.message);b.disabled=false;}
+  };});
+  $$('[data-prno]').forEach(function(b){b.onclick=async function(){
+    var id=+b.dataset.prno, note=prompt('Why reject it? (optional, helps next week\'s draft)');
+    if(note===null)return;
+    try{
+      var r=await sb.rpc('promo_reject',{p_id:id,p_note:note||null});
+      if(r.error)throw new Error(r.error.message);
+      PR.open=null; render(true);
+    }catch(e){alert(e.message);}
   };});
 };
 
