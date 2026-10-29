@@ -2547,46 +2547,87 @@ function prHead(){
     '</div>';
 }
 var PR_ST={queued:'Queued',sent:'Sent',failed:'Failed'};
+var ACCT_KIND={clips_approved:'Clips approved',clip_approved:'Clip approved',clip_rejected:'Clip rejected',
+  private_approved:'Private campaign',review_digest:'Clips to review',review_reminder:'Review reminder',weekly_report:'Weekly report'};
+var when=function(d){return d?new Date(d).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'·';};
 async function prOutbound(force){
   if(force||!PR.out){
-    var r=await sb.from('promo_sends').select('id,email,from_email,status,error,sent_at,promo_id,promo_emails(subject,kind)')
-      .order('id',{ascending:false}).limit(1000);
-    if(r.error)throw new Error(r.error.message);
-    PR.out=r.data||[];
+    var r=await Promise.all([
+      sb.from('promo_sends').select('id,email,from_email,status,error,sent_at,promo_id,promo_emails(subject,kind)').order('id',{ascending:false}).limit(1000),
+      sb.rpc('outbound_account_emails',{p_limit:1000})
+    ]);
+    if(r[0].error)throw new Error(r[0].error.message);
+    if(r[1].error)throw new Error(r[1].error.message);
+    PR.out=(r[0].data||[]).map(function(x){var p=x.promo_emails||{};return {to:x.email,from:x.from_email,subject:p.subject||'·',
+        type:'Promotion · '+(PR_KIND[p.kind]||p.kind||''),grp:'promo',status:x.status,error:x.error,at:x.sent_at};})
+      .concat((r[1].data||[]).map(function(x){return {to:x.to_email,from:'review@clipency.in',subject:x.subject||'·',
+        type:'Account · '+(ACCT_KIND[x.kind]||x.kind),grp:'account',status:x.status,error:x.error,at:x.sent_at||x.created_at};}))
+      .sort(function(a,b){return String(b.at||'').localeCompare(String(a.at||''));});
   }
-  var q=PR.q.trim().toLowerCase();
+  var q=PR.q.trim().toLowerCase(), g=PR.og||'all';
   var rows=PR.out.filter(function(x){
-    return !q||(x.email+' '+x.from_email+' '+((x.promo_emails||{}).subject||'')).toLowerCase().indexOf(q)>-1;});
+    return (g==='all'||x.grp===g)&&(!q||(x.to+' '+x.from+' '+x.subject+' '+x.type).toLowerCase().indexOf(q)>-1);});
   var c=function(st){return PR.out.filter(function(x){return x.status===st;}).length;};
+  var n=function(k){return k==='all'?PR.out.length:PR.out.filter(function(x){return x.grp===k;}).length;};
   return prHead()+
     '<div class="kpis">'+
-      '<div class="kpi"><span class="lab">sent</span><div class="big">'+fmt(c('sent'))+'</div><div class="sub-t">delivered to the provider</div></div>'+
-      '<div class="kpi"><span class="lab">queued</span><div class="big">'+fmt(c('queued'))+'</div><div class="sub-t">going out within 2 minutes</div></div>'+
-      '<div class="kpi"><span class="lab">failed</span><div class="big"'+(c('failed')?' style="color:var(--warn)"':'')+'>'+fmt(c('failed'))+'</div><div class="sub-t">see the reason per row</div></div>'+
+      '<div class="kpi"><span class="lab">sent</span><div class="big">'+fmt(c('sent'))+'</div><div class="sub-t">accepted by the email provider</div></div>'+
+      '<div class="kpi"><span class="lab">queued</span><div class="big">'+fmt(c('queued'))+'</div><div class="sub-t">going out shortly</div></div>'+
+      '<div class="kpi"><span class="lab">failed</span><div class="big"'+(c('failed')?' style="color:var(--warn)"':'')+'>'+fmt(c('failed'))+'</div><div class="sub-t">hover a row for the reason</div></div>'+
     '</div>'+
-    '<div class="card"><div class="ch"><input class="inp" id="prQ" placeholder="Search email, sender or subject" value="'+esc(PR.q)+'" style="max-width:340px"></div>'+
+    '<div class="card"><div class="ch" style="gap:12px;flex-wrap:wrap"><div class="seg" id="prOg">'+
+      [['all','All'],['promo','Promotions'],['account','Account emails']].map(function(t){
+        return '<button class="'+(g===t[0]?'on':'')+'" data-g="'+t[0]+'">'+t[1]+'<span class="n">'+n(t[0])+'</span></button>';}).join('')+
+      '</div><input class="inp" id="prQ" placeholder="Search address, sender or subject" value="'+esc(PR.q)+'" style="max-width:300px"></div>'+
     (rows.length
       ? '<table><thead><tr><th>To</th><th>From</th><th>Email</th><th>Status</th><th>When</th></tr></thead><tbody>'+
         rows.slice(0,500).map(function(x){
-          var p=x.promo_emails||{};
-          return '<tr><td class="mono" style="font-size:12px">'+esc(x.email)+'</td>'+
-            '<td class="mono" style="font-size:12px">'+esc(x.from_email)+'</td>'+
-            '<td>'+esc(p.subject||'·')+'<div class="mono" style="font-size:10.5px;color:var(--ink-40)">'+esc(PR_KIND[p.kind]||p.kind||'')+'</div></td>'+
-            '<td'+(x.status==='failed'?' style="color:var(--warn)" title="'+esc(x.error||'')+'"':'')+'>'+esc(PR_ST[x.status]||x.status)+'</td>'+
-            '<td class="mono">'+(x.sent_at?new Date(x.sent_at).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'·')+'</td></tr>';
-        }).join('')+'</tbody></table>'
+          return '<tr><td class="mono" style="font-size:12px">'+esc(x.to)+'</td>'+
+            '<td class="mono" style="font-size:12px">'+esc(x.from)+'</td>'+
+            '<td>'+esc(x.subject)+'<div class="mono" style="font-size:10.5px;color:var(--ink-40)">'+esc(x.type)+'</div></td>'+
+            '<td'+(x.status==='failed'?' style="color:var(--warn)" title="'+esc(x.error||'')+'"':'')+'>'+esc(PR_ST[x.status]||x.status||'·')+'</td>'+
+            '<td class="mono">'+when(x.at)+'</td></tr>';
+        }).join('')+'</tbody></table>'+(rows.length>500?'<p class="sub" style="padding:12px 16px">Showing the latest 500; search to narrow down.</p>':'')
       : '<div class="empty"><div class="ei">↗</div><b>No emails</b><p>'+(q?'Nothing matches that search.':'Nothing has been sent yet.')+'</p></div>')+
     '</div>';
 }
-function prInbound(){
+async function prInbound(force){
+  if(force||!PR.inb){
+    var r=await sb.from('inbound_emails').select('id,mailbox,to_address,from_email,from_name,subject,text_body,promo_id,forwarded,forward_error,read_at,received_at,promo_emails(subject)')
+      .order('received_at',{ascending:false}).limit(500);
+    if(r.error)throw new Error(r.error.message);
+    PR.inb=r.data||[];
+  }
+  var mb=PR.mb||'all', all=PR.inb;
+  var rows=all.filter(function(x){return mb==='all'||x.mailbox===mb;});
+  var boxes=['jake@clipency.in','ayush@clipency.in','tanish@clipency.in','hello@clipency.in','contact@clipency.in'];
+  var unread=all.filter(function(x){return !x.read_at;}).length;
   return prHead()+
-    '<div class="card"><div class="empty"><div class="ei">↙</div><b>Replies are not connected yet</b>'+
-    '<p>Replies to these emails land in each team Gmail inbox (jake@, ayush@, tanish@, hello@, contact@). To show them here too, replies need to pass through Clipency first; once that is set up, every reply appears in this list with who sent it, to which mailbox, and the message.</p></div></div>';
+    '<div class="card"><div class="ch" style="flex-wrap:wrap;gap:12px"><div class="seg" id="prMb">'+
+      [['all','All']].concat(boxes.map(function(b){return [b,b.split('@')[0]+'@'];})).map(function(t){
+        var k=t[0]==='all'?all.length:all.filter(function(x){return x.mailbox===t[0];}).length;
+        return '<button class="'+(mb===t[0]?'on':'')+'" data-mb="'+t[0]+'">'+esc(t[1])+'<span class="n">'+k+'</span></button>';}).join('')+
+      '</div><span style="font-size:12px;color:var(--ink-40)">'+fmt(unread)+' unread · copies also go to each Gmail inbox</span></div>'+
+    (rows.length
+      ? '<table><thead><tr><th>From</th><th>To</th><th>Message</th><th>Reply to</th><th>When</th></tr></thead><tbody>'+
+        rows.map(function(x){
+          var open=PR.inOpen===x.id, body=String(x.text_body||'').trim();
+          return '<tr data-inrow="'+x.id+'" style="cursor:pointer'+(x.read_at?'':';font-weight:600')+'">'+
+            '<td>'+esc(x.from_name||x.from_email)+'<div class="mono" style="font-size:10.5px;color:var(--ink-40);font-weight:400">'+esc(x.from_email)+'</div></td>'+
+            '<td class="mono" style="font-size:12px">'+esc(x.mailbox)+'</td>'+
+            '<td>'+esc(x.subject||'(no subject)')+'<div style="font-size:12px;color:var(--ink-55);font-weight:400;max-width:360px">'+esc(body.slice(0,90))+(body.length>90?'…':'')+'</div></td>'+
+            '<td style="font-size:12px;font-weight:400">'+esc((x.promo_emails||{}).subject||'·')+'</td>'+
+            '<td class="mono" style="font-weight:400">'+when(x.received_at)+(x.forwarded?'':'<div style="color:var(--warn);font-size:10.5px" title="'+esc(x.forward_error||'')+'">not forwarded</div>')+'</td></tr>'+
+            (open?'<tr><td colspan="5" style="padding:4px 16px 18px"><pre style="white-space:pre-wrap;font:13.5px/1.6 inherit;margin:0;padding:14px;border:1px solid var(--hair-2);border-radius:10px">'+esc(body||'(empty message)')+'</pre>'+
+              '<p style="margin:10px 0 0"><a class="btn sm ghost" href="mailto:'+esc(x.from_email)+'?subject='+encodeURIComponent('Re: '+(x.subject||''))+'">Reply by email</a></p></td></tr>':'');
+        }).join('')+'</tbody></table>'
+      : '<div class="empty"><div class="ei">↙</div><b>No replies yet</b><p>Replies to promotions show up here once replies go through reply.clipency.in. Replies sent before that went straight to Gmail.</p></div>')+
+    '</div>';
 }
 
 RENDERERS.promotions=async function(force){
   if(PR.view==='outbound')return prOutbound(force);
-  if(PR.view==='inbound')return prInbound();
+  if(PR.view==='inbound')return prInbound(force);
   if(force||!PR.rows.length){
     var r=await sb.from('promo_emails').select('id,kind,audience,subject,html,status,send_at,note,approved_at,queued,sent,failed,created_at')
       .order('created_at',{ascending:false}).limit(100);
@@ -2638,6 +2679,14 @@ RENDERERS.promotions=async function(force){
 };
 RENDERERS.promotions.after=function(){
   $$('#prViews button').forEach(function(b){b.onclick=function(){PR.view=b.dataset.v;PR.open=null;render();};});
+  $$('#prOg button').forEach(function(b){b.onclick=function(){PR.og=b.dataset.g;render();};});
+  $$('#prMb button').forEach(function(b){b.onclick=function(){PR.mb=b.dataset.mb;render();};});
+  $$('[data-inrow]').forEach(function(tr){tr.onclick=async function(){
+    var id=+tr.dataset.inrow, x=PR.inb.filter(function(r){return r.id===id;})[0];
+    PR.inOpen=PR.inOpen===id?null:id;
+    if(x&&!x.read_at){x.read_at=new Date().toISOString(); try{await sb.rpc('inbound_mark_read',{p_id:id});}catch(e){}}
+    render();
+  };});
   var q=$('#prQ'); if(q){q.oninput=function(){PR.q=q.value;var pos=q.selectionStart;render().then(function(){var n=$('#prQ');if(n){n.focus();n.setSelectionRange(pos,pos);}});};}
   $$('#prTabs button').forEach(function(b){b.onclick=function(){PR.tab=b.dataset.t;PR.open=null;render();};});
   $$('[data-prview]').forEach(function(b){b.onclick=function(){var id=+b.dataset.prview;PR.open=PR.open===id?null:id;render();};});

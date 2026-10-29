@@ -21,6 +21,10 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SELF = `${SUPABASE_URL}/functions/v1/promo-emails`;
+/* Set to reply.clipency.in once Resend receiving is verified there: replies then go
+   through inbound-email (saved for console > Inbound, forwarded to Gmail). Unset,
+   replies go straight to the team mailbox as before. */
+const REPLY_DOMAIN = (Deno.env.get("REPLY_DOMAIN") ?? "").trim();
 const NAMES: Record<string, string> = {
   "jake@clipency.in": "Jake from Clipency",
   "ayush@clipency.in": "Ayush from Clipency",
@@ -62,7 +66,7 @@ function build(r: Row) {
   return {
     from: `${NAMES[r.from_email] ?? "Clipency"} <${r.from_email}>`,
     to: [r.email],
-    reply_to: r.from_email,
+    reply_to: REPLY_DOMAIN ? r.from_email.replace(/@.*$/, "@" + REPLY_DOMAIN) : r.from_email,
     subject: r.subject,
     html, text,
     headers: { "List-Unsubscribe": `<${unsub}>`, "List-Unsubscribe-Post": "List-Unsubscribe=One-Click" },
