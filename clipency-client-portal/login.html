@@ -842,7 +842,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       try{
         var x = new URL(u, location.href);
         if(!/^(localhost|127\.0\.0\.1|([a-z0-9-]+\.)*clipency\.in)$/i.test(x.hostname)) return '';
-        if(/(signin|login|signup)/i.test(x.pathname)) return '';
+        /* marketing pages only: a dashboard that bounced the visitor here would just
+           bounce them straight back to sign-in */
+        if(!/^\/((why-us|hustlers|secret-method|launch-videos|clipping-agency|ugc-agency|performance-marketing|startup-marketing-agency|privacy)(\.html)?\/?)?$/.test(x.pathname)) return '';
         return x.href;
       }catch(e){ return ''; }
     }

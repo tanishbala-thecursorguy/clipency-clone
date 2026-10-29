@@ -627,8 +627,8 @@ body.leaving{opacity:0;transition:opacity .5s ease;}
             </svg>
           </span>
           <span>
-            <span class="t1">50 million views and counting</span><br>
-            <span class="t2"><span class="amt" id="viewsTicker">50,000,000</span> views</span>
+            <span class="t1">Views delivered</span><br>
+            <span class="t2"><span class="amt" id="viewsTicker">43,186,412</span> views</span>
           </span>
         </div>
         <div class="fchip fchip-2">
@@ -639,7 +639,7 @@ body.leaving{opacity:0;transition:opacity .5s ease;}
           </span>
           <span>
             <span class="t1">Likes earned</span><br>
-            <span class="t2"><span class="amt" id="likesTicker">3,862,409</span> likes</span>
+            <span class="t2"><span class="amt" id="likesTicker">2,914,377</span> likes</span>
           </span>
         </div>
       </div>
@@ -860,16 +860,21 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
    Views and likes tickers — both chips slowly climb
    ============================================================ */
 (function(){
-  function tick(id, n, max){
+  /* Counts come from the clock, not from page load, so every visitor sees the
+     same number and a returning visitor sees it has grown since last time.
+     About 0.55 views and 0.045 likes a second; ticks land every 2–6 s. */
+  var T0 = Date.UTC(2026, 9, 29);
+  function count(base, perSec){ return Math.floor(base + perSec * Math.max(0, Date.now() - T0) / 1000); }
+  function tick(id, base, perSec){
     var el = document.getElementById(id);
-    if(!el || REDUCED) return;
-    setInterval(function(){
-      n += Math.floor(Math.random()*max) + 4;
-      el.textContent = n.toLocaleString('en-US');
-    }, 1400);
+    if(!el) return;
+    function show(){ el.textContent = count(base, perSec).toLocaleString('en-US'); }
+    show();
+    if(REDUCED) return;
+    (function next(){ setTimeout(function(){ show(); next(); }, 2000 + Math.random()*4000); })();
   }
-  tick('viewsTicker', 50000000, 180);
-  tick('likesTicker', 3862409, 23);
+  tick('viewsTicker', 43186412, 0.55);
+  tick('likesTicker', 2914377, 0.045);
 })();
 
 /* ============================================================
@@ -886,7 +891,9 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       try{
         var x = new URL(u, location.href);
         if(!/^(localhost|127\.0\.0\.1|([a-z0-9-]+\.)*clipency\.in)$/i.test(x.hostname)) return '';
-        if(/(signin|login|signup)/i.test(x.pathname)) return '';
+        /* marketing pages only: a dashboard that bounced the visitor here would just
+           bounce them straight back to sign-in */
+        if(!/^\/((why-us|hustlers|secret-method|launch-videos|clipping-agency|ugc-agency|performance-marketing|startup-marketing-agency|privacy)(\.html)?\/?)?$/.test(x.pathname)) return '';
         return x.href;
       }catch(e){ return ''; }
     }
