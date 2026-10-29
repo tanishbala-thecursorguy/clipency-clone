@@ -623,23 +623,23 @@ body.leaving{opacity:0;transition:opacity .5s ease;}
         <div class="fchip fchip-1">
           <span class="ic">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 6 9 17l-5-5"/>
+              <path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>
             </svg>
           </span>
           <span>
-            <span class="t1">Campaign live</span><br>
-            <span class="t2">just now · <span class="amt">$248.60</span></span>
+            <span class="t1">50 million views and counting</span><br>
+            <span class="t2"><span class="amt" id="viewsTicker">50,000,000</span> views</span>
           </span>
         </div>
         <div class="fchip fchip-2">
           <span class="ic">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/>
+              <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/>
             </svg>
           </span>
           <span>
-            <span class="t1">Views delivered</span><br>
-            <span class="t2"><span class="amt" id="viewsTicker">1,204,516</span> views</span>
+            <span class="t1">Likes earned</span><br>
+            <span class="t2"><span class="amt" id="likesTicker">3,862,409</span> likes</span>
           </span>
         </div>
       </div>
@@ -857,16 +857,19 @@ var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 })();
 
 /* ============================================================
-   Views ticker — the trending chip slowly climbs
+   Views and likes tickers — both chips slowly climb
    ============================================================ */
 (function(){
-  var el = document.getElementById('viewsTicker');
-  if(!el || REDUCED) return;
-  var n = 1204516;
-  setInterval(function(){
-    n += Math.floor(Math.random()*23) + 4;
-    el.textContent = n.toLocaleString('en-US');
-  }, 1400);
+  function tick(id, n, max){
+    var el = document.getElementById(id);
+    if(!el || REDUCED) return;
+    setInterval(function(){
+      n += Math.floor(Math.random()*max) + 4;
+      el.textContent = n.toLocaleString('en-US');
+    }, 1400);
+  }
+  tick('viewsTicker', 50000000, 180);
+  tick('likesTicker', 3862409, 23);
 })();
 
 /* ============================================================
