@@ -431,6 +431,8 @@ form{margin-top:22px;}
 .msg.ok{color:var(--bronze);}
 .msg .resend-link{margin-top:8px;background:none;border:0;padding:2px 0;font:inherit;letter-spacing:.04em;color:var(--bronze);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
 .msg .resend-link:disabled{opacity:.6;cursor:default;}
+.up-note{margin-top:14px;font-size:12px;line-height:1.55;letter-spacing:.02em;text-align:center;color:var(--ink-55);}
+.up-note b{font-weight:600;color:var(--ink-70);}
 @keyframes shake{
   10%,90%{transform:translateX(-1px);} 20%,80%{transform:translateX(2px);}
   30%,50%,70%{transform:translateX(-4px);} 40%,60%{transform:translateX(4px);}
@@ -724,6 +726,7 @@ body.leaving{opacity:0;transition:opacity .5s ease;}
               Continue with Google
             </button>
 
+            <p class="up-note">After you join we email you a link to confirm your account. Can't find it? Check your <b>Spam</b> and <b>Promotions</b> folders and mark it &ldquo;Not spam&rdquo;. Only the newest email&rsquo;s link works.</p>
             <p class="msg" id="msgUp" role="status"></p>
             <p class="swap">Already have an account? <a data-goto="in">Sign in</a></p>
           </form>
@@ -1042,6 +1045,15 @@ document.querySelectorAll('.peek').forEach(function(b){
     setTimeout(function(){ location.href = AFTER; }, 700);
   }
 
+  /* An expired confirmation link, or one a newer email replaced, comes back with
+     #error_code=otp_expired (the homepage forwards it here as ?link=expired). */
+  (function(){
+    if(!/error_code=otp_expired|link=expired/.test(location.hash + location.search)) return;
+    var m = document.getElementById('msgIn');
+    if(m) say(m, 'err', 'That confirmation link expired or a newer email replaced it. Enter your email and password, press Sign in, then use "Resend confirmation email" and open only the newest email.');
+    try{ history.replaceState(null, '', location.pathname); }catch(e){}
+  })();
+
   /* ---- sign in ---- */
   document.querySelector('#panelIn form').addEventListener('submit', async function(e){
     e.preventDefault();
@@ -1084,6 +1096,10 @@ document.querySelectorAll('.peek').forEach(function(b){
     if(!em || !pw){ return err(m, 'Enter your email and a password.'); }
     if(pw.length < 8){ return err(m, 'Password must be at least 8 characters.'); }
     if(!configured(m)) return;
+    /* one request at a time: every extra sign-up sends a new email and voids the earlier link */
+    var form = this;
+    if(form.dataset.busy) return;
+    form.dataset.busy = '1';
     busy(m, 'Creating your account…');
     try{
       var c = client(), data;
@@ -1108,6 +1124,7 @@ document.querySelectorAll('.peek').forEach(function(b){
         }
       }
     }catch(ex){ err(m, friendly(ex && ex.message)); }
+    finally{ delete form.dataset.busy; }
   });
 
   /* Supabase needs an ABSOLUTE redirect URL. CLIPPER_DASHBOARD_URL is a

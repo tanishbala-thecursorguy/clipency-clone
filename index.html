@@ -3,10 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <script>
+/* Supabase email links land here (the project's Site URL) with the result in the hash. A good
+   sign-up confirmation goes on to the creator dashboard, which reads the session from the hash;
+   an expired or replaced link goes to creator sign-in, which explains and offers a fresh one. */
+(function(){try{
+  var h = location.hash;
+  if(/error_code=otp_expired|error=access_denied/.test(h)){ window.__cxResume = true; location.replace('/client/clipper-signin?link=expired'); }
+  else if(/access_token=/.test(h) && /type=signup/.test(h)){ window.__cxResume = true; location.replace('/clipper' + h); }
+}catch(e){}})();
 /* Signed in on this device? Opening clipency.in goes straight back to the dashboard you last used
    (clipper, client or admin), like an app. Each dashboard saves its address in cx-last-portal, and
    signing out clears it. Clicking through to the site from inside a dashboard still shows the site. */
 (function(){try{
+  if(window.__cxResume) return;
   var p = localStorage.getItem('cx-last-portal');
   if(!p || p.charAt(0) !== '/' || p.charAt(1) === '/' || /[?&](eye|site)\b/.test(location.search)) return;
   if(document.referrer && new URL(document.referrer).origin === location.origin) return;
