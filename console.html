@@ -3229,14 +3229,17 @@ async function crProfileScreen(force,uid){
   var joinedCard='<div class="card"><div class="ch"><div><h2>Campaigns</h2>'+
       '<div class="cs">Every campaign they have clips or an application in.</div></div></div>'+
     (joined.length
-      ? '<table><thead><tr><th>Campaign</th><th>Accounts used</th><th>Access</th><th>Clips</th><th>Views</th></tr></thead><tbody>'+
+      ? '<table><thead><tr><th>Campaign</th><th>Accounts used</th><th>Access</th><th>Clips</th><th>Views</th>'+(ROLE==='admin'?'<th></th>':'')+'</tr></thead><tbody>'+
         joined.map(function(j){
           return '<tr><td><a href="'+crHref({view:'campaign',c:j.campaign_id})+'">'+esc(j.title)+'</a>'+
               '<div style="font-size:11px;color:var(--ink-40)">'+(j.is_private?'private':'public')+' · '+esc(j.status||'')+'</div></td>'+
             '<td class="mono">'+((j.accounts||[]).map(esc).join('<br>')||'·')+'</td>'+
             '<td>'+(j.is_private?(j.access?String(j.access).split(',').map(crAccessChip).join(' '):'·'):'<span class="chip">open</span>')+'</td>'+
             '<td class="mono">'+fmt(j.approved)+' approved'+(num(j.pending)?' · '+fmt(j.pending)+' pending':'')+'</td>'+
-            '<td class="mono">'+fmtK(j.views)+'</td></tr>';}).join('')+'</tbody></table>'
+            '<td class="mono">'+fmtK(j.views)+'</td>'+
+            (ROLE==='admin'?'<td>'+(j.is_private&&/approved|pending/.test(j.access||'')
+              ?'<button class="btn sm danger" data-crrm="'+esc(j.campaign_id)+'" data-crrmt="'+esc(j.title)+'">Remove</button>':'')+'</td>':'')+
+            '</tr>';}).join('')+'</tbody></table>'
       : '<div class="empty" style="padding:22px 10px"><b>Not in any campaign yet</b><p>Connect an account below and pick a campaign for it.</p></div>')+
     '</div>';
 
@@ -3442,6 +3445,30 @@ RENDERERS.creators.after=function(){
       send.disabled=false;send.textContent='Submit '+fmt(urls.length)+' '+(urls.length===1?'clip':'clips');
     }
   };
+
+  /* ---- profile: take a creator out of a private campaign ---- */
+  $$('[data-crrm]').forEach(function(b){b.onclick=function(e){
+    e.stopPropagation();
+    var cid=b.dataset.crrm, title=b.dataset.crrmt;
+    openModal(
+      '<div class="eyeb">Private campaign</div><h3>Remove from '+esc(title)+'</h3>'+
+      '<p class="sub" style="margin-top:8px">The campaign disappears from their dashboard and they can no longer submit clips to it. '+
+        'Clips, views and payouts they already have stay. No email is sent. Connect an account below to add them back.</p>'+
+      '<div class="mrow"><button class="btn danger" id="crRmGo">Remove</button>'+
+        '<button class="btn ghost" onclick="closeModal()">Cancel</button></div>'+
+      '<div class="msg" id="crRmMsg"></div>',
+    function(){
+      var go=$('#crRmGo'), m=$('#crRmMsg');
+      go.onclick=async function(){
+        go.disabled=true;go.textContent='Removing…';
+        try{
+          var r=await sb.rpc('admin_remove_from_campaign',{p_user:CR.user,p_campaign:cid});
+          if(r.error)throw new Error(r.error.message);
+          closeModal(); toast('Removed from '+title); CR.ov=null; render(true);
+        }catch(err){go.disabled=false;go.textContent='Remove';m.className='msg err';m.textContent=err.message||String(err);}
+      };
+    });
+  };});
 
   /* ---- applications: profile and campaign screens ---- */
   $$('[data-crapok]').forEach(function(b){b.onclick=async function(e){
