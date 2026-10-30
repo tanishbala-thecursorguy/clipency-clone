@@ -2982,7 +2982,7 @@ RENDERERS.logs.after=function(){
    ============================================================ */
 var CR={ov:null,
         all:{q:'',plat:'',seg:'all',sort:'newest',off:0},
-        camp:{q:'',plat:'',access:'all',sort:'clips',off:0},
+        camp:{q:'',plat:'',access:'current',sort:'clips',off:0},
         fresh:{q:'',plat:'',days:'7',off:0},
         list:null,listKey:'',lastList:'',
         user:null,detail:null,
@@ -3141,7 +3141,7 @@ async function crCampaignScreen(force,cid){
   var filters='<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">'+
     '<input class="inp" id="crQ" data-scr="camp" placeholder="Filter by name, email or handle" value="'+esc(crLiveQ(f,'camp'))+'" style="flex:1;min-width:200px" autocomplete="off">'+
     crSel('crPlatF',f.plat,CR_PLAT_OPTS)+
-    (c.is_private?crSel('crAccess',f.access,[['all','Any access'],['approved','Approved'],['pending','Waiting for approval'],['rejected','Rejected']]):'')+
+    (c.is_private?crSel('crAccess',f.access,[['current','In the campaign'],['approved','Approved'],['pending','Waiting for approval'],['rejected','Rejected / removed'],['all','Everyone, incl. removed']]):'')+
     crSel('crSort',f.sort,[['clips','Most clips'],['views','Most views'],['last','Last clip'],['newest','Newest creator']])+
     '</div>';
   var stats='<div class="kpis" style="margin-bottom:14px">'+
