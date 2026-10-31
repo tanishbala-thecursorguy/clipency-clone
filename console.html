@@ -3244,7 +3244,7 @@ async function crProfileScreen(force,uid){
     '</div>';
 
   var acctRows=accts.length
-    ? '<table><thead><tr><th>Platform</th><th>Handle</th><th>Status</th><th>Clips</th><th>Connected</th></tr></thead><tbody>'+
+    ? '<table><thead><tr><th>Platform</th><th>Handle</th><th>Status</th><th>Clips</th><th>Connected</th>'+(ROLE==='admin'?'<th></th>':'')+'</tr></thead><tbody>'+
       accts.map(function(a){
         var u=crUrl(a.platform,a.handle);
         return '<tr><td>'+esc(PLAT_NAME[a.platform]||a.platform||'·')+'</td>'+
@@ -3253,7 +3253,9 @@ async function crProfileScreen(force,uid){
             (a.by_admin?' <span class="chip">by admin</span>':'')+
             (num(a.shared)&&a.status==='verified'?' <span class="chip no" title="The same handle is verified on another creator">also on '+fmt(a.shared)+' other '+(num(a.shared)===1?'creator':'creators')+'</span>':'')+'</td>'+
           '<td class="mono">'+fmt(a.clips)+'</td>'+
-          '<td class="mono">'+day(a.verified_at||a.created_at)+'</td></tr>';}).join('')+'</tbody></table>'
+          '<td class="mono">'+day(a.verified_at||a.created_at)+'</td>'+
+          (ROLE==='admin'?'<td><button class="btn sm danger" data-cracrm="'+esc(a.id)+'" data-cracrmh="'+esc(String(a.handle||'').replace(/^@/,''))+'" data-cracrmn="'+esc(num(a.clips))+'">Remove</button></td>':'')+
+          '</tr>';}).join('')+'</tbody></table>'
     : '<div class="empty" style="padding:22px 10px"><b>No accounts yet</b><p>Connect one below.</p></div>';
 
   var lc=camps.filter(function(c){return String(c.id)===String(CR.linkCamp);})[0]||null;
@@ -3445,6 +3447,32 @@ RENDERERS.creators.after=function(){
       send.disabled=false;send.textContent='Submit '+fmt(urls.length)+' '+(urls.length===1?'clip':'clips');
     }
   };
+
+  /* ---- profile: remove one connected account ---- */
+  $$('[data-cracrm]').forEach(function(b){b.onclick=function(e){
+    e.stopPropagation();
+    var aid=b.dataset.cracrm, h='@'+b.dataset.cracrmh, n=parseInt(b.dataset.cracrmn,10)||0;
+    openModal(
+      '<div class="eyeb">Connected account</div><h3>Remove '+esc(h)+'</h3>'+
+      '<p class="sub" style="margin-top:8px">'+(n
+        ?'This account has '+fmt(n)+' '+(n===1?'clip':'clips')+', so it is kept: it is taken off every campaign and can no longer submit to them. Its clips, views and payouts stay.'
+        :'This account has no clips. It is deleted from this creator, along with its campaign access. The creator can connect it again later.')+
+        ' No email is sent.</p>'+
+      '<div class="mrow"><button class="btn danger" id="crArmGo">Remove</button>'+
+        '<button class="btn ghost" onclick="closeModal()">Cancel</button></div>'+
+      '<div class="msg" id="crArmMsg"></div>',
+    function(){
+      var go=$('#crArmGo'), m=$('#crArmMsg');
+      go.onclick=async function(){
+        go.disabled=true;go.textContent='Removing…';
+        try{
+          var r=await sb.rpc('admin_remove_account',{p_account:aid});
+          if(r.error)throw new Error(r.error.message);
+          closeModal(); toast(r.data==='deleted'?h+' removed':h+' taken off its campaigns'); CR.ov=null; render(true);
+        }catch(err){go.disabled=false;go.textContent='Remove';m.className='msg err';m.textContent=err.message||String(err);}
+      };
+    });
+  };});
 
   /* ---- profile: take a creator out of a private campaign ---- */
   $$('[data-crrm]').forEach(function(b){b.onclick=function(e){
