@@ -587,6 +587,20 @@ window.CXCUR = (function () {
       out.forEach(function (m) {
         m.spend = Math.round((byCreator[m.creator] || 0) * 100) / 100;
       });
+      /* Private campaigns: only creators still approved for it. Someone removed
+         from the campaign keeps their clips (and what they were paid) in the
+         totals, but is no longer listed as one of the campaign's creators. */
+      var priv = {}, inRoster = {}, hasOpen = {};
+      (C.campaigns || []).forEach(function (c) { if (c && c.is_private) priv[String(c.id)] = 1; });
+      (C.roster || []).forEach(function (r) { inRoster[String(r.creator || '').toLowerCase()] = 1; });
+      C.approved().forEach(function (r) {
+        if (!priv[String(r.campaignId)]) hasOpen[String(r.creator || '').toLowerCase()] = 1;
+      });
+      out = out.filter(function (m) {
+        var k = String(m.creator || '').toLowerCase();
+        return inRoster[k] || hasOpen[k];
+      });
+
       /* approved creators who have not posted yet: listed last, all zeros */
       var seen = {};
       out.forEach(function (m) { seen[String(m.creator).toLowerCase()] = 1; });
