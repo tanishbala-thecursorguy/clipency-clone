@@ -725,6 +725,14 @@ window.CLIPDB = (function(){
         CLIPENCY.submissions.length = 0;
         only.forEach(function(r){ CLIPENCY.submissions.push(r); });
       }
+      /* Approved creators (posted or not), same narrowing. */
+      var allR = CLIPENCY.__allRoster;
+      if(allR){
+        if(!Array.isArray(CLIPENCY.roster)) CLIPENCY.roster = [];
+        var onlyR = state.campaigns.length > 1 ? allR.filter(mine) : allR;
+        CLIPENCY.roster.length = 0;
+        onlyR.forEach(function(r){ CLIPENCY.roster.push(r); });
+      }
       /* Clips awaiting this client's approval, same narrowing. */
       var allP = CLIPENCY.__allPending;
       if(allP){

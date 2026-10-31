@@ -141,7 +141,7 @@ CLIPSHELL.init('creators');
       '</div></td>' +
       '<td class="num">'+r.clips+'</td>' +
       '<td class="num">'+C.fmtFull(r.views)+'</td>' +
-      '<td class="num">'+C.fmtFull(Math.round(r.views/r.clips))+'</td>' +
+      '<td class="num">'+C.fmtFull(Math.round(r.views/(r.clips||1)))+'</td>' +
       '<td class="num">'+C.fmtFull(r.likes)+'</td>' +
       '<td class="num">'+eng.toFixed(1)+'%</td>' +
       '<td class="num">'+C.money(r.spend)+'</td>' +

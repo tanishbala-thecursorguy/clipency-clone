@@ -425,6 +425,16 @@ window.CXCUR = (function () {
     pend.forEach(function (r) { C.pending.push(r); });
     C.__allPending = pend.slice();
 
+    /* Everyone approved for the campaign, posted or not. byCreator() adds the
+       ones without a live clip as 0-clip rows. Same master-copy rule. */
+    var ros = (payload.roster || []).map(function (r) {
+      return { creator: cleanHandle(r.handle), platform: String(r.platform || '').toLowerCase(), campaignId: r.campaign_id };
+    });
+    if (!Array.isArray(C.roster)) C.roster = [];
+    C.roster.length = 0;
+    ros.forEach(function (r) { C.roster.push(r); });
+    C.__allRoster = ros.slice();
+
     /* Campaign meta. With several campaigns the portal represents the
        client as a whole: budgets add up, and the headline rate is the
        one from their newest campaign (the rpc orders created_at desc). */
@@ -577,6 +587,15 @@ window.CXCUR = (function () {
       out.forEach(function (m) {
         m.spend = Math.round((byCreator[m.creator] || 0) * 100) / 100;
       });
+      /* approved creators who have not posted yet: listed last, all zeros */
+      var seen = {};
+      out.forEach(function (m) { seen[String(m.creator).toLowerCase()] = 1; });
+      (C.roster || []).forEach(function (r) {
+        var k = String(r.creator || '').toLowerCase();
+        if (!r.creator || seen[k]) return;
+        seen[k] = 1;
+        out.push({ creator: r.creator, platform: r.platform, clips: 0, views: 0, likes: 0, comments: 0, spend: 0 });
+      });
       return out;
     };
   }
@@ -590,6 +609,8 @@ window.CXCUR = (function () {
     C.submissions.length = 0;
     if (Array.isArray(C.pending)) C.pending.length = 0;
     C.__allPending = [];
+    if (Array.isArray(C.roster)) C.roster.length = 0;
+    C.__allRoster = [];
     C.campaign.client = 'Your campaigns';
     C.campaign.budget = 0;
     C.campaign.cpm = 0;
