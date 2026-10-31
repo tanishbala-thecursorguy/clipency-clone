@@ -715,7 +715,7 @@ body.leaving{opacity:0;transition:opacity .5s ease;}
               Continue with Google
             </button>
 
-            <p class="up-note">After you join we email you a link to confirm your account. Can't find it? Check your <b>Spam</b> and <b>Promotions</b> folders and mark it &ldquo;Not spam&rdquo;. Only the newest email&rsquo;s link works.</p>
+            <p class="up-note">No confirmation email: we check your email address and take you straight to your dashboard.</p>
             <p class="msg" id="msgUp" role="status"></p>
             <p class="swap">Already have an account? <a data-goto="in">Sign in</a></p>
           </form>
@@ -1029,6 +1029,37 @@ document.querySelectorAll('.peek').forEach(function(b){
     try{ history.replaceState(null, '', location.pathname); }catch(e){}
   })();
 
+  /* Instant sign-up: the creator-signup function checks the email can receive mail
+     and creates the account already confirmed, so there is no confirmation email.
+     'in' = account ready, sign in now; 'exists' = already has an account;
+     'fallback' = invited staff/client email (or function unreachable): use the
+     normal sign-up with a confirmation email. */
+  async function instantSignup(em, pw, meta){
+    var t0 = Date.now(), d = {}, res;
+    try{
+      res = await fetch((URL_ || 'https://spwtkdgpgeutrhwcjrpy.supabase.co') + '/functions/v1/creator-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': KEY, 'Authorization': 'Bearer ' + KEY },
+        body: JSON.stringify({ email: em, password: pw, first_name: meta && meta.first_name || '', last_name: meta && meta.last_name || '' })
+      });
+      d = await res.json().catch(function(){ return {}; });
+    }catch(e){ return 'fallback'; }
+    var wait = 1500 - (Date.now() - t0);
+    if(wait > 0) await new Promise(function(r){ setTimeout(r, wait); });
+    if(d.fallback || res.status === 404 || res.status >= 500) return 'fallback';
+    if(!res.ok) throw new Error(d.error || 'Could not create the account. Try again.');
+    return d.exists ? 'exists' : 'in';
+  }
+  async function passwordSignIn(em, pw){
+    var c = client();
+    if(c){
+      var r = await c.auth.signInWithPassword({ email: em, password: pw });
+      if(r.error) throw r.error;
+      return r.data.session;
+    }
+    return await rest('token?grant_type=password', { email: em, password: pw });
+  }
+
   /* ---- sign in ---- */
   document.querySelector('#panelIn form').addEventListener('submit', async function(e){
     e.preventDefault();
@@ -1050,6 +1081,12 @@ document.querySelectorAll('.peek').forEach(function(b){
       done(m, session, 'Signed in. Taking you to your dashboard…');
     }catch(ex){
       if(/email not confirmed/i.test(ex && ex.message || '')){
+        /* signed up before instant sign-up and never confirmed: let them in now */
+        try{
+          if(await instantSignup(em, pw, null) === 'in'){
+            return done(m, await passwordSignIn(em, pw), 'Signed in. Taking you to your dashboard…');
+          }
+        }catch(e2){}
         shake();
         offerResend(m, 'err', 'Please confirm your email first. We sent the link to ' + em + ' when you signed up (check Spam and Promotions).', em);
       } else err(m, friendly(ex && ex.message));
@@ -1070,8 +1107,15 @@ document.querySelectorAll('.peek').forEach(function(b){
     var form = this;
     if(form.dataset.busy) return;
     form.dataset.busy = '1';
-    busy(m, 'Creating your account…');
+    busy(m, 'Checking your email…');
     try{
+      var fast = await instantSignup(em, pw, typeof meta !== 'undefined' ? meta : null);
+      if(fast === 'exists'){ return err(m, 'That email already has an account. Sign in instead, or use "Forgot password?".'); }
+      if(fast === 'in'){
+        busy(m, 'Creating your account…');
+        return done(m, await passwordSignIn(em, pw), 'Account created. Taking you to your dashboard…');
+      }
+      busy(m, 'Creating your account…');
       var c = client(), data;
       if(c){
         var r = await c.auth.signUp({ email: em, password: pw, options:{ emailRedirectTo: afterAuthURL() } });
