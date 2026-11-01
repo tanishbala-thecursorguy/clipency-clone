@@ -3084,7 +3084,7 @@ function crTabs(view){
     t('all','All creators',crHref({}),ov.creators)+
     t('campaign','By campaign',crHref({view:'campaign',c:CR.camp.id||''}),null)+
     t('new','New sign-ups',crHref({view:'new'}),ov.new_7d)+
-    '</div></div>';
+    '</div>'+(ROLE==='admin'?'<button class="btn ok sm" id="crNew">+ Add creator</button>':'')+'</div>';
 }
 function crHead(sub){
   return '<div class="head"><div class="eyeb">Creator Control</div><h1>Creators.</h1>'+
@@ -3364,6 +3364,49 @@ RENDERERS.creators=async function(force){
     crKpis(ov,view)+crTabs(view)+body;
 };
 
+/* Add creator: the account is confirmed straight away (no email is sent) and signs
+   in at /client/clipper-signin with the password typed here. */
+function crAddModal(){
+  var lab=function(t){return '<label style="display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin-bottom:5px">'+t+'</label>';};
+  openModal(
+    '<div class="eyeb">New creator</div><h3>Add a creator</h3>'+
+    '<p class="m-sub">Makes a creator account that can sign in straight away. No email is sent: pass the email and password on to them yourself.</p>'+
+    '<div style="margin-top:18px">'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+        '<div style="margin-bottom:12px">'+lab('First name *')+'<input class="inp" id="caFirst" autocomplete="off"></div>'+
+        '<div style="margin-bottom:12px">'+lab('Last name')+'<input class="inp" id="caLast" autocomplete="off"></div>'+
+      '</div>'+
+      '<div style="margin-bottom:12px">'+lab('Email *')+'<input class="inp" id="caEmail" type="email" placeholder="creator@gmail.com" autocomplete="off"></div>'+
+      '<div style="margin-bottom:6px">'+lab('Password *')+'<input class="inp" id="caPass" type="text" placeholder="at least 8 characters" autocomplete="off"></div>'+
+      '<p style="font-size:11.5px;color:var(--ink-40)">Shown as plain text on purpose, so you can pass it on. They can change it later with "Forgot password?".</p>'+
+    '</div>'+
+    '<div class="mrow"><button class="btn ok" id="caSave">Add creator</button>'+
+      '<button class="btn ghost" onclick="closeModal()">Cancel</button></div>'+
+    '<div class="msg" id="caMsg"></div>',
+  function(){
+    $('#caFirst').focus();
+    $('#caSave').onclick=async function(){
+      var msg=$('#caMsg'), btn=this;
+      var first=$('#caFirst').value.trim(), email=$('#caEmail').value.trim(), pass=$('#caPass').value;
+      var fail=function(t){msg.className='msg err';msg.textContent=t;btn.disabled=false;btn.textContent='Add creator';};
+      if(!first)return fail('Enter a first name.');
+      if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return fail('Enter a valid email address.');
+      if(pass.length<8)return fail('Password must be at least 8 characters.');
+      btn.disabled=true;btn.textContent='Adding…';msg.className='msg';msg.textContent='';
+      try{
+        var r=await sb.functions.invoke('admin-create-creator',{body:{
+          email:email,password:pass,first_name:first,last_name:$('#caLast').value.trim()}});
+        if(r.error){
+          var m=''; try{m=(await r.error.context.json()).error||'';}catch(e){}
+          throw new Error(m||r.error.message||'Could not add the creator.');
+        }
+        closeModal(); toast((r.data&&r.data.name||email)+' added');
+        CR.ov=null; CR.list=null; location.hash=crHref({}); render(true);
+      }catch(e){fail(e.message);}
+    };
+  });
+}
+
 RENDERERS.creators.after=function(){
   var scrEl=$('#crPage'), scr=scrEl?scrEl.dataset.scr:'all';
   var F=scr==='campaign'?CR.camp:scr==='new'?CR.fresh:CR.all;
@@ -3447,6 +3490,10 @@ RENDERERS.creators.after=function(){
       send.disabled=false;send.textContent='Submit '+fmt(urls.length)+' '+(urls.length===1?'clip':'clips');
     }
   };
+
+  /* ---- list: add a creator by hand (admins) ---- */
+  var addCr=$('#crNew');
+  if(addCr)addCr.onclick=crAddModal;
 
   /* ---- profile: remove one connected account ---- */
   $$('[data-cracrm]').forEach(function(b){b.onclick=function(e){
