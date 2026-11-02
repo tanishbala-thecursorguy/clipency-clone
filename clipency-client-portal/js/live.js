@@ -795,6 +795,8 @@ window.CXCUR = (function () {
 
     if (!uid) { toSignin(); return; }
 
+    startPresence(sb);
+
     var cached = readCache(uid);
     if (cached) {
       try {
@@ -848,6 +850,21 @@ window.CXCUR = (function () {
         applyEmpty(msg);
       }
     }
+  }
+
+  /* Presence: tells Clipency the client has the dashboard open (client_ping,
+     055). Once on load and every minute while the tab is in front; staff
+     previewing the portal are ignored server-side. Failures are silent. */
+  function startPresence(sb) {
+    var ping = function () {
+      if (document.hidden) return;
+      try {
+        sb.rpc('client_ping', { p_path: location.pathname }).then(function () {}, function () {});
+      } catch (e) { /* never let presence break the dashboard */ }
+    };
+    ping();
+    setInterval(ping, 60000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) ping(); });
   }
 
   /* Stale-while-revalidate: the page has already painted from cache,

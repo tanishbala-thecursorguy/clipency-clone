@@ -1761,6 +1761,64 @@ function clientsOn(campId){ return CLI.links.filter(function(l){return l.campaig
 function isLinked(campId,clientId){ return CLI.links.some(function(l){return l.campaign_id===campId&&l.client_user_id===clientId;}); }
 function ownerOf(campId){ var o=CLI.links.find(function(l){return l.campaign_id===campId&&l.is_owner;}); return o?o.client_user_id:null; }
 
+/* ---- client presence (055): who has their dashboard open ----
+   The client portal pings client_ping every minute; a client is "online" when
+   pinged in the last 2 minutes. While the console is open it checks every
+   minute and pops a notice when a client arrives (Telegram gets one too,
+   from the database, even with the console closed). */
+var CP={by:{}, seen:null};
+async function cpLoad(){
+  try{
+    var r=await sb.rpc('admin_client_presence');
+    if(r.error)return CP.by;
+    var by={}; (r.data||[]).forEach(function(x){by[x.user_id]=x;});
+    CP.by=by;
+  }catch(e){}
+  return CP.by;
+}
+function cpPage(p){
+  var m=String(p||'').replace(/\.html$/,'').split('/').filter(Boolean).pop()||'dashboard';
+  return m==='client'||m==='index'?'dashboard':m;
+}
+function cpCell(x){
+  if(!x)return '<span style="font-size:12px;color:var(--ink-40)">never opened</span>';
+  var line='<div style="font-size:11px;color:var(--ink-40)">'+fmt(x.visits_7d)+' visit'+(x.visits_7d===1?'':'s')+' · '+fmt(x.minutes_7d)+' min in 7 days</div>';
+  return x.online
+    ?'<span style="color:var(--gold);font-weight:600;font-size:12.5px">\u25CF Online now</span> <span style="font-size:12px;color:var(--ink-55)">on '+esc(cpPage(x.last_path))+'</span>'+line
+    :'<span style="font-size:12.5px;color:var(--ink-55)">Last seen '+esc(ago(x.last_seen_at))+'</span>'+line;
+}
+function cpWatch(){
+  if(ROLE!=='admin'&&ROLE!=='reviewer')return;
+  var tick=async function(){
+    if(!sb)return;
+    var before=CP.seen, by=await cpLoad(), now={};
+    Object.keys(by).forEach(function(id){if(by[id].online)now[id]=by[id].visit_started_at;});
+    COUNTS.clients=Object.keys(now).length||null;
+    var a=$('#nav a[data-id="clients"]');
+    if(a){var ct=a.querySelector('.ct');
+      if(COUNTS.clients){if(!ct){ct=document.createElement('span');ct.className='ct';a.appendChild(ct);}ct.textContent='\u25CF '+COUNTS.clients;}
+      else if(ct)ct.remove();}
+    if(before){
+      Object.keys(now).forEach(function(id){
+        if(before[id]===now[id])return;
+        var c=(CLI.rows||[]).filter(function(r){return r.id===id;})[0];
+        var who=c?(c.full_name||c.email):'A client';
+        if(c&&c.company_name)who+=' ('+c.company_name+')';
+        if(typeof toast==='function')toast(who+' just opened their dashboard');
+        try{if(window.Notification&&Notification.permission==='granted')new Notification('Client online',{body:who+' is on their dashboard ('+cpPage(by[id].last_path)+').',tag:'cx-client-'+id});}catch(e){}
+      });
+    }
+    CP.seen=now;
+  };
+  /* client names for the notice come from the Clients list */
+  (async function(){
+    try{if(!CLI.rows.length){var p=await sb.rpc('admin_list_clients');if(!p.error)CLI.rows=(p.data||[]).map(function(r){
+      return {id:r.user_id,email:r.email,full_name:r.full_name,company_name:r.company_name,role:r.role,created_at:r.created_at};});}}catch(e){}
+    tick().catch(function(){});
+  })().catch(function(){});
+  setInterval(function(){tick().catch(function(){});},60000);
+}
+
 RENDERERS.clients=async function(force){
   if(force||!CLI.rows.length){
     /* Was .eq('role','client'), which hid any clipper who was also given client
@@ -1788,21 +1846,24 @@ RENDERERS.clients=async function(force){
   }
   var list=CLI.rows, all=CLI.camps;
   var linked=all.filter(function(c){return clientsOn(c.id).length;}).length;
+  await cpLoad();
+  var onlineN=list.filter(function(c){var x=CP.by[c.id];return x&&x.online;}).length;
 
   return '<div class="head"><div class="eyeb">Client Access</div><h1>Clients.</h1>'+
-    '<p class="sub">Create a client login and choose which campaigns it can see. Clients cannot sign up themselves.</p></div>'+
+    '<p class="sub">Create a client login and choose which campaigns it can see. Clients cannot sign up themselves; they log in at <a href="/client-signin" target="_blank" rel="noopener" style="color:var(--gold)">client-signin ↗</a>.</p></div>'+
     '<div class="kpis">'+
       '<div class="kpi"><span class="lab">Client accounts</span><div class="big">'+fmt(list.length)+'</div><div class="sub-t">can sign in</div></div>'+
       '<div class="kpi"><span class="lab">Campaigns linked</span><div class="big">'+fmt(linked)+'</div><div class="sub-t">visible to a client</div></div>'+
       '<div class="kpi"><span class="lab">Unassigned</span><div class="big" style="color:'+(all.length-linked?'var(--warn)':'var(--ink-2)')+'">'+fmt(all.length-linked)+'</div><div class="sub-t">no client sees these</div></div>'+
-      '<div class="kpi"><span class="lab">Portal</span><div class="big" style="font-size:15px;padding-top:9px"><a href="/client-signin" target="_blank" rel="noopener" style="color:var(--gold)">client-signin ↗</a></div><div class="sub-t">where they log in</div></div>'+
+      '<div class="kpi"><span class="lab">Online now</span><div class="big"'+(onlineN?' style="color:var(--gold)"':'')+'>'+fmt(onlineN)+'</div><div class="sub-t">on their dashboard</div></div>'+
     '</div>'+
     '<div class="card"><div class="ch">'+
       '<div><h2>Client accounts</h2><div class="cs">'+fmt(list.length)+' account'+(list.length===1?'':'s')+'</div></div>'+
       '<button class="btn ok" id="clNew">+ New client</button></div>'+
       (list.length
-       ? '<table><thead><tr><th>Client</th><th>Email</th><th>Company</th><th>Campaigns</th><th>Wallet</th><th>Added</th><th></th></tr></thead><tbody>'+
-         list.map(function(c){
+       ? '<table><thead><tr><th>Client</th><th>Email</th><th>Company</th><th>Campaigns</th><th>Wallet</th><th>Dashboard use</th><th>Added</th><th></th></tr></thead><tbody>'+
+         list.slice().sort(function(a,b){var x=CP.by[a.id]||{},y=CP.by[b.id]||{};
+           return (y.online?1:0)-(x.online?1:0)||String(y.last_seen_at||'').localeCompare(String(x.last_seen_at||''));}).map(function(c){
            var mine=linksFor(c.id);
            return '<tr>'+
              '<td><b>'+esc(c.full_name||'·')+'</b>'+
@@ -1815,6 +1876,7 @@ RENDERERS.clients=async function(force){
                                esc(m.campaign_title)+(m.is_owner?'':' · view')+'</span>';}).join(' ')
                               :'<span style="color:var(--danger);font-size:12px">none — dashboard will be empty</span>')+'</td>'+
              '<td class="mono"><b>'+money(CLI.bal&&CLI.bal[c.id]||0)+'</b></td>'+
+             '<td>'+cpCell(CP.by[c.id])+'</td>'+
              '<td class="mono">'+day(c.created_at)+'</td>'+
              '<td style="white-space:nowrap">'+
                '<button class="btn sm ok" data-wal="'+esc(c.id)+'" data-wn="'+esc(c.full_name||c.email||'Client')+'">Funds</button> '+
@@ -4214,6 +4276,7 @@ async function boot(){
 
     paintApps();
     if(window.WK&&WK.init)WK.init();
+    cpWatch();
     $('#boot').classList.add('hide');
     $('#app').style.display='';
     if(!location.hash)location.hash=ROLE==='reviewer'?'#reviews':'#command';
