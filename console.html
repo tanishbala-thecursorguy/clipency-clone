@@ -2646,7 +2646,7 @@ RENDERERS.promotions=async function(force){
   var ib=await sb.rpc('promo_inbox_status');
   var inboxes=(!ib.error&&ib.data)||[];
   return prHead()+
-    (inboxes.length?'<div class="cs" style="margin:-6px 0 14px;font-size:12.5px;color:var(--ink-55)">Sending today, 50 max per inbox: '+
+    (inboxes.length?'<div class="cs" style="margin:-6px 0 14px;font-size:12.5px;color:var(--ink-55)">Sending today, 50 a day (10 per inbox): '+
       inboxes.map(function(x){
         return esc(String(x.inbox).split('@')[0])+' '+fmt(x.sent_today)+'/'+fmt(x.cap)+
           (x.paused_until?' <span style="color:var(--danger)" title="'+esc(x.pause_reason||'')+'">paused until '+esc(day(x.paused_until))+'</span>':'');

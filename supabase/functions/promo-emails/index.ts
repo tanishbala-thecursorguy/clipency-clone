@@ -10,8 +10,8 @@
 // never twice. This function renders {first_name}, adds the unsubscribe footer
 // and headers, sends through Resend's batch API, and reports each result back
 // (promo_mark). The From address rotates across the team mailboxes per
-// recipient (promo_senders); replies go to that same mailbox. Each inbox sends at
-// most 50 a day, and an inbox with a spam complaint or a bounce spike rests 3 days
+// recipient (promo_senders); replies go to that same mailbox. Promotions send
+// 50 a day in total (10 per inbox, 054), and an inbox with a spam complaint or a bounce spike rests 3 days
 // (053_fast_console_work_clock_promo_inboxes.sql).
 //
 // Provider key: RESEND_API_KEY secret, or Vault via cx_email_provider_key,
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
     await new Promise((ok) => setTimeout(ok, 600));  /* Resend allows ~2 requests a second */
   }
 
-  /* at most 50 per inbox per India day, paused inboxes skipped (promo_batch) */
+  /* at most 10 per inbox per India day (50 total), paused inboxes skipped (promo_batch) */
   const { data, error } = await admin.rpc("promo_batch", { p_limit: 90 });
   if (error) return json({ error: error.message }, 500);
   const rows = (data ?? []) as Row[];
