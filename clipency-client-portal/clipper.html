@@ -1075,6 +1075,7 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
       <!-- Filled and shown by showDetail() only when the creator pool is spent. -->
       <div class="spent-note" id="dSpent" style="display:none"></div>
       <div class="spent-note" id="dUnpaid" style="display:none"></div>
+      <div class="spent-note" id="dClosed" style="display:none"></div>
     </div>
 
     <div class="g4" style="margin-bottom:13px">
@@ -2581,8 +2582,9 @@ function campCard(c,idx,opt){
   var chips='';
   if(priv)chips+='<span class="chip priv">'+LOCK_SVG+(opt.locked?'Private':'Private · you’re in')+'</span>';
   if(c.category)chips+='<span class="chip gold">'+esc(c.category)+'</span>';
+  if(c.submissions_closed)chips+='<span class="chip spent">Submissions closed</span>';
   if(spent)chips+='<span class="chip spent">Budget exhausted</span>';
-  else if(c.is_new&&!priv)chips+='<span class="chip ok">New</span>';
+  else if(c.is_new&&!priv&&!c.submissions_closed)chips+='<span class="chip ok">New</span>';
 
   /* The campaign list shows reach only: how many creators are in and how
      many views the campaign has. No rate and no budget on the card, for any
@@ -2590,7 +2592,7 @@ function campCard(c,idx,opt){
   var hint=opt.locked
     ? '<span><b>Private campaign</b>: apply to join</span>'+
       '<span style="color:var(--accent);font-weight:600">Join the private campaign ↗</span>'
-    : '<span>'+(spent?'<b>Budget exhausted</b>: nothing left to earn':(isPerVideo(c)?'Brief inside':'Rates and brief inside'))+'</span>'+
+    : '<span>'+(c.submissions_closed?'<b>Submissions closed</b>: your clips still count':spent?'<b>Budget exhausted</b>: nothing left to earn':(isPerVideo(c)?'Brief inside':'Rates and brief inside'))+'</span>'+
       '<span style="color:var(--accent);font-weight:600">Open campaign ↗</span>';
 
   d.innerHTML='<div class="row1"><span class="ico">'+(c.icon_url?'<img src="'+esc(c.icon_url)+'" alt="">':esc((c.title||'C')[0]))+'</span>'+
@@ -2725,11 +2727,20 @@ async function openDetail(c){
         'approved is unaffected and will still be paid.</span>'
       : '';
   }
+  /* A campaign can close submissions without pausing: it stays on the
+     dashboard, pending clips are still reviewed and paid, but nothing new
+     goes in (the database refuses the insert as well). */
+  var closed=!!c.submissions_closed, cn=$('#dClosed');
+  if(cn){
+    cn.style.display=closed?'flex':'none';
+    cn.innerHTML=closed?'<span class="ic">●</span><span><b>Submissions are closed on this campaign for now.</b> '+
+      'Your approved and pending clips are unaffected and will still be paid.</span>':'';
+  }
   ['#dSubmit1','#dSubmit2'].forEach(function(sel){
     var b=$(sel); if(!b) return;
-    b.disabled=spent;
-    b.title=spent?'Budget exhausted — this campaign cannot pay for new clips':'';
-    b.textContent=spent?'Budget exhausted':'Submit Your Clip →';
+    b.disabled=spent||closed;
+    b.title=closed?'Submissions are closed on this campaign':spent?'Budget exhausted — this campaign cannot pay for new clips':'';
+    b.textContent=closed?'Submissions closed':spent?'Budget exhausted':'Submit Your Clip →';
   });
   /* Some campaigns pay a different rate per platform (YouTube at 0 next to a
      paid Instagram, say). The database only returns creator rates, and only
