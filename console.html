@@ -464,7 +464,7 @@ var PAGES=[
 ];
 var COUNTS={};
 
-function allowed(p){ return ROLE==='reviewer' ? !!p.reviewer : true; }
+function allowed(p){ if(p.admin&&ROLE!=='admin')return false; return ROLE==='reviewer' ? !!p.reviewer : true; }
 function currentId(){
   var h=(location.hash||'').replace(/^#/,'').split('?')[0];
   var p=PAGES.filter(function(x){return x.id===h;})[0];
@@ -4199,6 +4199,7 @@ async function boot(){
     $('#meAv').textContent=(name[0]||'A').toUpperCase();
 
     paintApps();
+    if(window.WK&&WK.init)WK.init();
     $('#boot').classList.add('hide');
     $('#app').style.display='';
     if(!location.hash)location.hash=ROLE==='reviewer'?'#reviews':'#command';
@@ -4211,6 +4212,318 @@ async function boot(){
   }
 }
 boot();
+</script>
+
+<script>
+/* ============================================================
+   WORK HOURS (admins only)
+   Plan the day, clock in, and prove you are actually working. A check-in
+   falls due every 20-35 minutes (random) and must be answered within 5
+   minutes; using the console just before it also counts. A missed check-in
+   means that stretch is not counted, and two missed in a row end the session
+   at the last moment you were seen. Days run midnight to midnight, India time.
+   Every rule lives in the database (clipency-db/052_work_hours.sql); this
+   module only shows it and sends clicks.
+   ============================================================ */
+var WK={st:null, off:0, rep:null, days:14, lastAct:0, sig:'', seenCheck:null, flash:false};
+
+(function(){
+  if(!PAGES.some(function(p){return p.id==='work';})){
+    var at=PAGES.findIndex(function(p){return p.id==='command';});
+    PAGES.splice(at<0?0:at+1,0,{id:'work',label:'Work Hours',ic:'◷',staff:true,admin:true});
+  }
+  var css=document.createElement('style');
+  css.textContent=
+    '.wk-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px;align-items:start}'+
+    '@media(max-width:900px){.wk-grid{grid-template-columns:1fr}}'+
+    '.wk-clock{font-family:var(--display);font-size:68px;line-height:1;color:var(--ink-2);margin:14px 0 10px;font-variant-numeric:tabular-nums}'+
+    '.wk-stats{display:flex;gap:22px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-55);margin-bottom:18px}'+
+    '.wk-stats b{display:block;font-family:var(--mono);font-size:15px;color:var(--ink);font-weight:500}'+
+    '.wk-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--hair)}'+
+    '.wk-row:last-child{border-bottom:0}'+
+    '.wk-row input[type=checkbox]{width:16px;height:16px;accent-color:var(--gold);cursor:pointer;flex:none}'+
+    '.wk-row .t{flex:1;font-size:14px;word-break:break-word}'+
+    '.wk-row.done .t{text-decoration:line-through;color:var(--ink-40)}'+
+    '.wk-row .d{font-size:11px;color:var(--ink-40);font-family:var(--mono)}'+
+    '.wk-x{background:none;border:0;color:var(--ink-40);cursor:pointer;font-size:17px;line-height:1;padding:2px 6px}'+
+    '.wk-x:hover{color:var(--danger)}'+
+    '.wk-add{display:flex;gap:8px;margin-top:12px}'+
+    '.wk-note{font-size:12px;color:var(--ink-40);margin-top:10px}'+
+    '.wk-warn{border:1px solid var(--danger);color:var(--danger);border-radius:12px;padding:12px 14px;font-size:13px;margin-bottom:16px}'+
+    '.wk-pill{display:inline-block;font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--hair-2);color:var(--ink-55);white-space:nowrap}'+
+    '.wk-pill.good{color:var(--gold);border-color:var(--gold-line);background:var(--gold-dim)}'+
+    '.wk-pill.bad{color:var(--danger);border-color:var(--danger)}'+
+    '.wk-sess{font-size:11.5px;color:var(--ink-40);margin-top:3px;line-height:1.5}'+
+    '.wk-tbl td{vertical-align:top}'+
+    '.wk-check{position:fixed;inset:0;z-index:85;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px)}'+
+    '.wk-check.on{display:flex}'+
+    '.wk-cbox{background:var(--raise);border:1px solid var(--gold-line);border-radius:18px;padding:30px 30px 26px;max-width:390px;width:calc(100% - 32px);text-align:center;box-shadow:var(--shadow)}'+
+    '.wk-cbox h3{font-family:var(--display);font-weight:400;font-size:34px;color:var(--ink-2);margin:4px 0 8px}'+
+    '.wk-cbox p{font-size:13px;color:var(--ink-55);margin-bottom:20px}'+
+    '.wk-cbox .btn{width:100%;justify-content:center}';
+  document.head.appendChild(css);
+  var ov=document.createElement('div');
+  ov.className='wk-check'; ov.id='wkCheck';
+  ov.innerHTML='<div class="wk-cbox"><div class="eyeb">Check-in</div><h3>Still working?</h3>'+
+    '<p>Answer within <b id="wkCd">5:00</b>, or the time since your last check-in won’t count. Two missed in a row end your session.</p>'+
+    '<button class="btn ok" id="wkHere">Yes, I’m working</button><div class="msg" id="wkHereMsg"></div></div>';
+  document.body.appendChild(ov);
+  $('#wkHere').onclick=wkAnswer;
+})();
+
+function wkNow(){return Date.now()+WK.off;}
+function wkDur(sec){sec=Math.max(0,Math.round(num(sec)));var h=Math.floor(sec/3600),m=Math.floor(sec%3600/60);
+  return h?h+'h '+(m<10?'0':'')+m+'m':m+'m';}
+function wkClock(sec){sec=Math.max(0,Math.floor(sec));var h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;
+  return h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}
+function wkTime(d){return new Date(d).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',timeZone:'Asia/Kolkata'});}
+function wkDayName(d){return new Date(d+'T12:00:00+05:30').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',timeZone:'Asia/Kolkata'});}
+
+async function wkCall(fn,args){
+  var r=await sb.rpc(fn,args||{});
+  if(r.error)throw new Error(r.error.message);
+  wkApply(r.data);
+  return r.data;
+}
+function wkApply(st){
+  WK.st=st||null;
+  if(st&&st.now)WK.off=new Date(st.now).getTime()-Date.now();
+  wkCheckUi();
+  if(currentId()==='work')wkPaintLive(false);
+}
+
+/* ---- running in the background on every console page ---- */
+WK.init=function(){
+  if(ROLE!=='admin')return;
+  wkSync();
+  setInterval(wkSync,30000);
+  setInterval(wkTick,1000);
+  ['mousemove','keydown','wheel','pointerdown','touchstart'].forEach(function(ev){
+    document.addEventListener(ev,wkActivity,{passive:true});});
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)wkSync();});
+};
+async function wkSync(){try{await wkCall('work_state');}catch(e){}}
+/* Using the console counts as being here; sent at most once a minute. */
+function wkActivity(){
+  if(!WK.st||!WK.st.session||document.hidden)return;
+  var t=Date.now(); if(t-WK.lastAct<60000)return; WK.lastAct=t;
+  wkCall('work_activity').catch(function(){});
+}
+async function wkAnswer(){
+  var b=$('#wkHere'), m=$('#wkHereMsg');
+  if(!WK.st||!WK.st.check)return;
+  b.disabled=true; m.className='msg'; m.textContent='';
+  try{
+    var st=await wkCall('work_answer',{p_check:WK.st.check.id});
+    if(st&&st.check){m.className='msg err';m.textContent='That check-in had already closed.';}
+    else if(typeof toast==='function')toast(st&&st.session?'Checked in. Keep going.':'Your session had already ended.');
+  }catch(e){m.className='msg err';m.textContent=e.message||String(e);}
+  b.disabled=false;
+}
+function wkCheckUi(){
+  var c=WK.st&&WK.st.check, ov=$('#wkCheck');
+  if(!ov)return;
+  ov.classList.toggle('on',!!c);
+  if(c&&WK.seenCheck!==c.id){
+    WK.seenCheck=c.id; $('#wkHereMsg').textContent='';
+    try{
+      if(window.Notification&&Notification.permission==='granted'){
+        var n=new Notification('Clipency check-in',{body:'Still working? Answer within 5 minutes.',tag:'cx-work-check',requireInteraction:true});
+        n.onclick=function(){window.focus();n.close();};
+      }
+    }catch(e){}
+  }
+  if(!c)document.title=document.title.replace(/^● Check-in · /,'');
+}
+function wkTick(){
+  var st=WK.st; if(!st)return;
+  var s=st.session, c=st.check, now=wkNow();
+  if(c){
+    var left=Math.max(0,Math.round((new Date(c.closes_at).getTime()-now)/1000));
+    var cd=$('#wkCd'); if(cd)cd.textContent=Math.floor(left/60)+':'+(left%60<10?'0':'')+(left%60);
+    WK.flash=!WK.flash;
+    var base=document.title.replace(/^● Check-in · /,'');
+    document.title=WK.flash?'● Check-in · '+base:base;
+    if(left===0)wkSync();
+  }
+  var el=$('#wkClock');
+  if(el&&s)el.textContent=wkClock((now-new Date(s.started_at).getTime())/1000);
+  /* sidebar: running time next to Work Hours */
+  var a=$('#nav a[data-id="work"]');
+  if(a){
+    var ct=a.querySelector('.ct'), txt=s?wkClock((now-new Date(s.started_at).getTime())/1000).replace(/:\d\d$/,''):'';
+    if(txt&&!ct){ct=document.createElement('span');ct.className='ct';a.appendChild(ct);}
+    if(ct){if(txt)ct.textContent=txt;else ct.remove();}
+  }
+}
+
+/* ---- the page ---- */
+function wkTaskRow(t){
+  return '<div class="wk-row'+(t.done?' done':'')+'"><input type="checkbox" data-wkdone="'+t.id+'"'+(t.done?' checked':'')+'>'+
+    '<span class="t">'+esc(t.title)+'</span>'+
+    '<button class="wk-x" title="Delete" data-wkdel="'+t.id+'">×</button></div>';
+}
+function wkLiveHtml(){
+  var st=WK.st||{}, s=st.session, tasks=st.tasks||[], carry=st.carry||[], tot=st.totals||{};
+  var open=tasks.filter(function(t){return !t.done;}).length, done=tasks.length-open;
+  var le=st.last_ended, warn='';
+  if(!s&&le&&le.reason==='no_response'&&wkNow()-new Date(le.ended_at).getTime()<24*3600e3)
+    warn='<div class="wk-warn">Your session from '+wkTime(le.started_at)+' was ended at '+wkTime(le.ended_at)+
+      ' because two check-ins in a row went unanswered. Only the answered time counts.</div>';
+  var notif='';
+  if(window.Notification&&Notification.permission!=='granted')
+    notif='<div class="wk-note">'+(Notification.permission==='denied'
+      ?'Notifications are blocked for this site, so check-ins only show while the console is open. Allow them in your browser’s site settings.'
+      :'Turn on notifications so check-ins reach you while you work in other apps. <a href="#" id="wkNotif" style="color:var(--gold)">Turn on</a>')+'</div>';
+
+  var left=s
+    ?'<div class="card"><div class="eyeb">Working since '+wkTime(s.started_at)+'</div>'+
+       '<div class="wk-clock" id="wkClock">'+wkClock((wkNow()-new Date(s.started_at).getTime())/1000)+'</div>'+
+       '<div class="wk-stats"><div><b>'+wkDur(tot.verified)+'</b>verified today</div>'+
+         '<div><b>'+fmt(tot.ok)+' / '+fmt(num(tot.ok)+num(tot.missed))+'</b>check-ins answered</div>'+
+         '<div><b>'+fmt(done)+' / '+fmt(tasks.length)+'</b>tasks done</div></div>'+
+       '<button class="btn danger" id="wkStop">Finish work</button>'+notif+'</div>'
+    :'<div class="card"><div class="eyeb">Not working</div>'+
+       '<div class="wk-clock" style="color:var(--ink-25)">0:00:00</div>'+
+       '<div class="wk-stats"><div><b>'+wkDur(tot.verified)+'</b>verified today</div>'+
+         '<div><b>'+wkDur(tot.logged)+'</b>logged today</div></div>'+
+       '<button class="btn ok" id="wkStart"'+(open?'':' disabled')+'>Start work</button>'+
+       '<div class="wk-note">'+(open?'The clock starts now. A check-in pops up every 20 to 35 minutes.':'Plan at least one task for today first.')+'</div>'+notif+'</div>';
+
+  var right='<div class="card"><div class="ch"><div><h2>Today’s plan</h2><div class="cs">'+
+      wkDayName(st.today||new Date().toISOString().slice(0,10))+' · '+fmt(done)+' of '+fmt(tasks.length)+' done</div></div></div>'+
+    (tasks.length?tasks.map(wkTaskRow).join(''):'<div class="wk-note" style="margin:0">Nothing planned yet. What do you have to finish today?</div>')+
+    '<div class="wk-add"><input class="inp" id="wkNew" maxlength="300" placeholder="Add a task, then press Enter" autocomplete="off">'+
+      '<button class="btn ghost" id="wkAdd">Add</button></div><div class="msg" id="wkMsg"></div>'+
+    (carry.length?'<div style="margin-top:18px"><div class="eyeb" style="color:var(--ink-40)">Unfinished from earlier</div>'+
+      carry.map(function(t){
+        return '<div class="wk-row"><span class="t">'+esc(t.title)+'</span><span class="d">'+esc(wkDayName(t.day))+'</span>'+
+          '<button class="btn sm ghost" data-wktoday="'+t.id+'">Move to today</button>'+
+          '<button class="wk-x" title="Delete" data-wkdel="'+t.id+'">×</button></div>';
+      }).join('')+'</div>':'')+
+    '</div>';
+  return warn+'<div class="wk-grid">'+left+right+'</div>';
+}
+function wkSig(){var st=WK.st||{};
+  return JSON.stringify([st.session&&st.session.id,st.tasks,st.carry,st.last_ended,st.totals,
+    window.Notification&&Notification.permission]);}
+function wkPaintLive(force){
+  var box=$('#wkLive'); if(!box)return;
+  var sig=wkSig();
+  if(!force&&sig===WK.sig)return;
+  var inp=$('#wkNew');
+  if(!force&&inp&&(inp.value||document.activeElement===inp))return;  /* don't wipe what someone is typing */
+  WK.sig=sig; box.innerHTML=wkLiveHtml(); wkWireLive();
+}
+async function wkDo(fn,args,btn){
+  var m=$('#wkMsg');
+  if(btn)btn.disabled=true;
+  try{await wkCall(fn,args);WK.rep=null;wkPaintLive(true);return true;}
+  catch(e){if(m){m.className='msg err';m.textContent=e.message||String(e);}if(btn)btn.disabled=false;return false;}
+}
+function wkWireLive(){
+  var add=async function(){
+    var i=$('#wkNew'), v=(i&&i.value||'').trim(); if(!v)return;
+    i.value=''; if(!(await wkDo('work_task_add',{p_title:v}))){i.value=v;}
+    var n=$('#wkNew'); if(n)n.focus();
+  };
+  var a=$('#wkAdd'); if(a)a.onclick=add;
+  var n=$('#wkNew'); if(n)n.onkeydown=function(e){if(e.key==='Enter'){e.preventDefault();add();}};
+  $$('[data-wkdone]').forEach(function(c){c.onchange=function(){wkDo('work_task_set',{p_id:+c.dataset.wkdone,p_action:c.checked?'done':'undo'});};});
+  $$('[data-wkdel]').forEach(function(b){b.onclick=function(){wkDo('work_task_set',{p_id:+b.dataset.wkdel,p_action:'delete'},b);};});
+  $$('[data-wktoday]').forEach(function(b){b.onclick=function(){wkDo('work_task_set',{p_id:+b.dataset.wktoday,p_action:'today'},b);};});
+  var nt=$('#wkNotif');
+  if(nt)nt.onclick=function(e){e.preventDefault();
+    try{Notification.requestPermission().then(function(){wkPaintLive(true);}).catch(function(){});}catch(err){}};
+  var go=$('#wkStart');
+  if(go)go.onclick=async function(){
+    try{if(window.Notification&&Notification.permission==='default')Notification.requestPermission().catch(function(){});}catch(e){}
+    if(await wkDo('work_start',{},go)&&typeof toast==='function')toast('Clock started. Focus.');
+  };
+  var stop=$('#wkStop');
+  if(stop)stop.onclick=wkStopModal;
+}
+function wkStopModal(){
+  var st=WK.st||{}, open=(st.tasks||[]).filter(function(t){return !t.done;});
+  openModal(
+    '<div class="eyeb">Finish work</div><h3>Log out of work</h3>'+
+    '<p class="m-sub">'+(open.length
+      ?fmt(open.length)+' task'+(open.length===1?' is':'s are')+' still open: '+open.map(function(t){return esc(t.title);}).join(', ')+'. They stay on today’s plan.'
+      :'Every task for today is done.')+'</p>'+
+    '<div style="margin-top:16px"><textarea class="inp" id="wkSum" rows="4" maxlength="2000" placeholder="What did you get done? (optional)"></textarea></div>'+
+    '<div class="mrow"><button class="btn danger" id="wkStopGo">Finish work</button>'+
+      '<button class="btn ghost" onclick="closeModal()">Keep working</button></div><div class="msg" id="wkStopMsg"></div>',
+  function(){
+    var go=$('#wkStopGo'), m=$('#wkStopMsg');
+    go.onclick=async function(){
+      go.disabled=true;
+      try{
+        await wkCall('work_stop',{p_summary:$('#wkSum').value});
+        closeModal(); WK.rep=null; if(typeof toast==='function')toast('Logged out of work'); render(true);
+      }catch(e){go.disabled=false;m.className='msg err';m.textContent=e.message||String(e);}
+    };
+  });
+}
+
+function wkVerdict(logged,verified,running){
+  if(running)return '<span class="wk-pill">In progress</span>';
+  if(logged<60)return '<span class="wk-pill">·</span>';
+  var r=verified/logged;
+  return r>=0.8?'<span class="wk-pill good">Worked</span>'
+        :r>=0.5?'<span class="wk-pill">Partly</span>'
+        :'<span class="wk-pill bad">Mostly away</span>';
+}
+function wkReportHtml(){
+  var rep=WK.rep||[];
+  var seg='<div class="seg">'+[7,14,30].map(function(d){
+    return '<button data-wkdays="'+d+'" class="'+(WK.days===d?'on':'')+'">'+d+' days</button>';}).join('')+'</div>';
+  return '<div class="ch" style="margin-top:8px"><div><h2>Team log</h2><div class="cs">Every admin, day by day (India time). Verified = time backed by answered check-ins.</div></div>'+seg+'</div>'+
+    rep.filter(function(p){return p.me||(p.days||[]).some(function(d){return (d.sessions||[]).length||(d.tasks||[]).length;});}).map(function(p){
+      var days=(p.days||[]).filter(function(d){return (d.sessions||[]).length||(d.tasks||[]).length;});
+      var body=days.length?'<table class="wk-tbl"><thead><tr><th>Day</th><th>Logged</th><th>Verified</th><th>Check-ins</th><th>Tasks</th><th></th></tr></thead><tbody>'+
+        days.map(function(d){
+          var ss=d.sessions||[], lg=0, vf=0, ok=0, ms=0, run=false;
+          ss.forEach(function(x){lg+=num(x.logged);vf+=num(x.verified);ok+=num(x.ok);ms+=num(x.missed);if(!x.ended_at)run=true;});
+          var td=(d.tasks||[]).filter(function(t){return t.done;}).length;
+          var lines=ss.map(function(x){
+            return wkTime(x.started_at)+' – '+(x.ended_at?wkTime(x.ended_at):'now')+
+              ' · '+(x.ended_at?(x.end_reason==='no_response'?'<span style="color:var(--danger)">auto-ended, no answer</span>':'logged out'):'running')+
+              (x.summary?' · “'+esc(x.summary)+'”':'');
+          }).join('<br>');
+          return '<tr><td><b style="font-weight:600">'+esc(wkDayName(d.day))+'</b>'+(lines?'<div class="wk-sess">'+lines+'</div>':'')+'</td>'+
+            '<td class="mono">'+wkDur(lg)+'</td><td class="mono">'+wkDur(vf)+'</td>'+
+            '<td class="mono">'+fmt(ok)+(ms?' · <span style="color:var(--danger)">'+fmt(ms)+' missed</span>':'')+'</td>'+
+            '<td class="mono">'+fmt(td)+' / '+fmt((d.tasks||[]).length)+'</td>'+
+            '<td>'+(ss.length?wkVerdict(lg,vf,run):'<span class="wk-pill">No work</span>')+'</td></tr>';
+        }).join('')+'</tbody></table>'
+        :'<div class="wk-note" style="margin:0">No work logged in the last '+WK.days+' days.</div>';
+      return '<div class="card"><div class="ch"><div><h2>'+esc(p.name||'Admin')+(p.me?' <span class="wk-pill" style="vertical-align:middle">you</span>':'')+'</h2></div></div>'+body+'</div>';
+    }).join('')+
+    (rep.length>1&&rep.filter(function(p){return !p.me;}).every(function(p){return !(p.days||[]).some(function(d){return (d.sessions||[]).length||(d.tasks||[]).length;});})
+      ?'<div class="wk-note" style="margin:-6px 0 16px">The other admins show up here once they plan or log work.</div>':'')+
+    '<div class="card"><div class="eyeb" style="color:var(--ink-40)">What this can’t do</div>'+
+      '<p style="font-size:13px;color:var(--ink-55)">The console can prove you were at your desk, not what was on your screen. A website can’t see or block other apps, so it can’t stop Reels. '+
+      'For that, set app limits on the phone itself (iPhone: Settings › Screen Time › App Limits; Android: Digital Wellbeing) and let the other person set the passcode. '+
+      'Check-ins reach your phone only while the console is open there.</p></div>';
+}
+
+RENDERERS.work=async function(force){
+  if(ROLE!=='admin')return '<div class="head"><div class="eyeb">Work Hours</div><h1>Admins only.</h1></div>';
+  await wkCall('work_state');
+  if(force||!WK.rep){
+    var r=await sb.rpc('work_report',{p_days:WK.days});
+    if(r.error)throw new Error(r.error.message);
+    WK.rep=r.data||[];
+  }
+  WK.sig=wkSig();
+  return '<div class="head"><div class="eyeb">Work Hours</div><h1>Your work day.</h1>'+
+    '<p class="sub">Plan what you’ll finish, start the clock, and answer the check-ins. Two missed check-ins in a row end the session, so the log only shows real work.</p></div>'+
+    '<div id="wkLive">'+wkLiveHtml()+'</div>'+wkReportHtml();
+};
+RENDERERS.work.after=function(){
+  wkWireLive();
+  $$('[data-wkdays]').forEach(function(a){a.onclick=function(){WK.days=+a.dataset.wkdays;WK.rep=null;render(true);};});
+};
 </script>
 
 <!-- Admin modules. Loaded after the console's own script so they can register
