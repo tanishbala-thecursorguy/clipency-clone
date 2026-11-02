@@ -2343,10 +2343,11 @@ RENDERERS.accounts.after=function(){
    Everything at a glance, straight from v_admin_kpis.
    ============================================================ */
 RENDERERS.command=async function(){
-  var k=await sb.from('v_admin_kpis').select('*').maybeSingle();
+  /* admin_daily_activity replaces v_daily_activity, which took ~3.5 s (053) */
+  var res=await Promise.all([sb.from('v_admin_kpis').select('*').maybeSingle(),sb.rpc('admin_daily_activity',{p_days:14})]);
+  var k=res[0], act=res[1];
   if(k.error)throw new Error(k.error.message);
   var d=k.data||{};
-  var act=await sb.from('v_daily_activity').select('*').order('day',{ascending:false}).limit(14);
   var days=(act.data||[]).slice().reverse();
 
   COUNTS.reviews=num(d.clips_pending_review)||COUNTS.reviews;
@@ -2642,7 +2643,14 @@ RENDERERS.promotions=async function(force){
   var isAdmin=ROLE==='admin';
   var label={draft:'Waiting for approval',sent:'Approved',rejected:'Rejected'};
 
+  var ib=await sb.rpc('promo_inbox_status');
+  var inboxes=(!ib.error&&ib.data)||[];
   return prHead()+
+    (inboxes.length?'<div class="cs" style="margin:-6px 0 14px;font-size:12.5px;color:var(--ink-55)">Sending today, 50 max per inbox: '+
+      inboxes.map(function(x){
+        return esc(String(x.inbox).split('@')[0])+' '+fmt(x.sent_today)+'/'+fmt(x.cap)+
+          (x.paused_until?' <span style="color:var(--danger)" title="'+esc(x.pause_reason||'')+'">paused until '+esc(day(x.paused_until))+'</span>':'');
+      }).join(' · ')+'</div>':'')+
     '<div class="card"><div class="ch"><div class="seg" id="prTabs">'+
       ['draft','sent','rejected'].map(function(t){
         return '<button class="'+(PR.tab===t?'on':'')+'" data-t="'+t+'">'+label[t]+'<span class="n">'+n(t)+'</span></button>';}).join('')+
@@ -4173,9 +4181,15 @@ RENDERERS.easyupload.after=function(){
 async function boot(){
   try{
     await ensureSupabase();
-    var u=await sb.auth.getUser();
-    if(u.error||!u.data||!u.data.user){location.replace('/admin-signin');return;}
-    ME=u.data.user;
+    /* The stored session is read locally (no round trip); the role check below
+       still goes to the database, which is what actually grants access. */
+    var ss=await sb.auth.getSession();
+    ME=ss.data&&ss.data.session&&ss.data.session.user;
+    if(!ME){
+      var u=await sb.auth.getUser();
+      if(u.error||!u.data||!u.data.user){location.replace('/admin-signin');return;}
+      ME=u.data.user;
+    }
 
     /* role: prefer the RPC, fall back to admin_users, same as the old console */
     try{
@@ -4265,7 +4279,7 @@ var WK={st:null, off:0, rep:null, days:14, lastAct:0, sig:'', seenCheck:null, fl
   var ov=document.createElement('div');
   ov.className='wk-check'; ov.id='wkCheck';
   ov.innerHTML='<div class="wk-cbox"><div class="eyeb">Check-in</div><h3>Still working?</h3>'+
-    '<p>Answer within <b id="wkCd">5:00</b>, or the time since your last check-in won’t count. Two missed in a row end your session.</p>'+
+    '<p>Answer within <b id="wkCd">5:00</b>, or the time since your last check-in is marked away from your desk. Your clock keeps running either way.</p>'+
     '<button class="btn ok" id="wkHere">Yes, I’m working</button><div class="msg" id="wkHereMsg"></div></div>';
   document.body.appendChild(ov);
   $('#wkHere').onclick=wkAnswer;
@@ -4379,16 +4393,16 @@ function wkLiveHtml(){
   var left=s
     ?'<div class="card"><div class="eyeb">Working since '+wkTime(s.started_at)+'</div>'+
        '<div class="wk-clock" id="wkClock">'+wkClock((wkNow()-new Date(s.started_at).getTime())/1000)+'</div>'+
-       '<div class="wk-stats"><div><b>'+wkDur(tot.verified)+'</b>verified today</div>'+
+       '<div class="wk-stats"><div><b>'+wkDur(tot.verified)+'</b>at the desk today</div>'+
          '<div><b>'+fmt(tot.ok)+' / '+fmt(num(tot.ok)+num(tot.missed))+'</b>check-ins answered</div>'+
          '<div><b>'+fmt(done)+' / '+fmt(tasks.length)+'</b>tasks done</div></div>'+
        '<button class="btn danger" id="wkStop">Finish work</button>'+notif+'</div>'
     :'<div class="card"><div class="eyeb">Not working</div>'+
        '<div class="wk-clock" style="color:var(--ink-25)">0:00:00</div>'+
-       '<div class="wk-stats"><div><b>'+wkDur(tot.verified)+'</b>verified today</div>'+
+       '<div class="wk-stats"><div><b>'+wkDur(tot.verified)+'</b>at the desk today</div>'+
          '<div><b>'+wkDur(tot.logged)+'</b>logged today</div></div>'+
        '<button class="btn ok" id="wkStart"'+(open?'':' disabled')+'>Start work</button>'+
-       '<div class="wk-note">'+(open?'The clock starts now. A check-in pops up every 20 to 35 minutes.':'Plan at least one task for today first.')+'</div>'+notif+'</div>';
+       '<div class="wk-note">'+(open?'The clock runs until you press Finish work, even if you close the console.':'Plan at least one task for today first.')+'</div>'+notif+'</div>';
 
   var right='<div class="card"><div class="ch"><div><h2>Today’s plan</h2><div class="cs">'+
       wkDayName(st.today||new Date().toISOString().slice(0,10))+' · '+fmt(done)+' of '+fmt(tasks.length)+' done</div></div></div>'+
@@ -4466,6 +4480,7 @@ function wkStopModal(){
 }
 
 function wkVerdict(logged,verified,running){
+  return running?'<span class="wk-pill">In progress</span>':'';
   if(running)return '<span class="wk-pill">In progress</span>';
   if(logged<60)return '<span class="wk-pill">·</span>';
   var r=verified/logged;
@@ -4477,10 +4492,10 @@ function wkReportHtml(){
   var rep=WK.rep||[];
   var seg='<div class="seg">'+[7,14,30].map(function(d){
     return '<button data-wkdays="'+d+'" class="'+(WK.days===d?'on':'')+'">'+d+' days</button>';}).join('')+'</div>';
-  return '<div class="ch" style="margin-top:8px"><div><h2>Team log</h2><div class="cs">Every admin, day by day (India time). Verified = time backed by answered check-ins.</div></div>'+seg+'</div>'+
+  return '<div class="ch" style="margin-top:8px"><div><h2>Team log</h2><div class="cs">Every admin, day by day (India time). Logged runs from Start to Finish; at desk is the part backed by answered check-ins.</div></div>'+seg+'</div>'+
     rep.filter(function(p){return p.me||(p.days||[]).some(function(d){return (d.sessions||[]).length||(d.tasks||[]).length;});}).map(function(p){
       var days=(p.days||[]).filter(function(d){return (d.sessions||[]).length||(d.tasks||[]).length;});
-      var body=days.length?'<table class="wk-tbl"><thead><tr><th>Day</th><th>Logged</th><th>Verified</th><th>Check-ins</th><th>Tasks</th><th></th></tr></thead><tbody>'+
+      var body=days.length?'<table class="wk-tbl"><thead><tr><th>Day</th><th>Logged</th><th>At desk</th><th>Check-ins</th><th>Tasks</th><th></th></tr></thead><tbody>'+
         days.map(function(d){
           var ss=d.sessions||[], lg=0, vf=0, ok=0, ms=0, run=false;
           ss.forEach(function(x){lg+=num(x.logged);vf+=num(x.verified);ok+=num(x.ok);ms+=num(x.missed);if(!x.ended_at)run=true;});
@@ -4517,7 +4532,7 @@ RENDERERS.work=async function(force){
   }
   WK.sig=wkSig();
   return '<div class="head"><div class="eyeb">Work Hours</div><h1>Your work day.</h1>'+
-    '<p class="sub">Plan what you’ll finish, start the clock, and answer the check-ins. Two missed check-ins in a row end the session, so the log only shows real work.</p></div>'+
+    '<p class="sub">Plan what you’ll finish, start the clock, and press Finish work when you’re done. The clock keeps running in between, even with the console closed. Check-ins show how much of it was at your desk.</p></div>'+
     '<div id="wkLive">'+wkLiveHtml()+'</div>'+wkReportHtml();
 };
 RENDERERS.work.after=function(){

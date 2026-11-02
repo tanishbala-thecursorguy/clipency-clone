@@ -10,7 +10,9 @@
 // never twice. This function renders {first_name}, adds the unsubscribe footer
 // and headers, sends through Resend's batch API, and reports each result back
 // (promo_mark). The From address rotates across the team mailboxes per
-// recipient (promo_senders); replies go to that same mailbox.
+// recipient (promo_senders); replies go to that same mailbox. Each inbox sends at
+// most 50 a day, and an inbox with a spam complaint or a bounce spike rests 3 days
+// (053_fast_console_work_clock_promo_inboxes.sql).
 //
 // Provider key: RESEND_API_KEY secret, or Vault via cx_email_provider_key,
 // the same as client-review-emails.
@@ -131,10 +133,29 @@ Deno.serve(async (req) => {
 
   if (!isService) return json({ error: "Sending runs on the schedule only." }, 403);
 
+  /* Look up recent sends at Resend (~30 min after sending, again after a day). A spam
+     complaint or a bounce spike pauses that inbox for 3 days (promo_note_event). */
+  const paused: string[] = [];
+  const { data: due } = await admin.rpc("promo_to_check", { p_limit: 6 });
+  for (const c of (due ?? []) as { send_id: number; provider_id: string }[]) {
+    const r = await fetch(`https://api.resend.com/emails/${encodeURIComponent(c.provider_id)}`, {
+      headers: { Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(10_000),
+    }).catch(() => null);
+    if (!r || r.status === 429) break;
+    const ev = r.ok ? String(((await r.json().catch(() => ({}))) as { last_event?: string }).last_event ?? "unknown")
+      : r.status === 404 ? "not_found" : null;
+    if (ev) {
+      const { data: p } = await admin.rpc("promo_note_event", { p_send: c.send_id, p_event: ev });
+      if (p === "paused") paused.push(String(c.send_id));
+    }
+    await new Promise((ok) => setTimeout(ok, 600));  /* Resend allows ~2 requests a second */
+  }
+
+  /* at most 50 per inbox per India day, paused inboxes skipped (promo_batch) */
   const { data, error } = await admin.rpc("promo_batch", { p_limit: 90 });
   if (error) return json({ error: error.message }, 500);
   const rows = (data ?? []) as Row[];
-  if (!rows.length) return json({ mode: "send", queued: 0 });
+  if (!rows.length) return json({ mode: "send", queued: 0, checked: (due ?? []).length, paused: paused.length });
 
   const res = await fetch("https://api.resend.com/emails/batch", {
     method: "POST",
