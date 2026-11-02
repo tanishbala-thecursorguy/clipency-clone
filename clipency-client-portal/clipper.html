@@ -1455,7 +1455,43 @@ var LOGIN_URL="/client/clipper-signin";   /* NOT /login - on this deployment tha
                                        is the clients' 6-digit access page */
 var REDIRECT_WHEN_LOGGED_OUT=true;    /* deployed: bounce to /login when signed out */
 var DEMO=false;
-var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+/* Admin "Log in" from the console (059): the link carries a one-time token in
+   #imp=. That session is kept in this tab's sessionStorage only (the admin's own
+   login is untouched) and signing out here ends only this tab, never the
+   creator's own devices. */
+var CX_IMP=(function(){
+  try{
+    var m=/[#&]imp=([^&]+)/.exec(location.hash);
+    if(m){
+      sessionStorage.setItem('cx-imp','1');
+      sessionStorage.setItem('cx-imp-token',decodeURIComponent(m[1]));
+      history.replaceState(null,'',location.pathname+location.search);
+    }
+    return sessionStorage.getItem('cx-imp')==='1';
+  }catch(e){return false;}
+})();
+var sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,CX_IMP
+  ?{auth:{storage:window.sessionStorage,storageKey:'cx-imp-auth',persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}
+  :undefined);
+if(CX_IMP){
+  var cxSo=sb.auth.signOut.bind(sb.auth);
+  sb.auth.signOut=function(){try{sessionStorage.removeItem('cx-imp');sessionStorage.removeItem('cx-imp-auth');}catch(e){}return cxSo({scope:'local'});};
+}
+async function cxImpStart(){
+  if(!CX_IMP)return;
+  var t=null;try{t=sessionStorage.getItem('cx-imp-token');}catch(e){}
+  if(t){
+    try{sessionStorage.removeItem('cx-imp-token');}catch(e){}
+    try{await sb.auth.verifyOtp({token_hash:t,type:'magiclink'});}catch(e){console.warn('[cx] login-as link failed',e);}
+  }
+}
+function cxImpBanner(email){
+  if(!CX_IMP||document.getElementById('cxImpBar'))return;
+  var b=document.createElement('div');b.id='cxImpBar';
+  b.style.cssText='position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9999;background:#14120e;color:#f3efe7;border:1px solid #c8a170;border-radius:999px;padding:9px 16px;font:600 12.5px/1.3 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35);max-width:calc(100% - 32px);text-align:center';
+  b.textContent='Logged in as '+(email||'this account')+' from the console. Close this tab when you’re done.';
+  document.body.appendChild(b);
+}
 var CDN="https://spwtkdgpgeutrhwcjrpy.supabase.co/storage/v1/object/public/campaign-banners/";
 
 /* ---------- mock (mirrors the real rows) ---------- */
@@ -4260,8 +4296,9 @@ function renderCalendar(){
    BOOT
    ============================================================ */
 async function boot(){
+  await cxImpStart();
   var s=null;try{s=await sb.auth.getSession();}catch(e){}
-  if(s&&s.data&&s.data.session){ME=s.data.session.user;
+  if(s&&s.data&&s.data.session){ME=s.data.session.user;cxImpBanner(ME.email);
     try{await loadAll();}catch(e){console.warn('[cx] live failed → demo',e);loadMock();}}
   else if(REDIRECT_WHEN_LOGGED_OUT){$('#splashMsg').innerHTML='Session expired. <a href="'+LOGIN_URL+'">Sign in →</a>';
     setTimeout(function(){location.href=LOGIN_URL;},1300);return;}

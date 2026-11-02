@@ -561,6 +561,29 @@ async function render(force){
 }
 window.addEventListener('hashchange',function(){render();});
 
+/* "Log in" (059): opens that creator's or client's dashboard in a new tab with a
+   one-time link from admin-login-as. The tab is opened first, inside the click,
+   so popup blockers allow it; the address follows once the link is ready. */
+document.addEventListener('click',function(e){
+  var b=e.target.closest&&e.target.closest('[data-loginas]');
+  if(!b)return;
+  e.preventDefault(); e.stopPropagation();
+  if(ROLE!=='admin')return;
+  var w=window.open('about:blank','_blank');
+  if(w){try{w.document.title='Opening dashboard…';w.document.body.style.cssText='font:14px system-ui;padding:40px;color:#555';w.document.body.textContent='Opening their dashboard…';}catch(x){}}
+  b.disabled=true;
+  (async function(){
+    try{
+      var r=await sb.functions.invoke('admin-login-as',{body:{user_id:b.dataset.loginas,as:b.dataset.loginasAs}});
+      if(r.error){var m='';try{m=(await r.error.context.json()).error||'';}catch(x){}throw new Error(m||r.error.message);}
+      if(!r.data||!r.data.url)throw new Error('No link came back.');
+      if(w){w.opener=null;w.location.replace(r.data.url);}else location.href=r.data.url;
+      toast('Opened '+(r.data.email||'their dashboard')+' in a new tab');
+    }catch(err){if(w)try{w.close();}catch(x){} toast(err.message||String(err));}
+    b.disabled=false;
+  })().catch(function(){});
+},true);
+
 /* modal helper */
 function openModal(html, after){
   $('#modal').innerHTML=html;
@@ -1879,6 +1902,7 @@ RENDERERS.clients=async function(force){
              '<td>'+cpCell(CP.by[c.id])+'</td>'+
              '<td class="mono">'+day(c.created_at)+'</td>'+
              '<td style="white-space:nowrap">'+
+               (ROLE==='admin'?'<button class="btn sm ghost" data-loginas="'+esc(c.id)+'" data-loginas-as="client" title="Open their dashboard in a new tab">Log in ↗</button> ':'')+
                '<button class="btn sm ok" data-wal="'+esc(c.id)+'" data-wn="'+esc(c.full_name||c.email||'Client')+'">Funds</button> '+
                '<button class="btn sm ghost" data-cl="'+esc(c.id)+'" data-em="'+esc(c.email||'')+'">Campaigns</button></td>'+
            '</tr>';}).join('')+'</tbody></table>'
@@ -3172,6 +3196,7 @@ function crTable(rows,cols){
 }
 var crWho=function(r){
   return '<a href="'+crHref({u:r.id})+'" style="color:var(--ink);font-weight:600;text-decoration:none">'+esc(r.name||r.email||'·')+'</a>'+
+    (ROLE==='admin'?' <button class="btn sm ghost" style="padding:2px 9px;font-size:11px;margin-left:6px" data-loginas="'+esc(r.id)+'" data-loginas-as="creator" title="Open their dashboard in a new tab">Log in ↗</button>':'')+
     '<div style="font-size:12px;color:var(--ink-40)">'+esc(r.email||'')+'</div>';
 };
 
@@ -3288,7 +3313,8 @@ async function crProfileScreen(force,uid){
   var back='<a href="'+esc(CR.lastList||'#creators')+'" id="crBack" class="btn sm ghost" style="margin-bottom:14px;display:inline-block">← Back to creators</a>';
   var head='<div class="head"><div class="eyeb">'+esc(p.role||'creator')+' · joined '+day(p.created_at)+'</div>'+
       '<h1>'+esc(p.name||p.email||'Creator')+'</h1>'+
-      '<p class="sub">'+esc(p.email||'')+'</p></div>';
+      '<p class="sub">'+esc(p.email||'')+
+        (ROLE==='admin'?' <button class="btn sm ghost" style="margin-left:8px" data-loginas="'+esc(uid)+'" data-loginas-as="creator">Log in to their dashboard ↗</button>':'')+'</p></div>';
 
   var kpis='<div class="kpis">'+PLATS.map(function(pl){
       return '<div class="kpi"><span class="lab">'+PLAT_NAME[pl]+'</span><div class="big">'+fmt(per(pl))+'</div>'+

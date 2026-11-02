@@ -714,15 +714,43 @@ window.CXCUR = (function () {
   /* ---------------------------------------------------------
      6. Client + session
      --------------------------------------------------------- */
+  /* Admin "Log in" from the console (059): the link carries a one-time token in
+     #imp=. That session lives in this tab's sessionStorage only, so the admin's
+     own login is untouched; sign-out ends only this tab (never the client's own
+     devices) and no "client online" alert is sent for these visits. */
+  var IMP = (function () {
+    try {
+      var m = /[#&]imp=([^&]+)/.exec(location.hash);
+      if (m) {
+        sessionStorage.setItem('cx-imp', '1');
+        sessionStorage.setItem('cx-imp-token', decodeURIComponent(m[1]));
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+      return sessionStorage.getItem('cx-imp') === '1';
+    } catch (e) { return false; }
+  })();
+  window.CLIPENCY_IMP = IMP;
+
   function makeClient() {
+    var auth = { persistSession: true, autoRefreshToken: true };
+    if (IMP) {
+      auth.storage = window.sessionStorage;
+      auth.storageKey = 'cx-imp-auth';
+      auth.detectSessionInUrl = false;
+    }
     var sb = guardClient(
-      window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, {
-        /* persistSession MUST be true. The dashboard is scoped by
-           auth.uid(); without the stored session every rpc runs as
-           anon and raises "not authenticated". */
-        auth: { persistSession: true, autoRefreshToken: true }
-      })
+      /* persistSession MUST be true. The dashboard is scoped by
+         auth.uid(); without the stored session every rpc runs as
+         anon and raises "not authenticated". */
+      window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth: auth })
     );
+    if (IMP) {
+      var so = sb.auth.signOut.bind(sb.auth);
+      sb.auth.signOut = function () {
+        try { sessionStorage.removeItem('cx-imp'); sessionStorage.removeItem('cx-imp-auth'); } catch (e) {}
+        return so({ scope: 'local' });
+      };
+    }
     window.clipencySupabase = sb;
     window.supabaseClient = sb;
     window.sbClient = sb;
@@ -786,6 +814,15 @@ window.CXCUR = (function () {
 
     var sb = makeClient();
 
+    if (IMP) {
+      var tok = null;
+      try { tok = sessionStorage.getItem('cx-imp-token'); sessionStorage.removeItem('cx-imp-token'); } catch (e) {}
+      if (tok) {
+        try { await sb.auth.verifyOtp({ token_hash: tok, type: 'magiclink' }); }
+        catch (e) { note('warn', 'login-as link failed: ' + e.message); }
+      }
+    }
+
     var uid = null;
     try {
       var u = await sb.auth.getUser();
@@ -795,7 +832,8 @@ window.CXCUR = (function () {
 
     if (!uid) { toSignin(); return; }
 
-    startPresence(sb);
+    if (IMP) impBanner(window.CLIPENCY_LIVE.email);
+    else startPresence(sb);
 
     var cached = readCache(uid);
     if (cached) {
@@ -855,6 +893,17 @@ window.CXCUR = (function () {
   /* Presence: tells Clipency the client has the dashboard open (client_ping,
      055). Once on load and every minute while the tab is in front; staff
      previewing the portal are ignored server-side. Failures are silent. */
+  function impBanner(email) {
+    var put = function () {
+      if (document.getElementById('cxImpBar')) return;
+      var b = document.createElement('div'); b.id = 'cxImpBar';
+      b.style.cssText = 'position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:9999;background:#14120e;color:#f3efe7;border:1px solid #c8a170;border-radius:999px;padding:9px 16px;font:600 12.5px/1.3 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.35);max-width:calc(100% - 32px);text-align:center';
+      b.textContent = 'Logged in as ' + (email || 'this client') + ' from the console. Close this tab when you\u2019re done.';
+      document.body.appendChild(b);
+    };
+    if (document.body) put(); else document.addEventListener('DOMContentLoaded', put);
+  }
+
   function startPresence(sb) {
     var ping = function () {
       if (document.hidden) return;
