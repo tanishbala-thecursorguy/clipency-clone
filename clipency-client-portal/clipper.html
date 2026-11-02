@@ -898,6 +898,16 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
 .tour-tip .tt-foot{display:flex;gap:8px;margin-top:14px;align-items:center;}
 .tour-tip .tt-foot .onb-skip{font-size:12px;}
 
+.cal-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--hair)}
+.cal-row:last-child{border-bottom:0}
+.cal-row .dd{width:112px;flex:none;font-weight:600}
+.cal-row .sl{flex:1;color:var(--ink-55);font-size:13px}
+.cal-row.today .dd{color:var(--gold)}
+.cal-tag{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:999px;border:1px solid var(--hair-2);color:var(--ink-55);white-space:nowrap}
+.cal-tag.ok{color:var(--ok);border-color:var(--ok-line);background:var(--ok-dim)}
+.cal-tag.due{color:var(--gold);border-color:var(--gold);background:var(--gold-dim)}
+.cal-prog{height:6px;border-radius:6px;background:var(--hair);overflow:hidden;margin:10px 0 4px}
+.cal-prog i{display:block;height:100%;background:var(--gold)}
 @media (max-width:1000px){
   .app{grid-template-columns:1fr;}
   .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;gap:6px;border-right:none;
@@ -964,6 +974,7 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
   <button class="nav-item on" data-v="campaigns"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m10 9 5 3-5 3z" fill="currentColor" stroke="none"/></svg>Campaigns</button>
   <button class="nav-item" data-v="stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 19V5M4 19h16"/><path d="m7 14 4-4 3 3 5-6"/></svg>Stats</button>
   <button class="nav-item" data-v="payouts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/></svg>Payouts</button>
+  <button class="nav-item" data-v="calendar" id="navCal" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Content calendar</button>
   <button class="nav-item" data-v="wallet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M20 7H5a2 2 0 0 1 0-4h13v4"/><path d="M20 7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/></svg>Wallet</button>
 
   <div class="nav-lab">Account</div>
@@ -1174,6 +1185,13 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
       <b style="font-family:var(--display);font-weight:400;font-size:22px">Payout History</b><span class="lab" id="payCount"></span></div>
     <div id="payHist"></div>
   </div>
+</section>
+
+<!-- ===== CONTENT CALENDAR ===== -->
+<section class="view" id="v-calendar">
+  <div class="head"><div><div class="crumb">Clipency</div><h1 class="pg">Content calendar</h1>
+    <p class="pg-sub">When to post, and by what time (India time). Submit each video's link here the same day.</p></div></div>
+  <div id="calBody"></div>
 </section>
 
 <!-- ===== WALLET ===== -->
@@ -4182,6 +4200,52 @@ $('#brandModal').addEventListener('click',function(){clearInterval(BL_T);});
 $$('#brandModal [data-close]').forEach(function(b){b.addEventListener('click',function(){clearInterval(BL_T);});});
 
 /* ============================================================
+   CONTENT CALENDAR (my_content_calendar, 057)
+   Shown only when this creator has a posting plan. Never blocks
+   the dashboard: a failure just leaves the tab hidden.
+   ============================================================ */
+var CALS=[];
+function calDayName(d){return new Date(d+'T12:00:00+05:30').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',timeZone:'Asia/Kolkata'});}
+async function loadCalendar(){
+  if(DEMO)return;
+  try{
+    var r=await sb.rpc('my_content_calendar');
+    CALS=(!r.error&&r.data)||[];
+  }catch(e){CALS=[];}
+  $('#navCal').hidden=!CALS.length;
+  renderCalendar();
+  if(CALS.length&&location.hash==='#calendar')go('calendar');
+}
+function renderCalendar(){
+  var el=$('#calBody'); if(!el)return;
+  if(!CALS.length){el.innerHTML='<div class="card" style="color:var(--ink-55)">No posting calendar yet.</div>';return;}
+  el.innerHTML=CALS.map(function(c){
+    var pct=Math.min(100,Math.round(c.done/Math.max(1,c.target)*100));
+    var rule=c.style==='reaction'
+      ?'2 reaction videos a day: one between <b>10 AM and 12 PM</b>, one between <b>7 PM and 9 PM</b>.'
+      :'1 talking-head video a day, posted <b>before 9 PM</b>.';
+    var head='<div class="card" style="margin-bottom:13px">'+
+      '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">'+
+        '<b style="font-family:var(--display);font-weight:400;font-size:22px">'+esc(String(c.campaign||'').replace(/\s*\{.*?\}\s*/g,' ').trim())+'</b>'+
+        '<span class="lab">@'+esc(c.label)+'</span></div>'+
+      '<p style="margin-top:6px;font-size:13.5px;color:var(--ink-70)">'+rule+'</p>'+
+      '<div class="cal-prog"><i style="width:'+pct+'%"></i></div>'+
+      '<div style="font-size:12.5px;color:var(--ink-55)"><b style="color:var(--ink)">'+c.done+' of '+c.target+'</b> videos done'+
+        (c.remaining>0?' · '+c.remaining+' to go':'')+'</div>';
+    if(c.remaining<=0||c.status==='done')
+      return head+'<div class="note-strip" style="margin-top:14px">✓&nbsp;You\u2019ve finished this campaign\u2019s videos. Please <b>pause posting</b> for now; we\u2019ll message you if more are needed.</div></div>';
+    return head+'<div style="margin-top:14px">'+(c.schedule||[]).map(function(d){
+      var isToday=d.day===c.today, done=isToday&&d.posted>=d.videos;
+      var tag=isToday?(done?'<span class="cal-tag ok">✓ Posted</span>':'<span class="cal-tag due">Today · '+(d.videos-d.posted)+' to post</span>')
+                     :'<span class="cal-tag">'+d.videos+' video'+(d.videos===1?'':'s')+'</span>';
+      return '<div class="cal-row'+(isToday?' today':'')+'"><span class="dd">'+esc(isToday?'Today':calDayName(d.day))+'</span>'+
+        '<span class="sl">'+d.slots.map(esc).join(' &amp; ')+'</span>'+tag+'</div>';
+    }).join('')+'</div>'+
+    '<p style="margin-top:12px;font-size:12px;color:var(--ink-40)">We email you a reminder on each posting day'+(c.style==='reaction'?' at 10 AM and 7 PM':' at 7 PM')+'.</p></div>';
+  }).join('');
+}
+
+/* ============================================================
    BOOT
    ============================================================ */
 async function boot(){
@@ -4205,6 +4269,7 @@ async function boot(){
   /* Rates come in after the dashboard is up, never before it. A slow or dead
      FX host costs the creator a slightly stale conversion, not the app. */
   fxRefresh().then(function(moved){if(moved){fxNote();repaintMoney();}},function(){});
+  loadCalendar().catch(function(e){console.warn('[cx] calendar',e);});
   if(DEMO){var b=document.createElement('div');b.className='chip';b.style.cssText='position:fixed;bottom:16px;right:16px;z-index:70';
     b.textContent='Demo data';document.body.appendChild(b);}
   /* first open → onboarding + tour (replay from Support, or force with ?tour) */

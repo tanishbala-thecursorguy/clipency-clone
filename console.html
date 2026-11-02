@@ -4604,6 +4604,146 @@ RENDERERS.work.after=function(){
 };
 </script>
 
+<script>
+/* ============================================================
+   CONTENT CALENDAR (clipency-db/057_content_calendar.sql)
+   Who posts how many videos a day, until when. Reminder emails
+   (creator-reminders) go at 10 AM (reaction) and 7 PM India time
+   while that day's video is still missing; the creator sees the
+   same calendar on their dashboard.
+   ============================================================ */
+var CAL={rows:null, camps:null};
+(function(){
+  if(!PAGES.some(function(p){return p.id==='calendar';})){
+    var at=PAGES.findIndex(function(p){return p.id==='campaigns';});
+    PAGES.splice(at<0?PAGES.length:at+1,0,{id:'calendar',label:'Content Calendar',ic:'☷',staff:true});
+  }
+  var css=document.createElement('style');
+  css.textContent=
+    '.cal-bar{height:5px;border-radius:5px;background:var(--hair);overflow:hidden;margin-top:5px;width:110px}'+
+    '.cal-bar i{display:block;height:100%;background:var(--gold)}'+
+    '.cal-days{display:flex;gap:4px;flex-wrap:wrap}'+
+    '.cal-d{font-family:var(--mono);font-size:10.5px;padding:2px 7px;border-radius:7px;border:1px solid var(--hair-2);color:var(--ink-55);white-space:nowrap}'+
+    '.cal-d.today{border-color:var(--gold-line);color:var(--gold);background:var(--gold-dim)}'+
+    '.cal-tbl td{vertical-align:top}';
+  document.head.appendChild(css);
+})();
+
+function calDay(d){return new Date(d+'T12:00:00+05:30').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',timeZone:'Asia/Kolkata'});}
+function calRule(r){return r.style==='reaction'?'Reaction · 2 a day (10–12 AM, 7–9 PM)':'Talking head · 1 a day, before 9 PM';}
+var CAL_KIND={intro:'Intro',morning:'10 AM reminder',evening:'7 PM reminder',pause:'Pause notice'};
+
+RENDERERS.calendar=async function(force){
+  if(force||!CAL.rows){
+    var r=await sb.rpc('admin_content_calendar');
+    if(r.error)throw new Error(r.error.message);
+    CAL.rows=r.data||[];
+  }
+  var rows=CAL.rows, isAdmin=ROLE==='admin';
+  var by={}; rows.forEach(function(x){(by[x.campaign]=by[x.campaign]||[]).push(x);});
+  var active=rows.filter(function(x){return x.status==='active';});
+  var dueToday=active.filter(function(x){return num(x.today_posted)<num(x.today_planned);}).length;
+  var head='<div class="head"><div class="eyeb">Content Calendar</div><h1>Who posts when.</h1>'+
+    '<p class="sub">Each creator’s posting plan, India time. Reminder emails go at 10 AM (reaction creators) and 7 PM while that day’s video is still missing, and a pause notice when they hit their target. Creators see the same calendar on their dashboard.</p></div>'+
+    '<div class="kpis">'+
+      '<div class="kpi"><span class="lab">Creators on a plan</span><div class="big">'+fmt(active.length)+'</div><div class="sub-t">'+fmt(rows.length-active.length)+' done or paused</div></div>'+
+      '<div class="kpi"><span class="lab">Still to post today</span><div class="big"'+(dueToday?' style="color:var(--warn)"':'')+'>'+fmt(dueToday)+'</div><div class="sub-t">creators with today’s video missing</div></div>'+
+      '<div class="kpi"><span class="lab">Videos to go</span><div class="big">'+fmt(active.reduce(function(a,x){return a+num(x.remaining);},0))+'</div><div class="sub-t">across all plans</div></div>'+
+      '<div class="kpi"><span class="lab">Test</span><div style="padding-top:8px"><button class="btn sm ghost" id="calTest">Send me test emails</button></div><div class="sub-t" id="calTestMsg">all 5 email types to '+esc(ME&&ME.email||'you')+'</div></div>'+
+    '</div>';
+  var body=Object.keys(by).sort().map(function(camp){
+    var list=by[camp];
+    return '<div class="card"><div class="ch"><div><h2>'+esc(camp)+'</h2><div class="cs">'+fmt(list.length)+' creators</div></div>'+
+      (isAdmin?'<button class="btn sm ok" data-caladd="'+esc(list[0].campaign_id)+'">+ Add creator</button>':'')+'</div>'+
+      '<table class="cal-tbl"><thead><tr><th>Creator</th><th>Plan</th><th>Progress</th><th>Today</th><th>Next posting days</th><th>Last email</th>'+(isAdmin?'<th></th>':'')+'</tr></thead><tbody>'+
+      list.map(function(x){
+        var pct=Math.min(100,Math.round(num(x.done)/Math.max(1,num(x.target))*100));
+        var today=x.status!=='active'?'<span class="chip">'+esc(x.status)+'</span>'
+          :num(x.today_planned)===0?'<span style="color:var(--ink-40);font-size:12px">nothing due</span>'
+          :num(x.today_posted)>=num(x.today_planned)?'<span class="chip ok">✓ '+fmt(x.today_posted)+' of '+fmt(x.today_planned)+'</span>'
+          :'<span style="color:var(--warn);font-weight:600;font-size:12.5px">'+fmt(x.today_posted)+' of '+fmt(x.today_planned)+' posted</span>';
+        var days=(x.schedule||[]).slice(0,4).map(function(d){
+          return '<span class="cal-d'+(d.day===x.today?' today':'')+'">'+esc(calDay(d.day))+(d.videos>1?' ×'+d.videos:'')+'</span>';}).join('');
+        var last=(x.sends||[])[0];
+        return '<tr><td><b>@'+esc(x.label)+'</b><div style="font-size:11.5px;color:var(--ink-40)">'+esc(x.name||'')+' · '+esc(x.email||'')+'</div></td>'+
+          '<td style="font-size:12.5px">'+esc(calRule(x))+'</td>'+
+          '<td class="mono">'+fmt(x.done)+' / '+fmt(x.target)+'<div class="cal-bar"><i style="width:'+pct+'%"></i></div></td>'+
+          '<td>'+today+'</td>'+
+          '<td><div class="cal-days">'+(days||'<span style="color:var(--ink-40);font-size:12px">finished</span>')+'</div>'+
+            ((x.schedule||[]).length>4?'<div style="font-size:11px;color:var(--ink-40);margin-top:3px">last day '+esc(calDay(x.schedule[x.schedule.length-1].day))+'</div>':'')+'</td>'+
+          '<td style="font-size:12px">'+(last?esc(CAL_KIND[last.kind]||last.kind)+' · '+(last.status==='failed'?'<span style="color:var(--danger)" title="'+esc(last.error||'')+'">failed</span>':esc(last.status))+'<div style="color:var(--ink-40)">'+esc(ago(last.at))+'</div>':'<span style="color:var(--ink-40)">none yet</span>')+'</td>'+
+          (isAdmin?'<td><button class="btn sm ghost" data-caledit="'+esc(x.plan_id)+'">Edit</button></td>':'')+'</tr>';
+      }).join('')+'</tbody></table></div>';
+  }).join('');
+  if(!rows.length)body='<div class="card"><div class="empty"><div class="ei">▦</div><b>No calendars yet</b><p>Add creators to a campaign’s posting plan to start reminders.</p></div></div>';
+  return head+body;
+};
+
+function calPlanModal(x,campaignId){
+  var lab=function(t){return '<label style="display:block;font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-40);margin:12px 0 5px">'+t+'</label>';};
+  var isNew=!x;
+  openModal(
+    '<div class="eyeb">Content calendar</div><h3>'+(isNew?'Add a creator':'Edit @'+esc(x.label))+'</h3>'+
+    '<p class="m-sub">'+(isNew?'They get an intro email with their dates, then reminders on each posting day.':'Changes apply to the next reminder.')+'</p>'+
+    (isNew?lab('Creator')+'<select class="inp" id="cpUser"><option value="">Loading…</option></select>':'')+
+    lab('Handle shown')+'<input class="inp" id="cpLabel" value="'+esc(x?x.label:'')+'" placeholder="their Instagram handle">'+
+    lab('Style')+'<select class="inp" id="cpStyle"><option value="talking"'+(x&&x.style==='talking'?' selected':'')+'>Talking head · 1 a day, before 9 PM</option>'+
+      '<option value="reaction"'+(x&&x.style==='reaction'?' selected':'')+'>Reaction · 2 a day, 10–12 AM and 7–9 PM</option></select>'+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">'+
+      '<div>'+lab('Target videos')+'<input class="inp" id="cpTarget" type="number" min="1" value="'+esc(x?x.target:8)+'"></div>'+
+      '<div>'+lab('Done before start')+'<input class="inp" id="cpDone" type="number" min="0" value="'+esc(x?x.done_before:0)+'"></div>'+
+    '</div>'+
+    (isNew?'':lab('Status')+'<select class="inp" id="cpStatus">'+['active','paused','done'].map(function(s){
+      return '<option value="'+s+'"'+(x.status===s?' selected':'')+'>'+({active:'Active: reminders on',paused:'Paused: no reminders',done:'Done'})[s]+'</option>';}).join('')+'</select>')+
+    '<div class="mrow"><button class="btn ok" id="cpSave">'+(isNew?'Add to calendar':'Save')+'</button><button class="btn ghost" onclick="closeModal()">Cancel</button></div>'+
+    '<div class="msg" id="cpMsg"></div>',
+  function(){
+    if(isNew){
+      sb.rpc('admin_cal_candidates',{p_campaign:campaignId}).then(function(r){
+        var sel=$('#cpUser'); if(!sel)return;
+        var c=(r&&r.data)||[];
+        sel.innerHTML='<option value="">'+(c.length?'Pick a creator…':'Everyone approved is already on the calendar')+'</option>'+
+          c.map(function(u){return '<option value="'+esc(u.user_id)+'" data-h="'+esc(String(u.handles||'').split(' · ')[0].replace(/^@/,''))+'">'+esc(u.name+' · '+u.handles)+'</option>';}).join('');
+        sel.onchange=function(){var o=sel.options[sel.selectedIndex];if(o&&o.dataset.h&&!$('#cpLabel').value)$('#cpLabel').value=o.dataset.h;};
+      },function(){});
+    }
+    $('#cpSave').onclick=async function(){
+      var b=this, m=$('#cpMsg');
+      var t=parseInt($('#cpTarget').value,10), d=parseInt($('#cpDone').value,10)||0;
+      var fail=function(s){m.className='msg err';m.textContent=s;b.disabled=false;};
+      if(isNew&&!$('#cpUser').value)return fail('Pick a creator.');
+      if(!(t>0))return fail('Enter how many videos in total.');
+      b.disabled=true;
+      try{
+        var r=await sb.rpc('admin_cal_save',{p_id:isNew?null:x.plan_id,p_campaign:isNew?campaignId:x.campaign_id,
+          p_user:isNew?$('#cpUser').value:x.user_id,p_label:$('#cpLabel').value.trim()||'creator',p_style:$('#cpStyle').value,
+          p_target:t,p_done_before:d,p_status:isNew?'active':$('#cpStatus').value,p_start:null});
+        if(r.error)throw new Error(r.error.message);
+        closeModal(); toast(isNew?'Added to the calendar':'Saved'); CAL.rows=null; render(true);
+      }catch(e){fail(e.message||String(e));}
+    };
+  });
+}
+
+RENDERERS.calendar.after=function(){
+  $$('[data-caledit]').forEach(function(b){b.onclick=function(){
+    var x=(CAL.rows||[]).filter(function(r){return String(r.plan_id)===b.dataset.caledit;})[0];
+    if(x)calPlanModal(x);};});
+  $$('[data-caladd]').forEach(function(b){b.onclick=function(){calPlanModal(null,b.dataset.caladd);};});
+  var t=$('#calTest');
+  if(t)t.onclick=async function(){
+    var m=$('#calTestMsg'); t.disabled=true; m.textContent='Sending…';
+    try{
+      var r=await sb.functions.invoke('creator-reminders',{body:{mode:'test',to:ME.email}});
+      if(r.error){var e='';try{e=(await r.error.context.json()).error||'';}catch(x){}throw new Error(e||r.error.message);}
+      var ok=((r.data&&r.data.results)||[]).filter(function(x){return x.ok;}).length;
+      m.textContent=ok+' of 5 sent to '+ME.email;
+    }catch(e){m.textContent=e.message||String(e);}
+    t.disabled=false;
+  };
+};
+</script>
+
 <!-- Admin modules. Loaded after the console's own script so they can register
      into PAGES / RENDERERS and hook campaignModal(). -->
 <!-- Admin modules used to be loaded from /auth/admin/*.js. None of the three
