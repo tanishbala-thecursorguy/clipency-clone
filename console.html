@@ -4657,6 +4657,13 @@ var CAL={rows:null, camps:null};
 
 function calDay(d){return new Date(d+'T12:00:00+05:30').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',timeZone:'Asia/Kolkata'});}
 function calRule(r){return r.style==='reaction'?'Reaction · 2 a day (10–12 AM, 7–9 PM)':'Talking head · 1 a day, before 9 PM';}
+function calReview(x){
+  var r=x.review||{}, w=num(r.pending), ok=num(r.approved), no=num(r.rejected);
+  if(!w&&!ok&&!no)return '<span style="color:var(--ink-40)">nothing posted</span>';
+  return (w?'<div style="color:var(--warn);font-weight:600" title="Oldest sent '+esc(ago(r.oldest_pending))+'">'+fmt(w)+' waiting</div>':'')+
+    (ok?'<div style="color:var(--ok)">'+fmt(ok)+' approved</div>':'')+
+    (no?'<div style="color:var(--danger)">'+fmt(no)+' rejected</div>':'');
+}
 var CAL_KIND={intro:'Intro',morning:'10 AM reminder',evening:'7 PM reminder',pause:'Pause notice'};
 
 RENDERERS.calendar=async function(force){
@@ -4669,11 +4676,15 @@ RENDERERS.calendar=async function(force){
   var by={}; rows.forEach(function(x){(by[x.campaign]=by[x.campaign]||[]).push(x);});
   var active=rows.filter(function(x){return x.status==='active';});
   var dueToday=active.filter(function(x){return num(x.today_posted)<num(x.today_planned);}).length;
+  var rv=function(x,k){return num(x.review&&x.review[k]);};
+  var waitN=rows.reduce(function(a,x){return a+rv(x,'pending');},0), waitC=rows.filter(function(x){return rv(x,'pending');}).length;
+  var rejN=rows.reduce(function(a,x){return a+rv(x,'rejected');},0);
   var head='<div class="head"><div class="eyeb">Content Calendar</div><h1>Who posts when.</h1>'+
-    '<p class="sub">Each creator’s posting plan, India time. Reminder emails go at 10 AM (reaction creators) and 7 PM while that day’s video is still missing, and a pause notice when they hit their target. Creators see the same calendar on their dashboard.</p></div>'+
+    '<p class="sub">Each creator’s posting plan, India time. Reminder emails go at 10 AM (reaction creators) and 7 PM while that day’s video is still missing, and a pause notice when they hit their target. Videos count toward the target as soon as they are sent in; the Approval column shows which are still waiting for review and which were rejected (rejected ones don’t count). Creators see the same calendar on their dashboard.</p></div>'+
     '<div class="kpis">'+
       '<div class="kpi"><span class="lab">Creators on a plan</span><div class="big">'+fmt(active.length)+'</div><div class="sub-t">'+fmt(rows.length-active.length)+' done or paused</div></div>'+
       '<div class="kpi"><span class="lab">Still to post today</span><div class="big"'+(dueToday?' style="color:var(--warn)"':'')+'>'+fmt(dueToday)+'</div><div class="sub-t">creators with today’s video missing</div></div>'+
+      '<div class="kpi"><span class="lab">Waiting for approval</span><div class="big"'+(waitN?' style="color:var(--warn)"':'')+'>'+fmt(waitN)+'</div><div class="sub-t">'+(waitN?'from '+fmt(waitC)+' creator'+(waitC===1?'':'s')+' · <a href="#reviews">review ↗</a>':'all posted videos reviewed')+(rejN?' · '+fmt(rejN)+' rejected':'')+'</div></div>'+
       '<div class="kpi"><span class="lab">Videos to go</span><div class="big">'+fmt(active.reduce(function(a,x){return a+num(x.remaining);},0))+'</div><div class="sub-t">across all plans</div></div>'+
       '<div class="kpi"><span class="lab">Test</span><div style="padding-top:8px"><button class="btn sm ghost" id="calTest">Send me test emails</button></div><div class="sub-t" id="calTestMsg">all 5 email types to '+esc(ME&&ME.email||'you')+'</div></div>'+
     '</div>';
@@ -4681,7 +4692,7 @@ RENDERERS.calendar=async function(force){
     var list=by[camp];
     return '<div class="card"><div class="ch"><div><h2>'+esc(camp)+'</h2><div class="cs">'+fmt(list.length)+' creators</div></div>'+
       (isAdmin?'<button class="btn sm ok" data-caladd="'+esc(list[0].campaign_id)+'">+ Add creator</button>':'')+'</div>'+
-      '<table class="cal-tbl"><thead><tr><th>Creator</th><th>Plan</th><th>Progress</th><th>Today</th><th>Next posting days</th><th>Last email</th>'+(isAdmin?'<th></th>':'')+'</tr></thead><tbody>'+
+      '<table class="cal-tbl"><thead><tr><th>Creator</th><th>Plan</th><th>Progress</th><th>Approval</th><th>Today</th><th>Next posting days</th><th>Last email</th>'+(isAdmin?'<th></th>':'')+'</tr></thead><tbody>'+
       list.map(function(x){
         var pct=Math.min(100,Math.round(num(x.done)/Math.max(1,num(x.target))*100));
         var today=x.status!=='active'?'<span class="chip">'+esc(x.status)+'</span>'
@@ -4694,6 +4705,7 @@ RENDERERS.calendar=async function(force){
         return '<tr><td><b>@'+esc(x.label)+'</b><div style="font-size:11.5px;color:var(--ink-40)">'+esc(x.name||'')+' · '+esc(x.email||'')+'</div></td>'+
           '<td style="font-size:12.5px">'+esc(calRule(x))+'</td>'+
           '<td class="mono">'+fmt(x.done)+' / '+fmt(x.target)+'<div class="cal-bar"><i style="width:'+pct+'%"></i></div></td>'+
+          '<td style="font-size:12px;white-space:nowrap">'+calReview(x)+'</td>'+
           '<td>'+today+'</td>'+
           '<td><div class="cal-days">'+(days||'<span style="color:var(--ink-40);font-size:12px">finished</span>')+'</div>'+
             ((x.schedule||[]).length>4?'<div style="font-size:11px;color:var(--ink-40);margin-top:3px">last day '+esc(calDay(x.schedule[x.schedule.length-1].day))+'</div>':'')+'</td>'+
