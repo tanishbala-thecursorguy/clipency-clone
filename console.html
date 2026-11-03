@@ -4634,7 +4634,7 @@ RENDERERS.work.after=function(){
 /* ============================================================
    CONTENT CALENDAR (clipency-db/057_content_calendar.sql)
    Who posts how many videos a day, until when. Reminder emails
-   (creator-reminders) go at 10 AM (reaction) and 7 PM India time
+   (creator-reminders) go at 10 AM (reaction), 6 PM, 8 PM and 9 PM (reaction) India time
    while that day's video is still missing; the creator sees the
    same calendar on their dashboard.
    ============================================================ */
@@ -4664,7 +4664,7 @@ function calReview(x){
     (ok?'<div style="color:var(--ok)">'+fmt(ok)+' approved</div>':'')+
     (no?'<div style="color:var(--danger)">'+fmt(no)+' rejected</div>':'');
 }
-var CAL_KIND={intro:'Intro',morning:'10 AM reminder',evening:'7 PM reminder',pause:'Pause notice'};
+var CAL_KIND={intro:'Intro',morning:'10 AM reminder',evening:'6 PM reminder',late:'8 PM reminder',last:'9 PM reminder',pause:'Pause notice'};
 
 RENDERERS.calendar=async function(force){
   if(force||!CAL.rows){
@@ -4680,7 +4680,7 @@ RENDERERS.calendar=async function(force){
   var waitN=rows.reduce(function(a,x){return a+rv(x,'pending');},0), waitC=rows.filter(function(x){return rv(x,'pending');}).length;
   var rejN=rows.reduce(function(a,x){return a+rv(x,'rejected');},0);
   var head='<div class="head"><div class="eyeb">Content Calendar</div><h1>Who posts when.</h1>'+
-    '<p class="sub">Each creator’s posting plan, India time. Reminder emails go at 10 AM (reaction creators) and 7 PM while that day’s video is still missing, and a pause notice when they hit their target. Videos count toward the target as soon as they are sent in; the Approval column shows which are still waiting for review and which were rejected (rejected ones don’t count). Creators see the same calendar on their dashboard.</p></div>'+
+    '<p class="sub">Each creator’s posting plan, India time. While that day’s videos are still missing, reminder emails go at 10 AM (reaction), 6 PM, 8 PM and 9 PM (reaction), and a pause notice when they hit their target. Videos count toward the target as soon as they are sent in; the Approval column shows which are still waiting for review and which were rejected (rejected ones don’t count). Creators see the same calendar on their dashboard.</p></div>'+
     '<div class="kpis">'+
       '<div class="kpi"><span class="lab">Creators on a plan</span><div class="big">'+fmt(active.length)+'</div><div class="sub-t">'+fmt(rows.length-active.length)+' done or paused</div></div>'+
       '<div class="kpi"><span class="lab">Still to post today</span><div class="big"'+(dueToday?' style="color:var(--warn)"':'')+'>'+fmt(dueToday)+'</div><div class="sub-t">creators with today’s video missing</div></div>'+

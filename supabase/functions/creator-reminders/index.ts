@@ -5,7 +5,8 @@
 //   POST { mode: "test", to }     Clipency staff only: every email type, filled with sample data, to `to`
 //
 // What is due is decided in SQL (cx_cal_due / cal_claim): an intro with the dates,
-// a 10 AM reminder (reaction creators), a 7 PM reminder, and one "pause now" email
+// a 10 AM reminder (reaction creators), "post now" reminders at 6 PM and 8 PM (and
+// 9 PM for reaction creators; clipency-db/062), and one "pause now" email
 // once the target is reached. Reminders only go while that day's video is still
 // missing, and each email is claimed once, so a rerun never sends it twice.
 //
@@ -33,7 +34,7 @@ const esc = (v: string) => v.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 
 type Day = { day: string; videos: number; posted: number; slots: string[] };
 type State = { style: "talking" | "reaction"; per_day: number; target: number; done: number; remaining: number; today_posted: number; today_planned: number; schedule: Day[] };
-type Claim = { send_id: number; kind: "intro" | "morning" | "evening" | "pause"; email: string; first_name: string; label: string; campaign: string; state: State };
+type Claim = { send_id: number; kind: "intro" | "morning" | "evening" | "late" | "last" | "pause"; email: string; first_name: string; label: string; campaign: string; state: State };
 
 async function providerKey(): Promise<string> {
   const env = Deno.env.get("RESEND_API_KEY");
@@ -92,7 +93,7 @@ function build(c: Claim) {
       html: shell("Your posting calendar", `<p style="margin:0">${hi}</p>
 <p style="margin:12px 0 0">Your content calendar for <b>${camp}</b> is ready. ${rule(s)}</p>${progress(s)}
 <p style="margin:16px 0 4px;font-weight:600;color:#14120e">Your posting days</p>${scheduleTable(s)}
-<p style="margin:16px 0 0">We'll email you a reminder on each posting day${s.style === "reaction" ? " at 10 AM and 7 PM" : " at 7 PM"}, and tell you when you've hit ${s.target} so you can pause.</p>`),
+<p style="margin:16px 0 0">On each posting day we'll remind you ${s.style === "reaction" ? "at 10 AM, then at 6, 8 and 9 PM" : "at 6 PM and 8 PM"} if today's video${s.style === "reaction" ? "s are" : " is"} still missing, and we'll tell you when you've hit ${s.target} so you can pause.</p>`),
     };
   }
   if (c.kind === "morning") {
@@ -102,15 +103,23 @@ function build(c: Claim) {
 <p style="margin:12px 0 0">Time for your first <b>${camp}</b> reaction video today. Please post it <b>between 10 AM and 12 PM</b> (India time), then submit the link on your dashboard. Your second one is due between 7 PM and 9 PM.</p>${progress(s)}`, "Submit my video"),
     };
   }
-  if (c.kind === "evening") {
+  if (c.kind === "evening" || c.kind === "late" || c.kind === "last") {
     const left = Math.max(1, s.today_planned - s.today_posted);
     const what = s.style === "reaction"
-      ? (left >= 2 ? "both of today's reaction videos" : "your evening reaction video")
+      ? (left >= 2 ? "both of today's reaction videos" : "today's evening reaction video")
       : "today's talking-head video";
+    const T = {
+      evening: { subject: `Post today's video now: ${brand(c.campaign)}`, title: "Post your video now",
+                 line: `You haven't posted ${what} for <b>${camp}</b> yet. Please <b>post it now</b> and submit the link on your dashboard. It's due <b>before 9 PM</b> (India time).` },
+      late:    { subject: `1 hour left: post today's video before 9 PM: ${brand(c.campaign)}`, title: "1 hour left",
+                 line: `${what[0].toUpperCase() + what.slice(1)} for <b>${camp}</b> still isn't posted. Only <b>one hour</b> is left: please <b>post it right now</b>, before 9 PM, and submit the link on your dashboard.` },
+      last:    { subject: `Last call: today's video is missing: ${brand(c.campaign)}`, title: "Last call for today",
+                 line: `It's 9 PM and ${what} for <b>${camp}</b> is still missing. Please <b>post it right away</b> and submit the link tonight so it counts for today.` },
+    }[c.kind];
     return {
-      subject: `Today's video is due by 9 PM: ${brand(c.campaign)}`,
-      html: shell("Today's video is due by 9 PM", `<p style="margin:0">${hi}</p>
-<p style="margin:12px 0 0">Reminder: please post ${what} for <b>${camp}</b> <b>before 9 PM</b> (India time), then submit the link on your dashboard.</p>${progress(s)}`, "Submit my video"),
+      subject: T.subject,
+      html: shell(T.title, `<p style="margin:0">${hi}</p>
+<p style="margin:12px 0 0">${T.line}</p>${progress(s)}`, "Submit my video"),
     };
   }
   return {
@@ -159,8 +168,10 @@ Deno.serve(async (req) => {
     const tests: Claim[] = [
       { ...base, kind: "intro", state: sample("talking") },
       { ...base, kind: "evening", state: sample("talking") },
+      { ...base, kind: "late", state: sample("talking") },
       { ...base, first_name: "Narayani", label: "narayani.talks", kind: "intro", state: sample("reaction") },
       { ...base, first_name: "Narayani", label: "narayani.talks", kind: "morning", state: sample("reaction") },
+      { ...base, first_name: "Narayani", label: "narayani.talks", kind: "last", state: { ...sample("reaction"), today_posted: 1 } },
       { ...base, first_name: "Narayani", label: "narayani.talks", kind: "pause", state: { ...sample("reaction"), done: 15, remaining: 0, schedule: [] } },
     ];
     const results = [];
