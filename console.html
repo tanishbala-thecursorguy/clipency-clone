@@ -451,6 +451,7 @@ $('#refreshBtn').onclick=function(){render(true);};
 var PAGES=[
   {id:'command',  label:'Command Center', ic:'▦', staff:true},
   {id:'reviews',  label:'Reviews',        ic:'✓', staff:true, reviewer:true},
+  {id:'feed',     label:'Clip Feed',      ic:'▣', staff:true, reviewer:true},
   {id:'creators', label:'Creators',       ic:'☉', staff:true},
   {id:'accounts', label:'Accounts',       ic:'⚭', staff:true, reviewer:true},
   {id:'campaigns',label:'Campaigns',      ic:'▶', staff:true},
@@ -922,6 +923,116 @@ function reviewModal(id){
     };
   });
 }
+
+
+/* ============================================================
+   CLIP FEED
+   Every approved clip in one list, filterable by campaign, so a live
+   clip that should not have passed can be pulled. Reject goes through
+   admin_reject_submission, the same as Reviews: the clip stops earning,
+   and the clipper gets the clip_rejected email with the reason.
+   ============================================================ */
+var CF={rows:null, camps:[], camp:'', campPlat:'', campSel:'', plat:'', q:'', sort:'new', show:120};
+function cfCampOptions(){
+  return CF.camps.map(function(c){
+    var sp=cpSplitParts(c);
+    if(!sp)return '<option value="'+esc(c.title)+'"'+(CF.campSel===c.title?' selected':'')+'>'+esc(c.title)+'</option>';
+    return sp.order.map(function(p){
+      var v=c.title+'|'+p;
+      return '<option value="'+esc(v)+'"'+(CF.campSel===v?' selected':'')+'>'+esc(cpPartTitle(c.title,p))+'</option>';
+    }).join('');
+  }).join('');
+}
+RENDERERS.feed=async function(force){
+  if(force||!CF.rows){
+    var rows=[], from=0;
+    while(true){
+      var r=await sb.from('clip_submissions')
+        .select('id,user_id,campaign_id,campaign_title,platform,handle,clip_url,views_count,likes,comments,approved_amount,created_at,reviewed_at,review_source')
+        .eq('status','approved').order('reviewed_at',{ascending:false,nullsFirst:false}).range(from,from+999);
+      if(r.error)throw new Error(r.error.message);
+      rows=rows.concat(r.data||[]);
+      if(!r.data||r.data.length<1000||rows.length>=10000)break;
+      from+=1000;
+    }
+    CF.rows=rows;
+    var c=await sb.from('campaigns').select('id,title,status,platform,platform_split').order('title');
+    CF.camps=(c.data||[]).filter(function(x){return rows.some(function(s){return s.campaign_title===x.title;});});
+  }
+  var f=CF.rows.filter(function(s){
+    if(CF.camp&&String(s.campaign_title||'')!==CF.camp)return false;
+    if(CF.campPlat&&String(s.platform||'').toLowerCase()!==CF.campPlat)return false;
+    if(CF.plat&&String(s.platform||'')!==CF.plat)return false;
+    if(CF.q){var q=CF.q.toLowerCase().replace(/^@/,'');
+      if(!((s.handle||'').toLowerCase().indexOf(q)>-1||(s.clip_url||'').toLowerCase().indexOf(q)>-1))return false;}
+    return true;
+  });
+  var at=function(s){return String(s.reviewed_at||s.created_at||'');};
+  f.sort(CF.sort==='views'?function(a,b){return num(b.views_count)-num(a.views_count);}
+        :CF.sort==='old'?function(a,b){return at(a).localeCompare(at(b));}
+        :function(a,b){return at(b).localeCompare(at(a));});
+  var platforms=[]; CF.rows.forEach(function(s){if(s.platform&&platforms.indexOf(s.platform)<0)platforms.push(s.platform);});
+  var creators={}; f.forEach(function(s){creators[s.user_id]=1;});
+  var who=function(s){return s.review_source==='client'?'by client':s.review_source==='auto'?'auto':'by Clipency';};
+  return '<div class="head"><div class="eyeb">Clip Feed</div><h1>Every approved clip.</h1>'+
+    '<p class="sub">Filter by campaign, open any clip, and reject one that should not be live. Rejecting stops it earning and emails the creator your reason.</p></div>'+
+    '<div class="kpis">'+
+      '<div class="kpi"><span class="lab">Approved clips</span><div class="big">'+fmt(f.length)+'</div><div class="sub-t">'+(f.length===CF.rows.length?'all campaigns':'of '+fmt(CF.rows.length)+' in total')+'</div></div>'+
+      '<div class="kpi"><span class="lab">Creators</span><div class="big">'+fmt(Object.keys(creators).length)+'</div><div class="sub-t">in this view</div></div>'+
+      '<div class="kpi"><span class="lab">Views</span><div class="big">'+fmtK(f.reduce(function(a,s){return a+num(s.views_count);},0))+'</div><div class="sub-t">in this view</div></div>'+
+      '<div class="kpi"><span class="lab">Earned</span><div class="big">'+money(f.reduce(function(a,s){return a+num(s.approved_amount);},0))+'</div><div class="sub-t">in this view</div></div>'+
+    '</div>'+
+    '<div class="card">'+
+      '<div style="display:grid;grid-template-columns:1fr 220px 150px 160px;gap:10px;margin-bottom:16px">'+
+        '<input class="inp" id="cfQ" placeholder="Search handle or clip link…" value="'+esc(CF.q)+'">'+
+        '<select class="inp" id="cfCamp"><option value="">All campaigns</option>'+cfCampOptions()+'</select>'+
+        '<select class="inp" id="cfPlat"><option value="">All platforms</option>'+
+          platforms.map(function(p){return '<option'+(CF.plat===p?' selected':'')+'>'+esc(p)+'</option>';}).join('')+'</select>'+
+        '<select class="inp" id="cfSort">'+[['new','Newest approved'],['old','Oldest approved'],['views','Most views']].map(function(o){
+          return '<option value="'+o[0]+'"'+(CF.sort===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'+
+      '</div>'+
+      (f.length
+        ? '<table><thead><tr><th>Creator</th><th>Campaign</th><th>Platform</th><th>Approved</th><th>Views</th><th>Likes</th><th>Earned</th><th>Clip</th><th></th></tr></thead><tbody>'+
+          f.slice(0,CF.show).map(function(s){
+            return '<tr>'+
+              '<td class="mono">'+esc(s.handle||'·')+'<div style="font-size:10px;color:var(--ink-40);font-family:var(--sans)">sent '+day(s.created_at)+'</div></td>'+
+              '<td>'+esc(s.campaign_title||'·')+'</td>'+
+              '<td>'+esc(s.platform||'·')+'</td>'+
+              '<td style="white-space:nowrap">'+(s.reviewed_at?day(s.reviewed_at):'·')+'<div style="font-size:10px;color:var(--ink-40)">'+who(s)+'</div></td>'+
+              '<td><b>'+fmt(s.views_count)+'</b></td>'+
+              '<td>'+fmt(s.likes)+'</td>'+
+              '<td>'+(num(s.approved_amount)?money(s.approved_amount):'·')+'</td>'+
+              '<td>'+(s.clip_url?'<a class="mono" href="'+esc(s.clip_url)+'" target="_blank" rel="noopener">Open ↗</a>':'·')+'</td>'+
+              '<td><button class="btn sm danger" data-cfrej="'+esc(s.id)+'">Reject</button></td>'+
+            '</tr>';}).join('')+'</tbody></table>'+
+          (f.length>CF.show?'<div style="text-align:center;margin-top:14px"><button class="btn ghost sm" id="cfMore">Show more ('+fmt(f.length-CF.show)+' left)</button></div>':'')
+        : '<div class="empty"><div class="ei">▣</div><b>No approved clips</b><p>Nothing matches these filters.</p></div>')+
+    '</div>';
+};
+RENDERERS.feed.after=function(){
+  var q=$('#cfQ'); if(q){var tm; q.oninput=function(){clearTimeout(tm);tm=setTimeout(function(){CF.q=q.value;CF.show=120;
+    render().then(function(){var e=$('#cfQ');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}});},300);};}
+  var c=$('#cfCamp'); if(c)c.onchange=function(){var v=c.value.split('|');CF.campSel=c.value;CF.camp=v[0];CF.campPlat=v[1]||'';CF.show=120;render();};
+  var p=$('#cfPlat'); if(p)p.onchange=function(){CF.plat=p.value;CF.show=120;render();};
+  var so=$('#cfSort'); if(so)so.onchange=function(){CF.sort=so.value;render();};
+  var m=$('#cfMore'); if(m)m.onclick=function(){CF.show+=200;render();};
+  $$('[data-cfrej]').forEach(function(b){b.onclick=async function(){
+    var s=CF.rows.filter(function(x){return String(x.id)===b.dataset.cfrej;})[0]; if(!s)return;
+    var reason=prompt('Reject '+(s.handle||'this clip')+' on '+(s.campaign_title||'the campaign')+'?\n\n'+
+      'It stops earning'+(num(s.approved_amount)?' (loses '+money(s.approved_amount)+')':'')+' and the creator gets an email with this reason.\n\nReason:','');
+    if(reason===null)return;
+    if(!reason.trim()){alert('A reason is required. It is shown to the creator.');return;}
+    b.disabled=true; b.textContent='Rejecting…';
+    try{
+      var r=await sb.rpc('admin_reject_submission',{p_id:s.id,p_reason:reason.trim()});
+      if(r.error)throw new Error(r.error.message);
+      CF.rows=CF.rows.filter(function(x){return x!==s;});
+      RV.rows=[];
+      var tr=b.closest('tr');
+      if(tr)tr.innerHTML='<td colspan="9" style="color:var(--ink-40);font-size:12.5px">Rejected '+esc(s.handle||'clip')+' · '+esc(s.campaign_title||'')+'. The creator will get an email with your reason.</td>';
+    }catch(e){alert('Could not reject: '+(e.message||e));b.disabled=false;b.textContent='Reject';}
+  };});
+};
 
 
 /* ============================================================
