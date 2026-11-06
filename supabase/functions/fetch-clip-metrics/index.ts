@@ -5,6 +5,9 @@
 // Modes:
 //   POST { mode: "refresh", limit: 200 }    -> batch, called hourly by pg_cron
 //   POST { submission_id: "<uuid>" }        -> one clip, STAFF/service only
+//   POST { mode: "open", campaign_id? }     -> a client opened their dashboard (or staff
+//                                              opened a campaign): re-read the clips they
+//                                              see whose numbers are 30+ min old (064)
 //
 // There is deliberately no clipper-facing refresh. Every pull costs a
 // ScrapeCreators credit, so the schedule is the only thing that spends them.
@@ -313,6 +316,21 @@ Deno.serve(async (req) => {
       return a;
     }, {});
     return json({ mode: "refresh", processed: results.length, tally });
+  }
+
+  /* ---- someone opened a dashboard ---- */
+  if (body.mode === "open") {
+    if (!token || isService) return json({ error: "Sign in first" }, 401);
+    const asCaller = createClient(SUPABASE_URL, ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    const { data, error } = await asCaller.rpc("clips_due_on_open", { p_campaign: body.campaign_id || null });
+    if (error) return json({ error: error.message }, 403);
+    if (!data?.length) return json({ mode: "open", processed: 0, changed: 0 });
+    const results = await pool(data as Row[], CONCURRENCY, processRow);
+    return json({ mode: "open", processed: results.length,
+                  changed: results.filter((r: any) => r.status === "ok").length });
   }
 
   /* ---- single submission: staff / service only ---- */

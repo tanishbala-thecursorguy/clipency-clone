@@ -841,6 +841,7 @@ window.CXCUR = (function () {
         applyLive(cached.payload);
         note('info', 'served from cache (' + Math.round(cached.ageMs / 1000) + 's old)');
         revalidateInBackground(sb, uid);
+        refreshOnOpen(sb, uid);
         return;
       } catch (e) {
         note('warn', 'cache replay failed, falling through: ' + e.message);
@@ -853,6 +854,7 @@ window.CXCUR = (function () {
       var payload = res.data || {};
       applyLive(payload);
       writeCache(uid, payload);
+      refreshOnOpen(sb, uid);
     } catch (err) {
       var msg = (err && err.message) || String(err);
       window.CLIPENCY_LIVE.mode = 'error';
@@ -949,6 +951,33 @@ window.CXCUR = (function () {
         note('warn', 'background refresh failed (page already rendered)');
       }
     }, 400);
+  }
+
+  /* Fresh views on open (064): the scheduled refresh reads a clip only every
+     12-24 h, so opening the dashboard asks fetch-clip-metrics to re-read the
+     clips shown here (top 30 per campaign + the last 3 days) that are 30+ min
+     old. It runs in the background; when numbers moved, the page repaints the
+     same way the background revalidate does. At most once per 5 minutes per tab. */
+  function refreshOnOpen(sb, uid) {
+    try {
+      var last = Number(sessionStorage.getItem('cx-open-refresh') || 0);
+      if (Date.now() - last < 5 * 60 * 1000) return;
+      sessionStorage.setItem('cx-open-refresh', String(Date.now()));
+    } catch (e) { /* storage blocked: still refresh once */ }
+    setTimeout(async function () {
+      try {
+        var r = await sb.functions.invoke('fetch-clip-metrics', { body: { mode: 'open' } });
+        if (r.error || !r.data || !r.data.changed) return;
+        var res = await sb.rpc('client_dashboard_data');
+        if (res.error) return;
+        writeCache(uid, res.data || {});
+        applyLive(res.data || {});
+        note('info', 'fresh views for ' + r.data.changed + ' clips — re-rendering');
+        document.dispatchEvent(new CustomEvent('clipency:data-ready', {
+          detail: { mode: window.CLIPENCY_LIVE.mode, refreshed: true }
+        }));
+      } catch (e) { note('warn', 'refresh on open failed (page already rendered)'); }
+    }, 800);
   }
 
   function statusSig(rows) {

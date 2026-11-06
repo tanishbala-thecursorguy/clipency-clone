@@ -932,7 +932,7 @@ function reviewModal(id){
    admin_reject_submission, the same as Reviews: the clip stops earning,
    and the clipper gets the clip_rejected email with the reason.
    ============================================================ */
-var CF={rows:null, camps:[], camp:'', campPlat:'', campSel:'', plat:'', q:'', sort:'new', show:120};
+var CF={rows:null, camps:[], camp:'', campPlat:'', campSel:'', plat:'', q:'', sort:'new', show:120, fresh:{}, note:''};
 function cfCampOptions(){
   return CF.camps.map(function(c){
     var sp=cpSplitParts(c);
@@ -975,7 +975,8 @@ RENDERERS.feed=async function(force){
   var creators={}; f.forEach(function(s){creators[s.user_id]=1;});
   var who=function(s){return s.review_source==='client'?'by client':s.review_source==='auto'?'auto':'by Clipency';};
   return '<div class="head"><div class="eyeb">Clip Feed</div><h1>Every approved clip.</h1>'+
-    '<p class="sub">Filter by campaign, open any clip, and reject one that should not be live. Rejecting stops it earning and emails the creator your reason.</p></div>'+
+    '<p class="sub">Filter by campaign, open any clip, and reject one that should not be live. Rejecting stops it earning and emails the creator your reason.'+
+      ' Picking a campaign re-reads the views of its top 30 clips and any from the last 3 days.'+(CF.note?' <b id="cfNote">'+esc(CF.note)+'</b>':'')+'</p></div>'+
     '<div class="kpis">'+
       '<div class="kpi"><span class="lab">Approved clips</span><div class="big">'+fmt(f.length)+'</div><div class="sub-t">'+(f.length===CF.rows.length?'all campaigns':'of '+fmt(CF.rows.length)+' in total')+'</div></div>'+
       '<div class="kpi"><span class="lab">Creators</span><div class="big">'+fmt(Object.keys(creators).length)+'</div><div class="sub-t">in this view</div></div>'+
@@ -1016,6 +1017,16 @@ RENDERERS.feed.after=function(){
   var p=$('#cfPlat'); if(p)p.onchange=function(){CF.plat=p.value;CF.show=120;render();};
   var so=$('#cfSort'); if(so)so.onchange=function(){CF.sort=so.value;render();};
   var m=$('#cfMore'); if(m)m.onclick=function(){CF.show+=200;render();};
+  /* Fresh views for the picked campaign (064), at most every 5 minutes each. */
+  var camp=CF.camp&&CF.camps.filter(function(x){return x.title===CF.camp;})[0];
+  if(camp&&!(Date.now()-(CF.fresh[camp.id]||0)<5*60*1000)){
+    CF.fresh[camp.id]=Date.now(); CF.note='Refreshing views…'; var n=$('#cfNote'); if(n)n.textContent=CF.note;
+    sb.functions.invoke('fetch-clip-metrics',{body:{mode:'open',campaign_id:camp.id}}).then(function(r){
+      var ch=r&&r.data&&r.data.changed||0;
+      CF.note=r&&r.error?'Could not refresh views right now.':ch?'Views updated for '+ch+' clip'+(ch===1?'':'s')+'.':'Views are up to date.';
+      if(ch){CF.rows=null;render(true);}else{var e=$('#cfNote');if(e)e.textContent=CF.note;}
+    },function(){CF.note='Could not refresh views right now.';var e=$('#cfNote');if(e)e.textContent=CF.note;});
+  }
   $$('[data-cfrej]').forEach(function(b){b.onclick=async function(){
     var s=CF.rows.filter(function(x){return String(x.id)===b.dataset.cfrej;})[0]; if(!s)return;
     var reason=prompt('Reject '+(s.handle||'this clip')+' on '+(s.campaign_title||'the campaign')+'?\n\n'+
