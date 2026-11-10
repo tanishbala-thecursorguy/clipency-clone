@@ -2706,7 +2706,7 @@ RENDERERS.leads=async function(force){
          f.slice(0,200).map(function(l){
            return '<tr>'+
              '<td><b>'+esc(l.full_name||'·')+'</b>'+
-               '<div class="mono" style="font-size:10.5px;color:var(--ink-40)">'+esc(l.email||'')+(l.phone?' · '+esc(l.phone):'')+'</div>'+
+               '<div class="mono" style="font-size:10.5px;color:var(--ink-40)">'+esc(l.email||'')+(l.phone?' · '+ldPhone(l.phone):'')+'</div>'+
                (l.message?'<div style="font-size:11.5px;color:var(--ink-55);margin-top:4px;max-width:280px">'+esc(String(l.message).slice(0,110))+(String(l.message).length>110?'…':'')+'</div>':'')+'</td>'+
              '<td>'+esc(l.brand_name||l.company||'·')+'</td>'+
              '<td>'+esc(l.campaign_type||'·')+'</td>'+
@@ -2720,6 +2720,21 @@ RENDERERS.leads=async function(force){
        : '<div class="empty"><div class="ei">✉</div><b>No leads here</b><p>Nothing with this status yet.</p></div>')+
     '</div>';
 };
+/* A lead's phone as a WhatsApp chat link. The form stores "<country code> <number>";
+   people sometimes type the code again ("+91 +9198…") or a trunk 0 ("+91 098…"). */
+function ldWa(raw){
+  var t=String(raw||'').trim(), i=t.lastIndexOf('+');
+  if(i>0)return t.slice(i).replace(/\D/g,'');
+  var m=t.match(/^\+?(\d{1,4})\s+(.*)$/);
+  if(!m){var d=t.replace(/\D/g,'');return d.length<8?'':d;}
+  var cc=m[1], loc=m[2].replace(/\D/g,'').replace(/^0+/,'');
+  if(loc.length>10&&loc.indexOf(cc)===0)loc=loc.slice(cc.length);
+  return loc.length<6?'':cc+loc;
+}
+function ldPhone(raw){
+  var n=ldWa(raw);
+  return n?'<a href="https://wa.me/'+n+'" target="_blank" rel="noopener" title="Chat on WhatsApp" style="color:inherit;text-decoration:underline;text-underline-offset:2px">'+esc(raw)+' ↗</a>':esc(raw);
+}
 RENDERERS.leads.after=function(){
   $$('#ldTabs button').forEach(function(b){b.onclick=function(){LD.tab=b.dataset.t;render();};});
   $$('[data-ld]').forEach(function(sel){sel.onchange=async function(){
