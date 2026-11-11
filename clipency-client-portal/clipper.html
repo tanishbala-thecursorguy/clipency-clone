@@ -1273,6 +1273,14 @@ body,.card,.modal,.veil,.wz-card,.wz-acct,.wz-ico,.wz-av,.field input,.field sel
     <button class="btn" id="saveProfileBtn">Save Profile</button>
     <span class="modal-msg" id="profMsg" style="display:inline-block;margin-left:12px"></span>
   </div>
+  <div class="card" style="margin-top:13px">
+    <b style="font-family:var(--display);font-weight:400;font-size:21px;display:block;margin-bottom:3px">Change Password</b>
+    <p class="pg-sub" style="margin-bottom:15px">Pick a new password for signing in to Clipency. At least 8 characters.</p>
+    <div class="g2"><div class="field"><label>New password</label><input id="pwNew" type="password" autocomplete="new-password"></div>
+      <div class="field"><label>Confirm new password</label><input id="pwNew2" type="password" autocomplete="new-password"></div></div>
+    <button class="btn" id="pwSave">Change Password</button>
+    <span class="modal-msg" id="pwMsg" style="display:inline-block;margin-left:12px"></span>
+  </div>
 </section>
 
 </main>
@@ -3781,6 +3789,25 @@ $('#saveProfileBtn').onclick=async function(){
     if(r.error){m.className='modal-msg err';m.textContent=r.error.message;return;}}
   Object.assign(PROFILE,patch);renderShell();m.className='modal-msg ok';m.textContent='Saved.';toast('Profile updated');
   setTimeout(function(){m.textContent='';},2400);};
+/* Change password: updates the signed-in account's own password (also works in a
+   console "Log in" tab, where the session is the creator's). Other sessions stay
+   signed in. */
+$('#pwSave').onclick=async function(){
+  var m=$('#pwMsg'),a=$('#pwNew').value,b=$('#pwNew2').value,btn=this;
+  if(a.length<8){m.className='modal-msg err';m.textContent='Use at least 8 characters.';return;}
+  if(a!==b){m.className='modal-msg err';m.textContent='The two passwords don\u2019t match.';return;}
+  m.className='modal-msg';m.textContent='Saving…';btn.disabled=true;
+  try{
+    if(!DEMO){var r=await sb.auth.updateUser({password:a});if(r.error)throw r.error;}
+    $('#pwNew').value='';$('#pwNew2').value='';
+    m.className='modal-msg ok';m.textContent='Password changed.';toast('Password changed');
+    setTimeout(function(){m.textContent='';},3000);
+  }catch(e){
+    var t=String(e&&e.message||e);
+    m.className='modal-msg err';
+    m.textContent=/different from the old/i.test(t)?'That\u2019s the current password. Pick a new one.':/weak|pwned|leaked/i.test(t)?'That password is too common. Pick a stronger one.':t;
+  }
+  btn.disabled=false;};
 $('#editUserBtn').onclick=function(){$('#unNew').value=PROFILE.username||'';$('#unMsg').textContent='';open_('unModal');};
 $('#unSave').onclick=async function(){
   var m=$('#unMsg'),v=$('#unNew').value.trim().toLowerCase();
