@@ -3460,10 +3460,21 @@ async function crProfileScreen(force,uid){
     '<div class="kpi"><span class="lab">Applications</span><div class="big"'+(pendingApps?' style="color:var(--warn)"':'')+'>'+fmt(pendingApps)+'</div>'+
       '<div class="sub-t">waiting for a decision</div></div></div>';
 
+  if(ROLE==='admin'&&!CAL.rows){try{var cr=await sb.rpc('admin_content_calendar');CAL.rows=cr.error?null:(cr.data||[]);}catch(e){}}
+  var planOf=function(cid){return (CAL.rows||[]).filter(function(x){return String(x.campaign_id)===String(cid)&&String(x.user_id)===String(uid);})[0];};
+  var planCell=function(j){
+    var x=planOf(j.campaign_id);
+    if(x)return '<div style="font-size:12.5px">'+(x.style==='reaction'?'Reaction':'Talking head')+' · <span class="mono">'+fmt(x.done)+' / '+fmt(x.target)+'</span></div>'+
+      '<div style="margin-top:4px">'+calHalf(x)+'</div>'+
+      (num(x.half)!==2?'<button class="btn sm'+(x.status==='done'?' ok':' ghost')+'" style="margin-top:6px" data-crhalf="'+esc(x.plan_id)+'">Start second half</button>':'');
+    return '<div style="display:flex;gap:6px;align-items:center"><select class="inp" style="padding:6px 8px;font-size:12px;width:auto" data-crstyle="'+esc(j.campaign_id)+'">'+
+      '<option value="">Style…</option><option value="talking">Talking head (8)</option><option value="reaction">Reaction (15)</option></select>'+
+      '<button class="btn sm" data-crplan="'+esc(j.campaign_id)+'" data-crplanacct="'+esc(((j.accounts||[])[0]||'').replace(/^@/,'').split(/[\s·]/)[0])+'">Add</button></div>';
+  };
   var joinedCard='<div class="card"><div class="ch"><div><h2>Campaigns</h2>'+
       '<div class="cs">Every campaign they have clips or an application in.</div></div></div>'+
     (joined.length
-      ? '<table><thead><tr><th>Campaign</th><th>Accounts used</th><th>Access</th><th>Clips</th><th>Views</th>'+(ROLE==='admin'?'<th></th>':'')+'</tr></thead><tbody>'+
+      ? '<table><thead><tr><th>Campaign</th><th>Accounts used</th><th>Access</th><th>Clips</th><th>Views</th>'+(ROLE==='admin'?'<th>Posting plan</th><th></th>':'')+'</tr></thead><tbody>'+
         joined.map(function(j){
           return '<tr><td><a href="'+crHref({view:'campaign',c:j.campaign_id})+'">'+esc(j.title)+'</a>'+
               '<div style="font-size:11px;color:var(--ink-40)">'+(j.is_private?'private':'public')+' · '+esc(j.status||'')+'</div></td>'+
@@ -3471,6 +3482,7 @@ async function crProfileScreen(force,uid){
             '<td>'+(j.is_private?(j.access?String(j.access).split(',').map(crAccessChip).join(' '):'·'):'<span class="chip">open</span>')+'</td>'+
             '<td class="mono">'+fmt(j.approved)+' approved'+(num(j.pending)?' · '+fmt(j.pending)+' pending':'')+'</td>'+
             '<td class="mono">'+fmtK(j.views)+'</td>'+
+            (ROLE==='admin'?'<td>'+planCell(j)+'</td>':'')+
             (ROLE==='admin'?'<td>'+(j.is_private&&/approved|pending/.test(j.access||'')
               ?'<button class="btn sm danger" data-crrm="'+esc(j.campaign_id)+'" data-crrmt="'+esc(j.title)+'">Remove</button>':'')+'</td>':'')+
             '</tr>';}).join('')+'</tbody></table>'
@@ -3754,6 +3766,20 @@ RENDERERS.creators.after=function(){
       };
     });
   };});
+
+  /* ---- profile: posting plan (Content Calendar) for a campaign ---- */
+  $$('[data-crplan]').forEach(function(b){b.onclick=async function(){
+    var cid=b.dataset.crplan, sel=$('[data-crstyle="'+cid+'"]'), style=sel&&sel.value;
+    if(!style){alert('Pick talking head or reaction first.');return;}
+    var p=(CR.detail&&CR.detail.profile)||{};
+    var label=b.dataset.crplanacct||String(p.name||p.email||'creator').split('@')[0];
+    b.disabled=true;b.textContent='Adding…';
+    var r=await sb.rpc('admin_cal_save',{p_id:null,p_campaign:cid,p_user:CR.user,p_label:label,p_style:style,
+      p_target:style==='reaction'?15:8,p_done_before:0,p_status:'active',p_start:null});
+    if(r.error){alert('Could not add the plan: '+r.error.message);b.disabled=false;b.textContent='Add';return;}
+    CAL.rows=null; render(true);
+  };});
+  $$('[data-crhalf]').forEach(function(b){b.onclick=async function(){if(await calSecondHalf(b.dataset.crhalf,b))render(true);};});
 
   /* ---- profile: take a creator out of a private campaign ---- */
   $$('[data-crrm]').forEach(function(b){b.onclick=function(e){
@@ -4794,6 +4820,23 @@ var CAL={rows:null, camps:null};
 })();
 
 function calDay(d){return new Date(d+'T12:00:00+05:30').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',timeZone:'Asia/Kolkata'});}
+/* Two halves (066): talking head 8 then 15 in all, reaction 15 then 30. */
+function calHalf(x){
+  var second=num(x.half)===2;
+  return '<span class="chip'+(second?' ok':'')+'">'+(second?'Second half':'First half')+'</span>'+
+    (!second&&x.status==='done'?' <span style="font-size:11px;color:var(--warn)">paused, waiting for second half</span>':'');
+}
+async function calSecondHalf(id,btn){
+  var x=(CAL.rows||[]).filter(function(r){return String(r.plan_id)===String(id);})[0]||{};
+  var to=x.style==='reaction'?30:15;
+  if(!confirm('Start the second half for @'+(x.label||'this creator')+'?\n\nTheir target goes to '+to+' videos in total ('+
+    Math.max(0,to-num(x.done))+' more). They get a "second half starts today" email and daily reminders again.'))return false;
+  if(btn){btn.disabled=true;btn.textContent='Starting…';}
+  var r=await sb.rpc('admin_cal_second_half',{p_id:Number(id)});
+  if(r.error){alert('Could not start the second half: '+r.error.message);if(btn){btn.disabled=false;btn.textContent='Start second half';}return false;}
+  CAL.rows=null;
+  return true;
+}
 function calRule(r){return r.style==='reaction'?'Reaction · 2 a day (10–12 AM, 7–9 PM)':'Talking head · 1 a day, before 9 PM';}
 function calReview(x){
   var r=x.review||{}, w=num(r.pending), ok=num(r.approved), no=num(r.rejected);
@@ -4841,14 +4884,15 @@ RENDERERS.calendar=async function(force){
           return '<span class="cal-d'+(d.day===x.today?' today':'')+'">'+esc(calDay(d.day))+(d.videos>1?' ×'+d.videos:'')+'</span>';}).join('');
         var last=(x.sends||[])[0];
         return '<tr><td><b>@'+esc(x.label)+'</b><div style="font-size:11.5px;color:var(--ink-40)">'+esc(x.name||'')+' · '+esc(x.email||'')+'</div></td>'+
-          '<td style="font-size:12.5px">'+esc(calRule(x))+'</td>'+
+          '<td style="font-size:12.5px">'+esc(calRule(x))+'<div style="margin-top:4px">'+calHalf(x)+'</div></td>'+
           '<td class="mono">'+fmt(x.done)+' / '+fmt(x.target)+'<div class="cal-bar"><i style="width:'+pct+'%"></i></div></td>'+
           '<td style="font-size:12px;white-space:nowrap">'+calReview(x)+'</td>'+
           '<td>'+today+'</td>'+
           '<td><div class="cal-days">'+(days||'<span style="color:var(--ink-40);font-size:12px">finished</span>')+'</div>'+
             ((x.schedule||[]).length>4?'<div style="font-size:11px;color:var(--ink-40);margin-top:3px">last day '+esc(calDay(x.schedule[x.schedule.length-1].day))+'</div>':'')+'</td>'+
           '<td style="font-size:12px">'+(last?esc(CAL_KIND[last.kind]||last.kind)+' · '+(last.status==='failed'?'<span style="color:var(--danger)" title="'+esc(last.error||'')+'">failed</span>':esc(last.status))+'<div style="color:var(--ink-40)">'+esc(ago(last.at))+'</div>':'<span style="color:var(--ink-40)">none yet</span>')+'</td>'+
-          (isAdmin?'<td><button class="btn sm ghost" data-caledit="'+esc(x.plan_id)+'">Edit</button></td>':'')+'</tr>';
+          (isAdmin?'<td style="white-space:nowrap"><button class="btn sm ghost" data-caledit="'+esc(x.plan_id)+'">Edit</button>'+
+            (num(x.half)!==2?' <button class="btn sm'+(x.status==='done'?' ok':' ghost')+'" data-calhalf="'+esc(x.plan_id)+'">Start second half</button>':'')+'</td>':'')+'</tr>';
       }).join('')+'</tbody></table></div>';
   }).join('');
   if(!rows.length)body='<div class="card"><div class="empty"><div class="ei">▦</div><b>No calendars yet</b><p>Add creators to a campaign’s posting plan to start reminders.</p></div></div>';
@@ -4902,6 +4946,7 @@ function calPlanModal(x,campaignId){
 }
 
 RENDERERS.calendar.after=function(){
+  $$('[data-calhalf]').forEach(function(b){b.onclick=async function(){if(await calSecondHalf(b.dataset.calhalf,b))render(true);};});
   $$('[data-caledit]').forEach(function(b){b.onclick=function(){
     var x=(CAL.rows||[]).filter(function(r){return String(r.plan_id)===b.dataset.caledit;})[0];
     if(x)calPlanModal(x);};});

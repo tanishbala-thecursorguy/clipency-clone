@@ -33,7 +33,7 @@ const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: 
 const esc = (v: string) => v.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
 type Day = { day: string; videos: number; posted: number; slots: string[] };
-type State = { style: "talking" | "reaction"; per_day: number; target: number; done: number; remaining: number; today_posted: number; today_planned: number; schedule: Day[] };
+type State = { style: "talking" | "reaction"; half?: number; per_day: number; target: number; done: number; remaining: number; today_posted: number; today_planned: number; schedule: Day[] };
 type Claim = { send_id: number; kind: "intro" | "morning" | "evening" | "late" | "last" | "pause"; email: string; first_name: string; label: string; campaign: string; state: State };
 
 async function providerKey(): Promise<string> {
@@ -88,10 +88,13 @@ function progress(s: State) {
 function build(c: Claim) {
   const s = c.state, hi = `Hi ${esc(c.first_name || c.label)},`, camp = esc(brand(c.campaign));
   if (c.kind === "intro") {
+    const second = s.half === 2;
     return {
-      subject: `Your ${brand(c.campaign)} posting calendar starts today`,
-      html: shell("Your posting calendar", `<p style="margin:0">${hi}</p>
-<p style="margin:12px 0 0">Your content calendar for <b>${camp}</b> is ready. ${rule(s)}</p>${progress(s)}
+      subject: second ? `Second half: your ${brand(c.campaign)} posting starts again today` : `Your ${brand(c.campaign)} posting calendar starts today`,
+      html: shell(second ? "Second half starts today" : "Your posting calendar", `<p style="margin:0">${hi}</p>
+<p style="margin:12px 0 0">${second
+  ? `Thanks for pausing. The <b>second half</b> of <b>${camp}</b> starts today: please post again until you reach <b>${s.target} videos</b> in total.`
+  : `Your content calendar for <b>${camp}</b> is ready.`} ${rule(s)}</p>${progress(s)}
 <p style="margin:16px 0 4px;font-weight:600;color:#14120e">Your posting days</p>${scheduleTable(s)}
 <p style="margin:16px 0 0">On each posting day we'll remind you ${s.style === "reaction" ? "at 10 AM, then at 6, 8 and 9 PM" : "at 6 PM and 8 PM"} if today's video${s.style === "reaction" ? "s are" : " is"} still missing, and we'll tell you when you've hit ${s.target} so you can pause.</p>`),
     };
