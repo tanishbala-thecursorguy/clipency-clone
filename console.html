@@ -4845,7 +4845,7 @@ function calReview(x){
     (ok?'<div style="color:var(--ok)">'+fmt(ok)+' approved</div>':'')+
     (no?'<div style="color:var(--danger)">'+fmt(no)+' rejected</div>':'');
 }
-var CAL_KIND={intro:'Intro',morning:'10 AM reminder',evening:'6 PM reminder',late:'8 PM reminder',last:'9 PM reminder',pause:'Pause notice'};
+var CAL_KIND={intro:'Intro',warmup:'Warm-up email',morning:'10 AM reminder',noon:'11:30 AM reminder',evening:'6 PM reminder',late:'8 PM reminder',last:'9 PM reminder',pause:'Pause notice'};
 
 RENDERERS.calendar=async function(force){
   if(force||!CAL.rows){

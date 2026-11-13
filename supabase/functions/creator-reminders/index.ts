@@ -33,8 +33,8 @@ const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: 
 const esc = (v: string) => v.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
 type Day = { day: string; videos: number; posted: number; slots: string[] };
-type State = { style: "talking" | "reaction"; half?: number; per_day: number; target: number; done: number; remaining: number; today_posted: number; today_planned: number; schedule: Day[] };
-type Claim = { send_id: number; kind: "intro" | "morning" | "evening" | "late" | "last" | "pause"; email: string; first_name: string; label: string; campaign: string; state: State };
+type State = { style: "talking" | "reaction"; half?: number; start_date?: string; per_day: number; target: number; done: number; remaining: number; today_posted: number; today_planned: number; schedule: Day[] };
+type Claim = { send_id: number; kind: "intro" | "warmup" | "morning" | "noon" | "evening" | "late" | "last" | "pause"; email: string; first_name: string; label: string; campaign: string; state: State };
 
 async function providerKey(): Promise<string> {
   const env = Deno.env.get("RESEND_API_KEY");
@@ -90,13 +90,29 @@ function build(c: Claim) {
   if (c.kind === "intro") {
     const second = s.half === 2;
     return {
-      subject: second ? `Second half: your ${brand(c.campaign)} posting starts again today` : `Your ${brand(c.campaign)} posting calendar starts today`,
-      html: shell(second ? "Second half starts today" : "Your posting calendar", `<p style="margin:0">${hi}</p>
+      subject: second ? `${brand(c.campaign)}: your next round of posting starts today` : `Your ${brand(c.campaign)} posting calendar starts today`,
+      html: shell(second ? "Your next round starts today" : "Your posting calendar", `<p style="margin:0">${hi}</p>
 <p style="margin:12px 0 0">${second
-  ? `Thanks for pausing. The <b>second half</b> of <b>${camp}</b> starts today: please post again until you reach <b>${s.target} videos</b> in total.`
+  ? `The next round of <b>${camp}</b> starts today: <b>${s.target} videos</b> this round.`
   : `Your content calendar for <b>${camp}</b> is ready.`} ${rule(s)}</p>${progress(s)}
 <p style="margin:16px 0 4px;font-weight:600;color:#14120e">Your posting days</p>${scheduleTable(s)}
-<p style="margin:16px 0 0">On each posting day we'll remind you ${s.style === "reaction" ? "at 10 AM, then at 6, 8 and 9 PM" : "at 6 PM and 8 PM"} if today's video${s.style === "reaction" ? "s are" : " is"} still missing, and we'll tell you when you've hit ${s.target} so you can pause.</p>`),
+<p style="margin:16px 0 0">On each posting day we'll remind you ${s.style === "reaction" ? "at 10 AM, then at 6, 8 and 9 PM" : "at 6 PM and 8 PM"} if today's video${s.style === "reaction" ? "s are" : " is"} still missing${s.style === "reaction" ? " (and at 11:30 AM if the morning one is)" : ""}, and we'll tell you when you've hit ${s.target} so you can pause.</p>`),
+    };
+  }
+  if (c.kind === "warmup") {
+    const start = s.start_date ? dayName(s.start_date) : "soon";
+    return {
+      subject: `Warm up for 4 days: your ${brand(c.campaign)} posting starts ${start}`,
+      html: shell("Warm up your account first", `<p style="margin:0">${hi}</p>
+<p style="margin:12px 0 0">Before you start posting for <b>${camp}</b>, please spend the next <b>4 days warming up</b> your account: post and engage the way you normally do, but no ${camp} videos yet.</p>
+<p style="margin:12px 0 0">Your ${camp} posting starts on <b>${esc(start)}</b>. ${rule(s)} We'll email you that morning with your calendar.</p>`, "Open my dashboard"),
+    };
+  }
+  if (c.kind === "noon") {
+    return {
+      subject: `30 minutes left: morning video due by 12 PM: ${brand(c.campaign)}`,
+      html: shell("30 minutes left", `<p style="margin:0">${hi}</p>
+<p style="margin:12px 0 0">Your morning <b>${camp}</b> reaction video isn't posted yet. Please <b>post it now</b>, before 12 PM (India time), and submit the link on your dashboard.</p>${progress(s)}`, "Submit my video"),
     };
   }
   if (c.kind === "morning") {
