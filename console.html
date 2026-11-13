@@ -4802,7 +4802,7 @@ RENDERERS.work.after=function(){
    while that day's video is still missing; the creator sees the
    same calendar on their dashboard.
    ============================================================ */
-var CAL={rows:null, camps:null};
+var CAL={rows:null, camps:null, showPaused:false};
 (function(){
   if(!PAGES.some(function(p){return p.id==='calendar';})){
     var at=PAGES.findIndex(function(p){return p.id==='campaigns';});
@@ -4854,6 +4854,9 @@ RENDERERS.calendar=async function(force){
     CAL.rows=r.data||[];
   }
   var rows=CAL.rows, isAdmin=ROLE==='admin';
+  /* Paused plans (taken off the calendar) are hidden unless asked for. */
+  var pausedN=rows.filter(function(x){return x.status==='paused';}).length;
+  if(!CAL.showPaused)rows=rows.filter(function(x){return x.status!=='paused';});
   var by={}; rows.forEach(function(x){(by[x.campaign]=by[x.campaign]||[]).push(x);});
   var active=rows.filter(function(x){return x.status==='active';});
   var dueToday=active.filter(function(x){return num(x.today_posted)<num(x.today_planned);}).length;
@@ -4895,6 +4898,7 @@ RENDERERS.calendar=async function(force){
             (num(x.half)!==2?' <button class="btn sm'+(x.status==='done'?' ok':' ghost')+'" data-calhalf="'+esc(x.plan_id)+'">Start second half</button>':'')+'</td>':'')+'</tr>';
       }).join('')+'</tbody></table></div>';
   }).join('');
+  if(pausedN)body+='<p style="font-size:12px;color:var(--ink-40);margin:4px 2px 0"><a href="#" id="calPaused">'+(CAL.showPaused?'Hide the '+fmt(pausedN)+' paused creator'+(pausedN===1?'':'s'):'Show '+fmt(pausedN)+' paused creator'+(pausedN===1?'':'s')+' (no longer on the calendar)')+'</a></p>';
   if(!rows.length)body='<div class="card"><div class="empty"><div class="ei">▦</div><b>No calendars yet</b><p>Add creators to a campaign’s posting plan to start reminders.</p></div></div>';
   return head+body;
 };
@@ -4946,6 +4950,7 @@ function calPlanModal(x,campaignId){
 }
 
 RENDERERS.calendar.after=function(){
+  var cp=$('#calPaused'); if(cp)cp.onclick=function(e){e.preventDefault();CAL.showPaused=!CAL.showPaused;render();};
   $$('[data-calhalf]').forEach(function(b){b.onclick=async function(){if(await calSecondHalf(b.dataset.calhalf,b))render(true);};});
   $$('[data-caledit]').forEach(function(b){b.onclick=function(){
     var x=(CAL.rows||[]).filter(function(r){return String(r.plan_id)===b.dataset.caledit;})[0];
