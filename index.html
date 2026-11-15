@@ -64,7 +64,7 @@ try{ var nc = navigator.connection || {};
 try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
 if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavior:'instant'}); });
 </script>
-<link rel="stylesheet" href="/assets/site.css?v=1793224108">
+<link rel="stylesheet" href="/assets/site.css?v=1794737160">
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -723,7 +723,7 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
         <span class="eyebrow">Ready to Launch?</span>
         <h2 class="h-section">Let&rsquo;s make them<br>see you <em class="gold">seven times.</em></h2>
         <div class="divider"><span class="dmk"></span></div>
-        <p>Pick a time that suits you. You&rsquo;ll talk to Tanish, co-founder of Clipency, about what you&rsquo;re launching and how we&rsquo;d take it to market.</p>
+        <p>Pick a time that suits you. You&rsquo;ll talk to Tanish, co-founder of Clipency, about what you&rsquo;re launching and how we&rsquo;d take it to market. We have production teams all over the world.</p>
       </div>
       <div class="start-right">
         <!-- Step 1: who you are. Step 2: pick a time (Calendly, synced to Tanish's Google Calendar). Step 3: booked. -->
@@ -749,18 +749,26 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
               </select>
               <input class="f-input" id="fPhone" name="phone" type="tel" required autocomplete="tel-national" inputmode="tel" placeholder="98765 43210">
             </div></div>
+          <div class="f-field"><span class="f-label" id="fSvcL">What do you need? <span class="req">*</span> <span class="opt">Pick one or more</span></span>
+            <div class="f-svc" role="group" aria-labelledby="fSvcL">
+              <label class="f-chip"><input type="checkbox" name="svc" value="launch"><span>Launch</span></label>
+              <label class="f-chip"><input type="checkbox" name="svc" value="clipping"><span>Clipping</span></label>
+              <label class="f-chip"><input type="checkbox" name="svc" value="ugc"><span>UGC</span></label>
+            </div></div>
           <div class="f-row">
             <div class="f-field"><label class="f-label" for="fSite">Website <span class="req">*</span></label><input class="f-input" id="fSite" name="site" required autocomplete="url" inputmode="url" placeholder="company.com"></div>
             <div class="f-field"><label class="f-label" for="fBudget">Budget <span class="req">*</span></label>
               <select class="f-select" id="fBudget" name="budget" required>
                 <option value="">Select a range</option>
-                <option>$700 – $1,500</option>
-                <option>$1,500 – $3,000</option>
-                <option>$3,000 – $7,500</option>
+                <option>$1,000 – $3,000</option>
+                <option>$3,000 – $5,000</option>
+                <option>$5,000 – $7,500</option>
                 <option>$7,500 – $15,000</option>
-                <option>$15,000+</option>
+                <option>$15,000 – $50,000</option>
+                <option>$50,000+</option>
               </select></div>
           </div>
+          <p class="f-hint" id="fBudgetNote">Budget ranges follow what you pick and your country code. We have production teams all over the world.</p>
           <div class="f-error" id="fErr" hidden></div>
           <button class="btn btn-ink f-submit" type="submit">Pick a time <span class="arr">&#8594;</span></button>
         </form>
@@ -797,6 +805,6 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
   <div class="footer-bottom"><p>&copy; 2026 Clipency. The launch &amp; distribution firm for tech products.</p></div>
 </footer>
 
-<script src="/assets/site.js?v=1793224108"></script>
+<script src="/assets/site.js?v=1794737160"></script>
 </body>
 </html>
