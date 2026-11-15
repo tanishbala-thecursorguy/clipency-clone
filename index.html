@@ -64,7 +64,7 @@ try{ var nc = navigator.connection || {};
 try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
 if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavior:'instant'}); });
 </script>
-<link rel="stylesheet" href="/assets/site.css?v=1794737160">
+<link rel="stylesheet" href="/assets/site.css?v=1794737383">
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -758,14 +758,8 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
           <div class="f-row">
             <div class="f-field"><label class="f-label" for="fSite">Website <span class="req">*</span></label><input class="f-input" id="fSite" name="site" required autocomplete="url" inputmode="url" placeholder="company.com"></div>
             <div class="f-field"><label class="f-label" for="fBudget">Budget <span class="req">*</span></label>
-              <select class="f-select" id="fBudget" name="budget" required>
-                <option value="">Select a range</option>
-                <option>$1,000 – $3,000</option>
-                <option>$3,000 – $5,000</option>
-                <option>$5,000 – $7,500</option>
-                <option>$7,500 – $15,000</option>
-                <option>$15,000 – $50,000</option>
-                <option>$50,000+</option>
+              <select class="f-select" id="fBudget" name="budget" required disabled>
+                <option value="">Pick what you need first</option>
               </select></div>
           </div>
           <p class="f-hint" id="fBudgetNote">Budget ranges follow what you pick and your country code. We have production teams all over the world.</p>
@@ -805,6 +799,6 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
   <div class="footer-bottom"><p>&copy; 2026 Clipency. The launch &amp; distribution firm for tech products.</p></div>
 </footer>
 
-<script src="/assets/site.js?v=1794737160"></script>
+<script src="/assets/site.js?v=1794737383"></script>
 </body>
 </html>
