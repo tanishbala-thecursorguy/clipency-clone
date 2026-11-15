@@ -64,7 +64,7 @@ try{ var nc = navigator.connection || {};
 try{ if('scrollRestoration' in history) history.scrollRestoration = 'manual'; }catch(e){}
 if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavior:'instant'}); });
 </script>
-<link rel="stylesheet" href="/assets/site.css?v=1794737383">
+<link rel="stylesheet" href="/assets/site.css?v=1794737500">
 <script type="application/ld+json">
 {
  "@context": "https://schema.org",
@@ -733,8 +733,9 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
           <div class="f-field"><label class="f-label" for="fEmail">Email <span class="req">*</span></label><input class="f-input" id="fEmail" name="email" type="email" required autocomplete="email" placeholder="you@company.com"></div>
           <div class="f-field"><label class="f-label" for="fPhone">WhatsApp number <span class="req">*</span></label>
             <div class="f-phone">
-              <select class="f-select" id="fCc" aria-label="Country code">
-                <option value="91" selected>🇮🇳 +91</option><option value="1">🇺🇸 +1</option><option value="44">🇬🇧 +44</option>
+              <select class="f-select" id="fCc" aria-label="Country code" required>
+                <option value="" selected disabled>Code</option>
+                <option value="91">🇮🇳 +91</option><option value="1">🇺🇸 +1</option><option value="44">🇬🇧 +44</option>
                 <option value="971">🇦🇪 +971</option><option value="65">🇸🇬 +65</option><option value="61">🇦🇺 +61</option>
                 <option value="49">🇩🇪 +49</option><option value="33">🇫🇷 +33</option><option value="31">🇳🇱 +31</option>
                 <option value="966">🇸🇦 +966</option><option value="974">🇶🇦 +974</option><option value="81">🇯🇵 +81</option>
@@ -799,6 +800,6 @@ if(!location.hash) addEventListener('load', function(){ scrollTo({top:0, behavio
   <div class="footer-bottom"><p>&copy; 2026 Clipency. The launch &amp; distribution firm for tech products.</p></div>
 </footer>
 
-<script src="/assets/site.js?v=1794737383"></script>
+<script src="/assets/site.js?v=1794737500"></script>
 </body>
 </html>
