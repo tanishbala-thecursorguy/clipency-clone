@@ -2000,7 +2000,7 @@ async function loadAll(){
     sb.from('payout_requests').select('*').eq('user_id',uid).order('requested_at',{ascending:false})
   ]);
   PROFILE=r[0].data||{id:uid,email:ME.email};CAMPAIGNS=r[1].data||[];SUBS=r[2].data||[];
-  ACCOUNTS=r[3].data||[];METHODS=r[4].data||[];PAYOUTS=r[5].data||[];
+  ACCOUNTS=(r[3].data||[]).filter(function(a){return a.status!=='removed';});METHODS=r[4].data||[];PAYOUTS=r[5].data||[];
   /* UGC creator / clipper lives in its own table on the live backend (036) */
   /* Unpaid-platform clips: left off entirely for the creators the campaign
      names (see loadUnpaid); the full list is kept for the campaign page's note. */
@@ -3590,7 +3590,7 @@ async function checkBio(btn){
 }
 async function refreshAccounts(){
   var r=await sb.from('connected_accounts').select('*').eq('user_id',ME.id);
-  if(!r.error&&r.data){ACCOUNTS=r.data;renderAccounts();}
+  if(!r.error&&r.data){ACCOUNTS=r.data.filter(function(a){return a.status!=='removed';});renderAccounts();}
 }
 $('#cnConfirm').onclick=function(){checkBio(this);};
 $('#cnRetry').onclick=function(){checkBio(this);};

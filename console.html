@@ -2471,7 +2471,7 @@ RENDERERS.accounts=async function(force){
       .select('id,user_id,platform,handle,username,status,is_verified,verification_code,verify_attempts,verify_error,rejection_reason,created_at,verified_at,expires_at')
       .order('created_at',{ascending:false}).limit(400);
     if(r.error)throw new Error(r.error.message);
-    AC.rows=r.data||[];
+    AC.rows=(r.data||[]).filter(function(a){return a.status!=='removed';});
   }
   var all=AC.rows;
   COUNTS.accounts=all.filter(function(a){return a.status==='pending';}).length;
@@ -3443,7 +3443,7 @@ async function crProfileScreen(force,uid){
   if(uid!==CR.user){CR.user=uid;CR.detail=null;CR.last=null;CR.urls='';CR.handle='';CR.linkCamp='';}
   if(force||!CR.detail)await crLoad();
   var d=CR.detail||{};
-  var p=d.profile||{}, accts=d.accounts||[], apps=d.applications||[], clips=d.clips||[], camps=d.campaigns||[], joined=d.joined||[];
+  var p=d.profile||{}, accts=(d.accounts||[]).filter(function(a){return a.status!=='removed';}), apps=d.applications||[], clips=d.clips||[], camps=d.campaigns||[], joined=d.joined||[];
   var verified=accts.filter(function(a){return a.status==='verified';});
   var per=function(pl){return verified.filter(function(a){return a.platform===pl;}).length;};
   var pendingApps=apps.filter(function(a){return a.status==='pending';}).length;
@@ -3748,7 +3748,7 @@ RENDERERS.creators.after=function(){
     openModal(
       '<div class="eyeb">Connected account</div><h3>Remove '+esc(h)+'</h3>'+
       '<p class="sub" style="margin-top:8px">'+(n
-        ?'This account has '+fmt(n)+' '+(n===1?'clip':'clips')+', so it is kept: it is taken off every campaign and can no longer submit to them. Its clips, views and payouts stay.'
+        ?'It is removed from this creator and taken off every campaign, so it can no longer submit. Its '+fmt(n)+' '+(n===1?'clip stays':'clips stay')+' counted: views, approvals and payouts are not touched.'
         :'This account has no clips. It is deleted from this creator, along with its campaign access. The creator can connect it again later.')+
         ' No email is sent.</p>'+
       '<div class="mrow"><button class="btn danger" id="crArmGo">Remove</button>'+
@@ -3761,7 +3761,7 @@ RENDERERS.creators.after=function(){
         try{
           var r=await sb.rpc('admin_remove_account',{p_account:aid});
           if(r.error)throw new Error(r.error.message);
-          closeModal(); toast(r.data==='deleted'?h+' removed':h+' taken off its campaigns'); CR.ov=null; render(true);
+          closeModal(); toast(h+' removed'); CR.ov=null; render(true);
         }catch(err){go.disabled=false;go.textContent='Remove';m.className='msg err';m.textContent=err.message||String(err);}
       };
     });
