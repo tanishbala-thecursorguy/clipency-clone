@@ -33,8 +33,8 @@ const json = (b: unknown, s = 200) => new Response(JSON.stringify(b), { status: 
 const esc = (v: string) => v.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
 
 type Day = { day: string; videos: number; posted: number; slots: string[] };
-type State = { style: "talking" | "reaction"; half?: number; start_date?: string; per_day: number; target: number; done: number; remaining: number; today_posted: number; today_planned: number; schedule: Day[] };
-type Claim = { send_id: number; kind: "intro" | "warmup" | "morning" | "noon" | "evening" | "late" | "last" | "pause"; email: string; first_name: string; label: string; campaign: string; state: State };
+type State = { style: "talking" | "reaction"; half?: number; start_date?: string; end_date?: string | null; cc_email?: string | null; per_day: number; target: number; done: number; remaining: number; today_posted: number; today_planned: number; schedule: Day[] };
+type Claim = { send_id: number; kind: "intro" | "warmup" | "update" | "morning" | "noon" | "evening" | "late" | "last" | "pause"; email: string; first_name: string; label: string; campaign: string; state: State };
 
 async function providerKey(): Promise<string> {
   const env = Deno.env.get("RESEND_API_KEY");
@@ -57,9 +57,10 @@ const dayName = (d: string) =>
 const brand = (c: string) => c.replace(/\s*\{.*?\}\s*/g, " ").trim() || c;
 
 function rule(s: State) {
-  return s.style === "reaction"
+  const by = s.end_date ? ` Finish all ${s.target} by <b>${esc(dayName(s.end_date))}</b>; on days with 3 videos, the third can go up any time before 9 PM.` : "";
+  return (s.style === "reaction"
     ? "Post <b>2 reaction videos a day</b>: one between <b>10 AM and 12 PM</b>, and one between <b>7 PM and 9 PM</b> (India time)."
-    : "Post <b>1 talking-head video a day</b>, <b>before 9 PM</b> (India time).";
+    : "Post <b>1 talking-head video a day</b>, <b>before 9 PM</b> (India time).") + by;
 }
 function scheduleTable(s: State) {
   const rows = s.schedule.slice(0, 14).map((d) =>
@@ -99,6 +100,16 @@ function build(c: Claim) {
 <p style="margin:16px 0 0">On each posting day we'll remind you ${s.style === "reaction" ? "at 10 AM, then at 6, 8 and 9 PM" : "at 6 PM and 8 PM"} if today's video${s.style === "reaction" ? "s are" : " is"} still missing${s.style === "reaction" ? " (and at 11:30 AM if the morning one is)" : ""}, and we'll tell you when you've hit ${s.target} so you can pause.</p>`),
     };
   }
+  if (c.kind === "update") {
+    const by = s.end_date ? dayName(s.end_date) : "soon";
+    return {
+      subject: `Your ${brand(c.campaign)} calendar has changed: finish by ${by}`,
+      html: shell("Your calendar has changed", `<p style="margin:0">${hi}</p>
+<p style="margin:12px 0 0">You're now a <b>${s.style === "reaction" ? "reaction" : "talking-head"}</b> creator for <b>${camp}</b>, and this round needs to be finished by <b>${esc(by)}</b>. ${rule(s)}</p>${progress(s)}
+<p style="margin:16px 0 4px;font-weight:600;color:#14120e">Your new posting days</p>${scheduleTable(s)}
+<p style="margin:16px 0 0">We'll remind you ${s.style === "reaction" ? "at 10 AM, then at 6, 8 and 9 PM" : "at 6 PM and 8 PM"} on any day a video is still missing${s.style === "reaction" ? " (and at 11:30 AM if the morning one is)" : ""}.</p>`),
+    };
+  }
   if (c.kind === "warmup") {
     const start = s.start_date ? dayName(s.start_date) : "soon";
     return {
@@ -125,7 +136,7 @@ function build(c: Claim) {
   if (c.kind === "evening" || c.kind === "late" || c.kind === "last") {
     const left = Math.max(1, s.today_planned - s.today_posted);
     const what = s.style === "reaction"
-      ? (left >= 2 ? "both of today's reaction videos" : "today's evening reaction video")
+      ? (left >= 3 ? `today's ${left} reaction videos` : left >= 2 ? "both of today's reaction videos" : "today's evening reaction video")
       : "today's talking-head video";
     const T = {
       evening: { subject: `Post today's video now: ${brand(c.campaign)}`, title: "Post your video now",
@@ -208,7 +219,16 @@ Deno.serve(async (req) => {
   const rows = (data ?? []) as Claim[];
   let sent = 0, failed = 0;
   for (const c of rows) {
-    const r = c.email ? await send(key, c.email, build(c)) : { ok: false, id: null, error: "no email on the account" };
+    const m = build(c);
+    const r = c.email ? await send(key, c.email, m) : { ok: false, id: null, error: "no email on the account" };
+    /* a second address for this creator (cal_plans.cc_email, 071); the first send decides the status */
+    const cc = c.state?.cc_email;
+    if (cc && cc.toLowerCase() !== String(c.email || "").toLowerCase()) {
+      await new Promise((ok) => setTimeout(ok, 600));
+      const r2 = await send(key, cc, m);
+      if (!r2.ok) console.error("cc send failed", cc, r2.error);
+      else sent++;
+    }
     await admin.rpc("cal_mark", { p_id: c.send_id, p_ok: r.ok, p_provider_id: r.id, p_error: r.error });
     r.ok ? sent++ : failed++;
     await new Promise((ok) => setTimeout(ok, 600));  /* Resend allows ~2 requests a second */
