@@ -105,7 +105,7 @@ function build(c: Claim) {
     return {
       subject: `Your ${brand(c.campaign)} calendar has changed: finish by ${by}`,
       html: shell("Your calendar has changed", `<p style="margin:0">${hi}</p>
-<p style="margin:12px 0 0">You're now a <b>${s.style === "reaction" ? "reaction" : "talking-head"}</b> creator for <b>${camp}</b>, and this round needs to be finished by <b>${esc(by)}</b>. ${rule(s)}</p>${progress(s)}
+<p style="margin:12px 0 0">${s.style === "reaction" ? "You're a <b>reaction</b> creator" : "You're a <b>talking-head</b> creator"} for <b>${camp}</b>, and this round needs to be finished by <b>${esc(by)}</b>. ${rule(s)}</p>${progress(s)}
 <p style="margin:16px 0 4px;font-weight:600;color:#14120e">Your new posting days</p>${scheduleTable(s)}
 <p style="margin:16px 0 0">We'll remind you ${s.style === "reaction" ? "at 10 AM, then at 6, 8 and 9 PM" : "at 6 PM and 8 PM"} on any day a video is still missing${s.style === "reaction" ? " (and at 11:30 AM if the morning one is)" : ""}.</p>`),
     };
