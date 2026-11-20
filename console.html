@@ -956,17 +956,25 @@ RENDERERS.feed=async function(force){
       from+=1000;
     }
     CF.rows=rows;
+    /* Rejected clips the views fetcher found still live after they were rejected
+       (same rule as cx_rejected_live, 069): their views count, nothing else. */
+    var xr=await sb.from('clip_submissions')
+      .select('campaign_title,platform,handle,clip_url,views_count,metrics_fetched_at,reviewed_at')
+      .eq('status','rejected').eq('metrics_status','ok').gt('metrics_fetched_at','2026-11-20T00:00:00Z').limit(2000);
+    CF.extra=(xr.data||[]).filter(function(s){return !s.reviewed_at||String(s.metrics_fetched_at)>String(s.reviewed_at);});
     var c=await sb.from('campaigns').select('id,title,status,platform,platform_split').order('title');
     CF.camps=(c.data||[]).filter(function(x){return rows.some(function(s){return s.campaign_title===x.title;});});
   }
-  var f=CF.rows.filter(function(s){
+  var cfKeep=function(s){
     if(CF.camp&&String(s.campaign_title||'')!==CF.camp)return false;
     if(CF.campPlat&&String(s.platform||'').toLowerCase()!==CF.campPlat)return false;
     if(CF.plat&&String(s.platform||'')!==CF.plat)return false;
     if(CF.q){var q=CF.q.toLowerCase().replace(/^@/,'');
       if(!((s.handle||'').toLowerCase().indexOf(q)>-1||(s.clip_url||'').toLowerCase().indexOf(q)>-1))return false;}
     return true;
-  });
+  };
+  var f=CF.rows.filter(cfKeep);
+  var xViews=(CF.extra||[]).filter(cfKeep).reduce(function(a,s){return a+num(s.views_count);},0);
   var at=function(s){return String(s.reviewed_at||s.created_at||'');};
   f.sort(CF.sort==='views'?function(a,b){return num(b.views_count)-num(a.views_count);}
         :CF.sort==='old'?function(a,b){return at(a).localeCompare(at(b));}
@@ -980,7 +988,7 @@ RENDERERS.feed=async function(force){
     '<div class="kpis">'+
       '<div class="kpi"><span class="lab">Approved clips</span><div class="big">'+fmt(f.length)+'</div><div class="sub-t">'+(f.length===CF.rows.length?'all campaigns':'of '+fmt(CF.rows.length)+' in total')+'</div></div>'+
       '<div class="kpi"><span class="lab">Creators</span><div class="big">'+fmt(Object.keys(creators).length)+'</div><div class="sub-t">in this view</div></div>'+
-      '<div class="kpi"><span class="lab">Views</span><div class="big">'+fmtK(f.reduce(function(a,s){return a+num(s.views_count);},0))+'</div><div class="sub-t">in this view</div></div>'+
+      '<div class="kpi"><span class="lab">Views</span><div class="big">'+fmtK(f.reduce(function(a,s){return a+num(s.views_count);},0)+xViews)+'</div><div class="sub-t">'+(xViews?'incl. '+fmtK(xViews)+' from rejected clips still live':'in this view')+'</div></div>'+
       '<div class="kpi"><span class="lab">Earned</span><div class="big">'+money(f.reduce(function(a,s){return a+num(s.approved_amount);},0))+'</div><div class="sub-t">in this view</div></div>'+
     '</div>'+
     '<div class="card">'+

@@ -464,6 +464,14 @@ window.CLIPDB = (function(){
       comments += r.comments || 0; spend += r.amount || 0;
     });
     spend = Math.round(spend * 100) / 100;
+    /* still-live rejected clips (069): views only */
+    (function(){
+      var C0 = window.CLIPENCY || {}, base = String(c.baseId || c.id);
+      var xs = C0.__allViewsExtra || [];
+      var mineX = xs.filter(function(r){ return String(r.campaignId) === base && (!c.platform || r.platform === c.platform); });
+      if(!mineX.length && state.campaigns.length <= 1) mineX = xs;
+      mineX.forEach(function(r){ views += r.views || 0; });
+    })();
     /* One half of a split campaign: the budget is the whole campaign's, so
        what is read against it is every platform's spend, not this one's. */
     var forBudget = spend;
@@ -732,6 +740,14 @@ window.CLIPDB = (function(){
         var onlyR = state.campaigns.length > 1 ? allR.filter(mine) : allR;
         CLIPENCY.roster.length = 0;
         onlyR.forEach(function(r){ CLIPENCY.roster.push(r); });
+      }
+      /* Views-only list (still-live rejected clips, 069), same narrowing. */
+      var allX = CLIPENCY.__allViewsExtra;
+      if(allX){
+        if(!Array.isArray(CLIPENCY.viewsExtra)) CLIPENCY.viewsExtra = [];
+        var onlyX = state.campaigns.length > 1 ? allX.filter(mine) : allX;
+        CLIPENCY.viewsExtra.length = 0;
+        onlyX.forEach(function(r){ CLIPENCY.viewsExtra.push(r); });
       }
       /* Clips awaiting this client's approval, same narrowing. */
       var allP = CLIPENCY.__allPending;

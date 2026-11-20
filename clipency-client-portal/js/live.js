@@ -435,6 +435,20 @@ window.CXCUR = (function () {
     ros.forEach(function (r) { C.roster.push(r); });
     C.__allRoster = ros.slice();
 
+    /* Rejected clips that are still live (069): their views count toward the
+       view totals and charts, and nothing else. They are kept out of
+       C.submissions on purpose, so no clip list, spend, billing or budget
+       figure can ever pick them up. Same master-copy rule as the roster. */
+    var ext = (payload.views_extra || []).map(function (r) {
+      return { creator: cleanHandle(r.handle), platform: String(r.platform || '').toLowerCase(),
+               views: Number(r.views || 0), submitted: String(r.created_at || '').slice(0, 10),
+               campaignId: r.campaign_id };
+    });
+    if (!Array.isArray(C.viewsExtra)) C.viewsExtra = [];
+    C.viewsExtra.length = 0;
+    ext.forEach(function (r) { C.viewsExtra.push(r); });
+    C.__allViewsExtra = ext.slice();
+
     /* Campaign meta. With several campaigns the portal represents the
        client as a whole: budgets add up, and the headline rate is the
        one from their newest campaign (the rpc orders created_at desc). */
@@ -521,6 +535,8 @@ window.CXCUR = (function () {
         };
       }
       var t = realTotals.call(C);
+      /* still-live rejected clips: views only (069) */
+      t.approvedViews += (C.viewsExtra || []).reduce(function (a, r) { return a + (r.views || 0); }, 0);
       /* The payload also carries flagged and rejected clips (for the
          Rejected tab); engagement counts live clips only. */
       t.likes = C.approved().reduce(function (a, r) { return a + (r.likes || 0); }, 0);
@@ -555,6 +571,11 @@ window.CXCUR = (function () {
         map[r.submitted] = (map[r.submitted] || 0) + (r.views || 0);
         smap[r.submitted] = (smap[r.submitted] || 0) + (r.amount || 0);
       });
+      /* still-live rejected clips: views only, no spend (069) */
+      (C.viewsExtra || []).forEach(function (r) {
+        if (!r.submitted) return;
+        map[r.submitted] = (map[r.submitted] || 0) + (r.views || 0);
+      });
       var keys = Object.keys(map).sort();
       if (!keys.length) return [];
 
@@ -577,6 +598,18 @@ window.CXCUR = (function () {
       return days;
     };
 
+    var realByPlatform = C.byPlatform;
+    C.byPlatform = function () {
+      var out = realByPlatform.call(C);
+      /* still-live rejected clips: views only (069) */
+      (C.viewsExtra || []).forEach(function (r) {
+        var m = out.filter(function (x) { return x.platform === r.platform; })[0];
+        if (!m) { m = { platform: r.platform, clips: 0, views: 0 }; out.push(m); }
+        m.views += r.views || 0;
+      });
+      return out.sort(function (a, b) { return b.views - a.views; });
+    };
+
     var realByCreator = C.byCreator;
     C.byCreator = function () {
       var out = realByCreator.call(C);
@@ -587,6 +620,13 @@ window.CXCUR = (function () {
       out.forEach(function (m) {
         m.spend = Math.round((byCreator[m.creator] || 0) * 100) / 100;
       });
+      /* still-live rejected clips: views only (069) */
+      (C.viewsExtra || []).forEach(function (r) {
+        var m = out.filter(function (x) { return x.creator === r.creator; })[0];
+        if (!m) { m = { creator: r.creator, platform: r.platform, clips: 0, views: 0, likes: 0, comments: 0, spend: 0 }; out.push(m); }
+        m.views += r.views || 0;
+      });
+      out.sort(function (a, b) { return b.views - a.views; });
       /* Private campaigns: only creators still approved for it. Someone removed
          from the campaign keeps their clips (and what they were paid) in the
          totals, but is no longer listed as one of the campaign's creators. */
@@ -625,6 +665,8 @@ window.CXCUR = (function () {
     C.__allPending = [];
     if (Array.isArray(C.roster)) C.roster.length = 0;
     C.__allRoster = [];
+    if (Array.isArray(C.viewsExtra)) C.viewsExtra.length = 0;
+    C.__allViewsExtra = [];
     C.campaign.client = 'Your campaigns';
     C.campaign.budget = 0;
     C.campaign.cpm = 0;
